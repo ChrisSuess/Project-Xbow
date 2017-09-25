@@ -9,10 +9,10 @@ def launch_spot_instance(id, profile, spot_wait_sleep=5, instance_wait_sleep=3):
   ec2 = boto.ec2.connect_to_region(profile['region'])
 
   if not 'key_pair' in profile:
-    profile['key_pair'] = ('KP-' + id, 'KP-' + id + '.pem')
+    profile['key_pair'] = ('XBOW-' + id, 'XBOW-' + id + '.pem')
     try:
       print >> sys.stderr, 'Loading Xbow...',
-      keypair = ec2.create_key_pair('KP-' + id)
+      keypair = ec2.create_key_pair('XBOW-' + id)
       keypair.save('.')
       print >> sys.stderr, 'Loaded.'
     except boto.exception.EC2ResponseError as e:
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     'AWS': {
       'region': 'eu-west-1',
       'availability_zone': 'a',
-      'price': '0.03',
+      'price': '0.02',
       'type': 'r3.large',
       'image_id': 'ami-61a84d18',
       'username': 'ubuntu',
