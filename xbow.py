@@ -4,6 +4,7 @@ import argparse
 import boto, boto.ec2, boto.ec2.blockdevicemapping, boto.manage
 import paramiko
 import os, sys, time
+import fuse
 
 def launch_spot_instance(id, profile, spot_wait_sleep=5, instance_wait_sleep=3):
   ec2 = boto.ec2.connect_to_region(profile['region'])
