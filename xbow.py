@@ -126,7 +126,7 @@ if __name__ == '__main__':
     'AWS': {
       'region': 'eu-west-1',
       'availability_zone': 'a',
-      'price': '0.02',
+      'price': '0.03',
       'type': 'r3.large',
       'image_id': 'ami-61a84d18',
       'username': 'ubuntu',
