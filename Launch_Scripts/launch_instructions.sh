@@ -3,11 +3,6 @@
 cd gromacs
 echo "running gromacs in $PWD"
 
-export gmx="/usr/local/gromacs/5.1.3/bin/gmx"
-
-
-which gmx
-
 /usr/local/gromacs/5.1.3/bin/gmx grompp -f min_aa.mdp -c pga_60_r1_aa.gro -p pga_60_r1_aa.top -o pga_60_r1_aa_min.tpr
 /usr/local/gromacs/5.1.3/bin/gmx mdrun -s pga_60_r1_aa_min.tpr -o pga_60_r1_aa_min.trr -c pga_60_r1_aa_min.gro -e pga_60_r1_aa_min.edr -g pga_60_r1_aa_min.log
 

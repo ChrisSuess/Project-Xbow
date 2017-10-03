@@ -4,6 +4,7 @@ import argparse
 import boto, boto.ec2, boto.ec2.blockdevicemapping, boto.manage
 import paramiko
 import os, sys, time
+import subprocess
 import fuse
 
 def launch_spot_instance(id, profile, spot_wait_sleep=5, instance_wait_sleep=3):
@@ -127,13 +128,14 @@ if __name__ == '__main__':
       'region': 'eu-west-1',
       'availability_zone': 'a',
       'price': '0.03',
-      'type': 'r3.large',
+      'type': 'm4.large',
       'image_id': 'ami-61a84d18',
       'username': 'ubuntu',
       #'key_pair': ('AWS-EU', 'eu-key.pem'),
       'disk_size': 20,
       'disk_delete_on_termination': True,
       'scripts': [],
+      'mount': '~/Xbow/Mountpoint/TEST/',
       'firewall': [ ('tcp', 22, 22, '0.0.0.0/0') ]
     }
   }
@@ -143,6 +145,7 @@ if __name__ == '__main__':
   parser.add_argument('-p', '--profile', help='Profile', default=profiles.keys()[0], choices=profiles.keys())
   parser.add_argument('-s', '--script', help='Script path', action='append', default=[])
   parser.add_argument('-i', '--interactive', help='Connect to SSH', action='store_true')
+  parser.add_argument('-f', '--fuse', help='Shows command to Fuse client with EC2', action='store_true')
   args = parser.parse_args()
 
   profile = profiles[args.profile]
@@ -159,3 +162,7 @@ if __name__ == '__main__':
 
   if args.interactive:
     print 'ssh ' + profile['username'] + '@' + instance.ip_address + ' -i ' + profile['key_pair'][1] + ' -oStrictHostKeyChecking=no'
+
+  if args.fuse:
+    print 'sudo sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/gromacs ' + profile['mount'] + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other '
+    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + profile['mount'] + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other ', shell=True)
