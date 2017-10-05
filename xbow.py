@@ -3,9 +3,8 @@
 import argparse
 import boto, boto.ec2, boto.ec2.blockdevicemapping, boto.manage
 import paramiko
-import os, sys, time
+import os, sys, time, errno
 import subprocess
-import fuse
 
 def launch_spot_instance(id, profile, spot_wait_sleep=5, instance_wait_sleep=3):
   ec2 = boto.ec2.connect_to_region(profile['region'])
@@ -121,6 +120,8 @@ def setup_instance(id, instance, file, user_name, key_name):
   print >> sys.stderr, 'Exit code: ' + str(exit_code)
   return exit_code == 0
 
+#def terminate_instance()
+
 if __name__ == '__main__':
 
   profiles = {
@@ -135,7 +136,6 @@ if __name__ == '__main__':
       'disk_size': 20,
       'disk_delete_on_termination': True,
       'scripts': [],
-      'mount': '~/Xbow/Mountpoint/TEST/',
       'firewall': [ ('tcp', 22, 22, '0.0.0.0/0') ]
     }
   }
@@ -146,6 +146,8 @@ if __name__ == '__main__':
   parser.add_argument('-s', '--script', help='Script path', action='append', default=[])
   parser.add_argument('-i', '--interactive', help='Connect to SSH', action='store_true')
   parser.add_argument('-f', '--fuse', help='Shows command to Fuse client with EC2', action='store_true')
+  parser.add_argument('-c', '--collect', help='Collects data simulation', action='store_true')
+  parser.add_argument('-t', '--terminate', help='Terminates Instance', action='store_true')
   args = parser.parse_args()
 
   profile = profiles[args.profile]
@@ -164,5 +166,31 @@ if __name__ == '__main__':
     print 'ssh ' + profile['username'] + '@' + instance.ip_address + ' -i ' + profile['key_pair'][1] + ' -oStrictHostKeyChecking=no'
 
   if args.fuse:
-    print 'sudo sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/gromacs ' + profile['mount'] + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other '
-    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + profile['mount'] + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other ', shell=True)
+    print 'Fusing file systems'
+    cwd = os.getcwd()
+    file_path = cwd + "/mount"
+    base = os.path.basename(cwd)
+    #print file_path
+    try:
+        os.mkdir(file_path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+   # print 'sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other '
+    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other ', shell=True)
+    subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+
+  if args.collect:
+    print 'Collecting Data'
+    cwd = os.getcwd()
+    file_path = cwd + "/mount"
+    base = os.path.basename(cwd)
+    subprocess.call('rsync -avz --exclude mount ' + file_path + '/' + base + '/* ' + cwd, shell=True)
+
+  if args.terminate:
+    instance = instance.id
+    print 'Terminating the instance: ' + instance
+    ec2 = boto.ec2.connect_to_region(profile['region'])
+    ec2.terminate_instances(instance_ids=instance)
+
+#add shutdown features: syncs data back, unmounts fuse, terminates instances
