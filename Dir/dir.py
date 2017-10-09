@@ -3,7 +3,7 @@
 import os, errno, subprocess
 
 cwd = os.getcwd()
-file_path = cwd + "/mount"
+file_path = "/mnt/"
 base = os.path.basename(cwd)
 
 print base
@@ -15,4 +15,6 @@ except OSError as e:
     if e.errno != errno.EEXIST:
         raise
 
-subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+print "rsync -avz --exclude mount  + cwd + '/* ' + file_path + '/' + base"
+
+#subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + file_path + '/' + base, shell=True)

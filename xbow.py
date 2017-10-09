@@ -177,15 +177,16 @@ if __name__ == '__main__':
         if e.errno != errno.EEXIST:
             raise
    # print 'sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other '
-    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other ', shell=True)
-    subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO_3.pem -o allow_other -oStrictHostKeyChecking=no', shell=True)
+    subprocess.call('rsync -avz --exclude mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+    #subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/' + ' -o IdentityFile=~/Xbow/XBOW-DEMO_3.pem', shell=True)
 
   if args.collect:
     print 'Collecting Data'
     cwd = os.getcwd()
     file_path = cwd + "/mount"
     base = os.path.basename(cwd)
-    subprocess.call('rsync -avz --exclude mount ' + file_path + '/' + base + '/* ' + cwd, shell=True)
+    subprocess.call('rsync -avz --exclude mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
 
   if args.terminate:
     instance = instance.id

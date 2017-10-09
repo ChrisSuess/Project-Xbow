@@ -1,5 +1,8 @@
 *.pem
 
+gromacs/
+gromacs_example/
+
 # Compiled source #
 ###################
 *.com
