@@ -1,7 +1,9 @@
 # Project-Xbow
 A computional chemistry cloud based project.
 
-To launch an instance: python xbow.py -n NAME_OF_JOB -p AWS
+To launch an instance: 
+
+    $ python xbow.py -n NAME_OF_JOB -p AWS
 
 Instances take several moments to bootup so user must wait until it is ready to accept jobs.
 
