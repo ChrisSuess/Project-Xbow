@@ -1,6 +1,6 @@
 # Project-Xbow
 
-##A computional chemistry cloud based project.
+## A computional chemistry cloud based project.
 
 To launch an instance: 
 
