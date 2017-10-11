@@ -1,6 +1,23 @@
 # Project-Xbow
 
-## A computional chemistry cloud based project.
+Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly fleible allowing you to run your science your way.
+
+## Using Xbow
+
+Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS from the command line an additional configuration step is necessary 
+
+   1. Make the directory "/home/$USER/.aws/"
+   2. Create a file  
+
+        credentials
+
+   3. Change file permissions of this file for security 
+         
+        chmod 400  
+
+### Installing Xbow
+
+### Running Xbow
 
 To launch an instance: 
 
