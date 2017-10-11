@@ -8,7 +8,7 @@ Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS
 
    1. Make the directory: `mkdir /home/$USER/.aws/`
    2. Create a file:  `touch /home/$USER/.aws/credentials`
-   3. Add access and secret access keys to `/home/$USER/.aws/credentials`
+   3. Add access and secret access keys to: `/home/$USER/.aws/credentials`
 
 	[default]
 	aws_access_key_id = YOUR_ACCESS_KEY
@@ -18,11 +18,24 @@ Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS
 
  **IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!** 
 
-### Installing Xbow
+### Installing and Configuriing Xbow
 
 Update: pip install or conda package?
 
 ### Running Xbow
+
+Xbow is designed to give you the tools to work how you want to.
+
+The recommended steps to using Xbow are as follows:
+
+    1. Load an instance `xbow-load`
+    2. Fuse filesystems `xbow-fuse`
+    3. Transfer data `xbow-aim`
+    4. Run job `xbow-fire`
+    5. Collect data `xbow-collect`
+    6. Terminate instance `xbow-kill`
+
+A detailed explanation of each job is below.
 
 #### To launch an instance: 
 
