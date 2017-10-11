@@ -17,7 +17,7 @@ Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS
 
    5. Add access and secret access keys
 
-<p style="text-align: center;"> **IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!** <p>
+ **IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!** 
 
 ### Installing Xbow
 
