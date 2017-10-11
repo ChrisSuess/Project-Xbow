@@ -4,7 +4,7 @@ Xbow has been built to mirror the elasticity of cloud computing. It provides an 
 
 ## Using Xbow
 
-Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS from the command line an additional configuration step is necessary 
+Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS from the command line an additional configuration step is necessary. If this is already setup you can ignore this step!
 
    1. Make the directory: "/home/$USER/.aws/"
    2. Create a file:  "credentials"
@@ -25,18 +25,22 @@ Update: pip install or conda package?
 
 ### Running Xbow
 
-To launch an instance: 
+#### To launch an instance: 
 
     $ python xbow.py -n NAME_OF_JOB -p AWS
 
 Instances take several moments to bootup so user must wait until it is ready to accept jobs.
 
-To run a script on instance: python xbow.py -n NAME_OF_JOB -p AWS -s SCRIPT_NAME
+#### To run a script on instance: 
 
-To get SSH details of instance: python xbow.py -n NAME_OF_JOB -p AWS -i
+    $ python xbow.py -n NAME_OF_JOB -p AWS -s SCRIPT_NAME
 
-To Fuse Local and AWS HDD and copy files add -f
+#### To get SSH details of instance: 
 
-To collect data add -c
+    $ python xbow.py -n NAME_OF_JOB -p AWS -i
 
-To terminate instance add -t 
+#### To Fuse Local and AWS HDD and copy files add -f
+
+#### To collect data add -c
+
+#### To terminate instance add -t 
