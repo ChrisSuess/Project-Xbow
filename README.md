@@ -6,16 +6,15 @@ Xbow has been built to mirror the elasticity of cloud computing. It provides an 
 
 Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS from the command line an additional configuration step is necessary. If this is already setup you can ignore this step!
 
-   1. Make the directory: "/home/$USER/.aws/"
-   2. Create a file:  "credentials"
-   3. Change file permissions of this file for security:  "chmod 400 credentials"  
-   4. Add:
+   1. Make the directory: `mkdir /home/$USER/.aws/`
+   2. Create a file:  `touch /home/$USER/.aws/credentials`
+   3. Add access and secret access keys to `/home/$USER/.aws/credentials`
 
 	[default]
-	aws_access_key_id = 
-	aws_secret_access_key =
+	aws_access_key_id = YOUR_ACCESS_KEY
+	aws_secret_access_key = YOUR_SECRET_ACCESS_KEY
 
-   5. Add access and secret access keys
+   4. Change file permissions of this file for security:  `chmod 400 /home/$USER/.aws/credentials`
 
  **IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!** 
 
