@@ -1,21 +1,27 @@
 # Project-Xbow
 
-Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly fleible allowing you to run your science your way.
+Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly flexible allowing you to run your science your way.
 
 ## Using Xbow
 
 Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS from the command line an additional configuration step is necessary 
 
-   1. Make the directory "/home/$USER/.aws/"
-   2. Create a file  
+   1. Make the directory: "/home/$USER/.aws/"
+   2. Create a file:  "credentials"
+   3. Change file permissions of this file for security:  "chmod 400 credentials"  
+   4. Add:
 
-        credentials
+	[default]
+	aws_access_key_id = 
+	aws_secret_access_key =
 
-   3. Change file permissions of this file for security 
-         
-        chmod 400  
+   5. Add access and secret access keys
+
+**IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!**
 
 ### Installing Xbow
+
+Update: pip install or conda package?
 
 ### Running Xbow
 
