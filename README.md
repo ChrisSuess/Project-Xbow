@@ -28,12 +28,12 @@ Xbow is designed to give you the tools to work how you want to.
 
 The recommended steps to using Xbow are as follows:
 
-    1. Load an instance `xbow-load`
-    2. Fuse filesystems `xbow-fuse`
-    3. Transfer data `xbow-aim`
-    4. Run job `xbow-fire`
-    5. Collect data `xbow-collect`
-    6. Terminate instance `xbow-kill`
+   1. Load an instance `xbow-load`
+   2. Fuse filesystems `xbow-fuse`
+   3. Transfer data `xbow-aim`
+   4. Run job `xbow-fire`
+   5. Collect data `xbow-collect`
+   6. Terminate instance `xbow-kill`
 
 A detailed explanation of each job is below.
 
