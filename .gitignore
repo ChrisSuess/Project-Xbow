@@ -2,6 +2,11 @@
 
 gromacs/
 gromacs_example/
+Dir/
+Mountpoint/
+S3/
+Launch_Scripts/
+
 
 # Compiled source #
 ###################
