@@ -1,8 +1,8 @@
 *.pem
 
 TEST_FILES/
-gromacs/
 gromacs_example/
+gromacs/
 Dir/
 Mountpoint/
 S3/

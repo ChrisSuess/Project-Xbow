@@ -177,7 +177,7 @@ if __name__ == '__main__':
         if e.errno != errno.EEXIST:
             raise
    # print 'sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other '
-    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO_3.pem -o allow_other -oStrictHostKeyChecking=no', shell=True)
+    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/gromacs_example/XBOW-Example.pem -o allow_other -oStrictHostKeyChecking=no', shell=True)
     subprocess.call('rsync -avz --exclude mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
     #subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/' + ' -o IdentityFile=~/Xbow/XBOW-DEMO_3.pem', shell=True)
 
