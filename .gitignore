@@ -1,5 +1,6 @@
 *.pem
 
+TEST_FILES/
 gromacs/
 gromacs_example/
 Dir/
