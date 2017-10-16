@@ -1,5 +1,7 @@
 *.pem
 
+.DS_Store
+
 TEST_FILES/
 gromacs_example/
 gromacs/
