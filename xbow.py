@@ -146,11 +146,15 @@ if __name__ == '__main__':
   parser.add_argument('-s', '--script', help='Script path', action='append', default=[])
   parser.add_argument('-i', '--interactive', help='Connect to SSH', action='store_true')
   parser.add_argument('-f', '--fuse', help='Shows command to Fuse client with EC2', action='store_true')
+  parser.add_argument('-a', '--aim', help='Transfers data from client with EC2', action='store_true')
   parser.add_argument('-c', '--collect', help='Collects data simulation', action='store_true')
   parser.add_argument('-t', '--terminate', help='Terminates Instance', action='store_true')
   args = parser.parse_args()
 
   profile = profiles[args.profile]
+  cwd = os.getcwd()
+  file_path = cwd + "/.mount"
+  base = os.path.basename(cwd)
 
   try:
     instance = launch_spot_instance(args.name, profile)
@@ -167,26 +171,24 @@ if __name__ == '__main__':
 
   if args.fuse:
     print 'Fusing file systems'
-    cwd = os.getcwd()
-    file_path = cwd + "/mount"
-    base = os.path.basename(cwd)
-    #print file_path
     try:
         os.mkdir(file_path)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-   # print 'sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/XBOW-DEMO.pem -o allow_other '
-    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=~/Xbow/gromacs_example/XBOW-Example.pem -o allow_other -oStrictHostKeyChecking=no', shell=True)
-    subprocess.call('rsync -avz --exclude mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+    #print 'sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=' + cwd + '/' + profile['key_pair'][1] + ' -o allow_other -oStrictHostKeyChecking=no'
+    subprocess.call('sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=' + cwd + '/' + profile['key_pair'][1] + ' -o allow_other -oStrictHostKeyChecking=no', shell=True)
+   # subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
     #subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/' + ' -o IdentityFile=~/Xbow/XBOW-DEMO_3.pem', shell=True)
+
+  if args.aim:
+    print 'Transfering data to the cloud'
+    subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+
 
   if args.collect:
     print 'Collecting Data'
-    cwd = os.getcwd()
-    file_path = cwd + "/mount"
-    base = os.path.basename(cwd)
-    subprocess.call('rsync -avz --exclude mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
+    subprocess.call('rsync -avz --exclude .mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
 
   if args.terminate:
     instance = instance.id
