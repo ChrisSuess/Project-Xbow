@@ -185,7 +185,6 @@ if __name__ == '__main__':
     print 'Transfering data to the cloud'
     subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
 
-
   if args.collect:
     print 'Collecting Data'
     subprocess.call('rsync -avz --exclude .mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
@@ -195,5 +194,3 @@ if __name__ == '__main__':
     print 'Terminating the instance: ' + instance
     ec2 = boto.ec2.connect_to_region(profile['region'])
     ec2.terminate_instances(instance_ids=instance)
-
-#add shutdown features: syncs data back, unmounts fuse, terminates instances
