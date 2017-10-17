@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7 
+#!/usr/bin/env python2.7 
 
 import argparse
 import boto, boto.ec2, boto.ec2.blockdevicemapping, boto.manage

@@ -1,6 +1,6 @@
 # Project-Xbow
 
-Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly flexible allowing you to run your science your way.
+Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly flexible allowing you to run your science how you like it.
 
 ## Using Xbow
 
@@ -22,37 +22,24 @@ Xbow currently makes use of Amazon Web Services (AWS). If you have never run AWS
 
 Update: pip install or conda package?
 
+#### Prerequisites
+
+Xbow is being developed to work out of the box. For now, the following are currently necessary to be installed before using Xbow.
+
+  * sshfs `brew install sshfs` or `apt-get install sshfs`
+  * paramiko `pip install paramiko`
+  * boto `pip install boto`
+
 ### Running Xbow
 
 Xbow is designed to give you the tools to work how you want to.
 
 The recommended steps to using Xbow are as follows:
 
-   1. Load an instance `xbow-load`
+   1. Launch an instance `xbow-load`
    2. Fuse filesystems `xbow-fuse`
    3. Transfer data `xbow-aim`
    4. Run job `xbow-fire`
    5. Collect data `xbow-collect`
    6. Terminate instance `xbow-kill`
 
-A detailed explanation of each job is below.
-
-#### To launch an instance: 
-
-    $ python xbow.py -n NAME_OF_JOB -p AWS
-
-Instances take several moments to bootup so user must wait until it is ready to accept jobs.
-
-#### To run a script on instance: 
-
-    $ python xbow.py -n NAME_OF_JOB -p AWS -s SCRIPT_NAME
-
-#### To get SSH details of instance: 
-
-    $ python xbow.py -n NAME_OF_JOB -p AWS -i
-
-#### To Fuse Local and AWS HDD and copy files add -f
-
-#### To collect data add -c
-
-#### To terminate instance add -t 
