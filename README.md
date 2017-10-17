@@ -1,6 +1,7 @@
 # Project-Xbow
 
-Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly flexible allowing you to run your science how you like it.
+Xbow has been built to mirror the elasticity of cloud computing. It provides an easy interface to the cloud but remains incredibly flexible allowing you to run your science how you like it. 
+
 
 ## Using Xbow
 
@@ -26,9 +27,15 @@ Update: pip install or conda package?
 
 Xbow is being developed to work out of the box. For now, the following are currently necessary to be installed before using Xbow.
 
-  * sshfs `brew install sshfs` or `apt-get install sshfs`
+  * sshfs 
+	* for OSX: `brew install sshfs` 
+	* for Ubuntu: `apt-get install sshfs`
   * paramiko `pip install paramiko`
   * boto `pip install boto`
+
+### Getting Xbow
+
+`git clone https://github.com/ChrisSuess/Project-Xbow`
 
 ### Running Xbow
 
