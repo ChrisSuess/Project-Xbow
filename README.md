@@ -43,10 +43,22 @@ Xbow is designed to give you the tools to work how you want to.
 
 The recommended steps to using Xbow are as follows:
 
-   1. Launch an instance `xbow-load`
-   2. Fuse filesystems `xbow-fuse`
-   3. Transfer data `xbow-aim`
-   4. Run job `xbow-fire`
-   5. Collect data `xbow-collect`
-   6. Terminate instance `xbow-kill`
+   1. Launch an instance `python xbow.py -n $NAME_OF_JOB`
+   2. Fuse filesystems `python xbow.py -n $NAME_OF_JOB -f`
+   3. Transfer data `python xbow.py -n $NAME_OF_JOB -a`
+   4. Run job `python xbow.py -n $NAME_OF_JOB -s $SCRIPT_NAME`
+   5. Collect data `python xbow.py -n $NAME_OF_JOB -c`
+   6. Terminate instance `python xbow.py -n $NAME_OF_JOB -t`
+
+   A. To login directly with cloud `python xbow.py -n $NAME_OF_JOB -t`
+
+### Example
+
+`cd ~/Xbow/Example`
+`python xbow.py -n Example`
+`python xbow.py -n Example -f`
+`python xbow.py -n Example -a`
+`python xbow.py -n Example -s launch_instructions.sh`
+`python xbow.py -n Example -c`
+`python xbow.py -n Example -t`
 

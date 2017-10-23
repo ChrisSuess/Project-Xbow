@@ -1,5 +1,5 @@
 integrator           = steep
-nsteps               = 1000
+nsteps               = 100
 emtol                = 0.1
 nstxout              = 10
 rlist                = 1
