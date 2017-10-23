@@ -54,11 +54,11 @@ The recommended steps to using Xbow are as follows:
 
 ### Example
 
-`cd ~/Xbow/Example`
-`python xbow.py -n Example`
-`python xbow.py -n Example -f`
-`python xbow.py -n Example -a`
-`python xbow.py -n Example -s launch_instructions.sh`
-`python xbow.py -n Example -c`
-`python xbow.py -n Example -t`
+   1. `cd ~/Xbow/Example`
+   2. `python xbow.py -n Example`
+   3. `python xbow.py -n Example -f`
+   4. `python xbow.py -n Example -a`
+   5. `python xbow.py -n Example -s launch_instructions.sh`
+   6. `python xbow.py -n Example -c`
+   7. `python xbow.py -n Example -t`
 
