@@ -168,7 +168,6 @@ if __name__ == '__main__':
 
   if args.interactive:
     print 'ssh ' + profile['username'] + '@' + instance.ip_address + ' -i ' + profile['key_pair'][1] + ' -oStrictHostKeyChecking=no'
-    print profile['key_pair'][1]
 
   if args.fuse:
     print 'Fusing file systems'
@@ -181,12 +180,10 @@ if __name__ == '__main__':
 
   if args.aim:
     print 'Transfering data to the cloud'
-    #subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
     subprocess.call('rsync -avz -e "ssh -i ' + profile['key_pair'][1] + '" ' + cwd + '/* ' +  profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base, shell=True)
 
   if args.collect:
     print 'Collecting Data'
-    #subprocess.call('rsync -avz --exclude .mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
     subprocess.call('rsync -avz -e "ssh -i ' + profile['key_pair'][1] + '" ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/* ' + cwd + '/', shell=True) 
 
   if args.terminate:
