@@ -193,8 +193,3 @@ if __name__ == '__main__':
     print 'Terminating the instance: ' + instance
     ec2 = boto.ec2.connect_to_region(profile['region'])
     ec2.terminate_instances(instance_ids=instance)
-
-    #print 'sshfs ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/ ' + file_path + ' -o IdentityFile=' + cwd + '/' + profile['key_pair'][1] + ' -o allow_other -oStrictHostKeyChecking=no'
-
- # subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
-    #subprocess.call('rsync -avz --exclude mount ' + cwd + '/* ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/' + ' -o IdentityFile=~/Xbow/XBOW-DEMO_3.pem', shell=True)
