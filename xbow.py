@@ -180,11 +180,13 @@ if __name__ == '__main__':
 
   if args.aim:
     print 'Transfering data to the cloud'
-    subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+    #subprocess.call('rsync -avz --exclude .mount --progress ' + cwd + '/* ' + file_path + '/' + base, shell=True)
+    subprocess.call('rsync -avz -e "ssh -i XBOW-Example.pem" ' + cwd + '/* ' +  profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base, shell=True)
 
   if args.collect:
     print 'Collecting Data'
-    subprocess.call('rsync -avz --exclude .mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
+    #subprocess.call('rsync -avz --exclude .mount --progress ' + file_path + '/' + base + '/* ' + cwd, shell=True)
+    subprocess.call('rsync -avz -e "ssh -i XBOW-Example.pem" ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/* ' + cwd + '/', shell=True) 
 
   if args.terminate:
     instance = instance.id
