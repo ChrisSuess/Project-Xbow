@@ -130,7 +130,7 @@ if __name__ == '__main__':
       'availability_zone': 'a',
       'price': '0.03',
       'type': 'm4.large',
-      'image_id': 'ami-61a84d18',
+      'image_id': 'ami-9d8421e4',
       'username': 'ubuntu',
       #'key_pair': ('AWS-EU', 'eu-key.pem'),
       'disk_size': 20,
