@@ -123,9 +123,35 @@ def setup_instance(id, instance, file, user_name, key_name):
 #def terminate_instance()
 
 if __name__ == '__main__':
-
+ 
   profiles = {
-    'AWS': {
+    'Default': {
+      'region': 'eu-west-1',
+      'availability_zone': 'a',
+      'price': '0.03',
+      'type': 'm4.large',
+      'image_id': 'ami-9d8421e4',
+      'username': 'ubuntu',
+      #'key_pair': ('AWS-EU', 'eu-key.pem'),
+      'disk_size': 20,
+      'disk_delete_on_termination': True,
+      'scripts': [],
+      'firewall': [ ('tcp', 22, 22, '0.0.0.0/0') ]
+    },
+    'Gromacs': {
+      'region': 'eu-west-1',
+      'availability_zone': 'a',
+      'price': '0.03',
+      'type': 'm4.large',
+      'image_id': 'ami-9d8421e4',
+      'username': 'ubuntu',
+      #'key_pair': ('AWS-EU', 'eu-key.pem'),
+      'disk_size': 20,
+      'disk_delete_on_termination': True,
+      'scripts': [],
+      'firewall': [ ('tcp', 22, 22, '0.0.0.0/0') ]
+    },
+    'Amber': {
       'region': 'eu-west-1',
       'availability_zone': 'a',
       'price': '0.03',
@@ -139,7 +165,7 @@ if __name__ == '__main__':
       'firewall': [ ('tcp', 22, 22, '0.0.0.0/0') ]
     }
   }
-
+  
   parser = argparse.ArgumentParser(description='Launch spot instance')
   parser.add_argument('-n', '--name', help='Name', required=True)
   parser.add_argument('-p', '--profile', help='Profile', default=profiles.keys()[0], choices=profiles.keys())
