@@ -174,6 +174,7 @@ if __name__ == '__main__':
   parser.add_argument('-f', '--fuse', help='Shows command to Fuse client with EC2', action='store_true')
   parser.add_argument('-a', '--aim', help='Transfers data from client with EC2', action='store_true')
   parser.add_argument('-c', '--collect', help='Collects data simulation', action='store_true')
+  parser.add_argument('-r', '--ready', help='Check if instance is ready', action='store_true')
   parser.add_argument('-t', '--terminate', help='Terminates Instance', action='store_true')
   args = parser.parse_args()
 
@@ -211,6 +212,15 @@ if __name__ == '__main__':
   if args.collect:
     print 'Collecting Data'
     subprocess.call('rsync -avz -e "ssh -i ' + profile['key_pair'][1] + '" ' + profile['username'] + '@' + instance.dns_name + ':/home/ubuntu/' + base + '/* ' + cwd + '/', shell=True) 
+
+  if args.ready:
+    ami = instance.id
+    ec2 = boto.ec2.connect_to_region(profile['region'])
+    existing_instances = ec2.get_all_instance_status(instance_ids=ami)
+    print 'Checking if the instance: ' + ami + ' is ready'
+    print 'When both systems checks are ok Xbow is ready to fire!'
+    for instance in existing_instances:
+      print 'System Status is: ' + instance.system_status.status + '\n' + 'Instance Status is: ' + instance.instance_status.status
 
   if args.terminate:
     instance = instance.id
