@@ -27,9 +27,6 @@ Update: pip install or conda package?
 
 Xbow is being developed to work out of the box. For now, the following are currently necessary to be installed before using Xbow.
 
-  * sshfs 
-	* for OSX: `brew install sshfs` 
-	* for Ubuntu: `apt-get install sshfs`
   * paramiko `pip install paramiko`
   * boto `pip install boto`
 
@@ -43,10 +40,10 @@ Xbow is designed to give you the tools to work how you want to.
 
 The recommended steps to using Xbow are as follows:
 
-   1. Launch an instance `python xbow.py -n $NAME_OF_JOB`
-   2. Fuse filesystems `python xbow.py -n $NAME_OF_JOB -f`
-   3. Transfer data `python xbow.py -n $NAME_OF_JOB -a`
-   4. Run job `python xbow.py -n $NAME_OF_JOB -s $SCRIPT_NAME`
+   1. Load an instance `python xbow.py -n $NAME_OF_JOB`
+   2. Check if instance is ready `python xbow.py -n $NAME_OF_JOB -r`
+   3. Aim (transfer) data `python xbow.py -n $NAME_OF_JOB -a`
+   4. Fire job `python xbow.py -n $NAME_OF_JOB -s $SCRIPT_NAME`
    5. Collect data `python xbow.py -n $NAME_OF_JOB -c`
    6. Terminate instance `python xbow.py -n $NAME_OF_JOB -t`
 
@@ -56,7 +53,7 @@ The recommended steps to using Xbow are as follows:
 
    1. `cd Xbow/Example`
    2. `python ../xbow.py -n Example`
-   3. `python ../xbow.py -n Example -f`
+   3. `python ../xbow.py -n Example -r`
    4. `python ../xbow.py -n Example -a`
    5. `python ../xbow.py -n Example -s launch_instructions.sh`
    6. `python ../xbow.py -n Example -c`
