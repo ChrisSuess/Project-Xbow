@@ -27,9 +27,9 @@ Update: pip install or conda package?
 
 Xbow is being developed to work out of the box. For now, the following are currently necessary to be installed before using Xbow.
 
-  * paramiko `pip install paramiko`
+  * paramiko `pip install paramiko --user`
     * Currently if using Ubuntu installing via pip can fail if this happens use `apt-get install python-paramiko`   
-  * boto `pip install boto`
+  * boto `pip install boto --user`
 
 ### Getting Xbow
 
@@ -53,10 +53,10 @@ The recommended steps to using Xbow are as follows:
 ### Example
 
    1. `cd Xbow/Example`
-   2. `python ../xbow.py -n Example`
-   3. `python ../xbow.py -n Example -r`
-   4. `python ../xbow.py -n Example -a`
-   5. `python ../xbow.py -n Example -s launch_instructions.sh`
-   6. `python ../xbow.py -n Example -c`
-   7. `python ../xbow.py -n Example -t`
+   2. `python ../xbow.py -n TestSim`
+   3. `python ../xbow.py -n TestSim -r`
+   4. `python ../xbow.py -n TestSim -a`
+   5. `python ../xbow.py -n TestSim -s launch_instructions.sh`
+   6. `python ../xbow.py -n TestSim -c`
+   7. `python ../xbow.py -n TestSim -t`
 
