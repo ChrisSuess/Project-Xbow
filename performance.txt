@@ -5,8 +5,6 @@ GPU p2.xlarge
                  (ns/day)    (hour/ns)
 Performance:        9.410        2.551
 
-GROMACS reminds you: "Don't Follow Me Home" (Throwing Muses)
-
 
 GPU g2.2xlarge
                Core t (s)   Wall t (s)        (%)
