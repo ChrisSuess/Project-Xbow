@@ -1,0 +1,15 @@
+GPU p2.xlarge
+
+               Core t (s)   Wall t (s)        (%)
+       Time:      734.586      183.646      400.0
+                 (ns/day)    (hour/ns)
+Performance:        9.410        2.551
+
+GROMACS reminds you: "Don't Follow Me Home" (Throwing Muses)
+
+
+GPU g2.2xlarge
+               Core t (s)   Wall t (s)        (%)
+       Time:      898.466      112.308      800.0
+                 (ns/day)    (hour/ns)
+Performance:       15.387        1.560
