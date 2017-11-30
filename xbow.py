@@ -128,7 +128,7 @@ if __name__ == '__main__':
     'Default': {
       'region': 'eu-west-1',
       'availability_zone': 'a',
-      'price': '0.30',
+      'price': '0.50',
       'type': 'p2.xlarge',
       'image_id': 'ami-9d8421e4',
       'username': 'ubuntu',
