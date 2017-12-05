@@ -42,7 +42,7 @@ Update: pip install or conda package?
 Xbow is being developed to work out of the box. For now, the following are currently necessary to be installed before using Xbow.
 
   * paramiko `pip install paramiko --user`
-    * Currently if using Ubuntu installing via pip can fail if this happens use `apt-get install python-paramiko`   
+    * Currently if using a Linux distro (Ubuntu/centOS) is is necessary to `pip install python-gssapi --user`
   * boto `pip install boto --user`
 
 ### Getting Xbow
