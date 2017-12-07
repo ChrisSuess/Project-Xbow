@@ -98,9 +98,8 @@ Example
 1. ``cd Xbow/Example``
 2. ``python ../xbow.py -n TestSim``
 3. ``python ../xbow.py -n TestSim -r``
-4. \`python ../xbow.py -n TestSim
-
-pandoc 2.0.4
-
-© 2013–2015 John MacFarlane
+4. ``python ../xbow.py -n TestSim -a``
+5. ``python ../xbow.py -n TestSim -s launch_instructions.sh``
+6. ``python ../xbow.py -n TestSim -c``
+7. ``python ../xbow.py -n TestSim -t``
 
