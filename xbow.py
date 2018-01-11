@@ -141,8 +141,8 @@ if __name__ == '__main__':
     'Gromacs': {
       'region': 'eu-west-1',
       'availability_zone': 'a',
-      'price': '0.03',
-      'type': 'm4.large',
+      'price': '0.4',
+      'type': 'p2.xlarge',
       'image_id': 'ami-9d8421e4',
       'username': 'ubuntu',
       #'key_pair': ('AWS-EU', 'eu-key.pem'),
