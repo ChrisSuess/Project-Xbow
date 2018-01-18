@@ -1,4 +1,5 @@
 *.pem
+*.pyc
 
 .DS_Store
 
