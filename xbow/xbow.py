@@ -169,111 +169,120 @@ class ConnectedInstance(object):
         sftp.gett(remotefile, localfile)
         sftp.close()
 
+def create_spot_pool(count=1, price=1.0, image_id=None, region=None, 
+                     instance_type=None, name=None,
+                     security_groups=None, username=None,
+                     shared_file_system=None, mount_point=None):
+    """Create a pool of persistent connected spot instances"""
+    ec2_resource = boto3.resource('ec2', region_name=region)
+    if name is not None:
+        response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[name]},
+          {'Name': 'state', 'Values': ['open', 'active']}])
+        spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+        if len(spot_instance_request_ids) > 0:
+            raise ValueError('Error - spot pool {} already exists'.format(name))
+        launch_group = name
+        key_name = launch_group
+    else:
+        key_name = str(uuid.uuid4())[:8]
+        launch_group = self.key_name
+    pem_file = '/Users/pazcal/.xbow/{}.pem'.format(launch_group)
+    kp = self.ec2_resource.KeyPair(self.key_name)
+
+    if username is None:
+        image = self.ec2_resource.Image(image_id)
+        tagdict = {}
+        for tag in image.tags:
+            tagdict[tag['Key']] = tag['Value']
+        username = tagdict.get('username')
+
+    efs_client = boto3.client('efs', region_name=region)
+    if shared_file_system is not None:
+        dfs = efs_client.describe_file_systems
+        response = dfs(CreationToken=shared_file_system)['FileSystems']
+        if len(response) > 0:
+            FileSystemId = response[0]['FileSystemId']
+        else:
+            cfs = efs_client.create_file_system
+            response = cfs(CreationToken=shared_file_system)
+            FileSystemId = response['FileSystemId']
+            subnets = ec2_resource.subnets.all()
+            sgf = ec2_resource.security_groups.filter
+            security_groups = sgf(GroupNames=efs_security_groups)
+
+            efs_security_groupid = [security_group.group_id 
+                                    for security_group in security_groups]
+            for subnet in subnets:
+                cmt = efs_client.create_mount_target
+                cmt(FileSystemId=FileSystemId, 
+                    SubnetId=subnet.id, 
+                    SecurityGroups=efs_security_groupid
+                   )
+        user_data = '#!/bin/bash\n mkdir {}\n'.format(mount_point)
+        dnsname = '{}.efs.{}.amazonaws.com'.format(FileSystemId, region)
+        mount_command = 'mount -t nfs -o nfsvers=4.1,rsize=1048576,'
+        mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
+        mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
+        user_data += mount_command
+        user_data += ' chmod go+rw {}\n'.format(mount_point)
+    else:
+        user_data = None
+
+    rsi = ec2_resource.meta.client.request_spot_instances
+    response = rsi(ClientToken=str(uuid.uuid4()),
+                   InstanceCount=count,
+                   SpotPrice=price,
+                   Type='persistent',
+                   LaunchGroup=launch_group,
+                   LaunchSpecification={
+                                        'SecurityGroups': security_groups,
+                                        'ImageId': image_id,
+                                        'InstanceType': instance_type,
+                                        'KeyName': self.key_name,
+                                        'UserData': base64.b64encode(user_data)
+                                       })
+            
+    sip = SpotInstancePool(launch_group, region)
+    return sip
+
 class SpotInstancesPool(object):
     """A pool of persistent connected spot instances"""
     
-    def __init__(self, count=1, price=1.0, image_id=None, region=None,
-                 instance_type=None, 
-                 launch_group=None,
-                 security_groups=None, username=None, 
-                 shared_file_system=None, mount_point=None):
-    
+    def __init__(self, name, region=None):
 
         self.ec2_resource = boto3.resource('ec2', region_name=region)
-        if launch_group is not None:
-            response = self.ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[launch_group]},
-              {'Name': 'state', 'Values': ['open', 'active']}])
-            spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
-            if len(spot_instance_request_ids) > 0:
-               pool_exists = True
-               self.instance_count = len(spot_instance_request_ids)
-               image_id = response['SpotInstanceRequests'][0]['LaunchSpecification']['ImageId']
-               self.spot_instance_request_ids = spot_instance_request_ids
-               instance_type = response['SpotInstanceRequests'][0]['LaunchSpecification']['InstanceType']
-            else:
-               pool_exists = False
- 
-        if launch_group is None:
-            self.key_name = str(uuid.uuid4())[:8]
-            launch_group = self.key_name
+        self.name = name
+        response = self.ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[name]},
+          {'Name': 'state', 'Values': ['open', 'active']}])
+        self.spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+        if len(self.spot_instance_request_ids) == 0:
+            raise ValueError('Error - spot pool {} does not exist'.format(name))
         else:
-            self.key_name = launch_group
-        self.pem_file = '/Users/pazcal/.xbow/{}.pem'.format(launch_group)
+            self.instance_count = len(self.spot_instance_request_ids)
+
+        az = response['SpotInstanceRequests'][0]['LaunchSpecification']['Placement']['AvailabilityZone']
+        instance_type = response['SpotInstanceRequests'][0]['InstanceType']
+        self.meter = SpotMeter(instance_type, az, count=self.instance_count)
+        self.launch_group = name
+        self.key_name = name
         self.kp = self.ec2_resource.KeyPair(self.key_name)
+        self.pem_file = '/Users/pazcal/.xbow/().pem'.format(name)
 
-        if not pool_exists:
-            result = self.ec2_resource.meta.client.create_key_pair(KeyName=self.key_name)
-            with open(self.pem_file, 'w') as f:
-                f.write(result['KeyMaterial'])
-        
-        if username is None:
-            image = self.ec2_resource.Image(image_id)
-            tagdict = {}
-            for tag in image.tags:
-                tagdict[tag['Key']] = tag['Value']
-            username = tagdict.get('username')
+        image_id = response['SpotInstanceRequests'][0]['ImageId']
+        image = self.ec2_resource.Image(image_id)
+        tagdict = {}
+        for tag in image.tags:
+            tagdict[tag['Key']] = tag['Value']
+        self.username = tagdict.get('username')
+        if self.username is None:
+            raise ValueError('Error - the chosen image does not define the username')
 
-        efs_client = boto3.client('efs', region_name=region)
-        if not pool_exists:
-            if shared_file_system is not None:
-                dfs = efs_client.describe_file_systems
-                response = dfs(CreationToken=shared_file_system)['FileSystems']
-                if len(response) > 0:
-                    FileSystemId = response[0]['FileSystemId']
-                else:
-                    cfs = efs_client.create_file_system
-                    response = cfs(CreationToken=shared_file_system)
-                    FileSystemId = response['FileSystemId']
-                    subnets = ec2_resource.subnets.all()
-                    sgf = ec2_resource.security_groups.filter
-                    security_groups = sgf(GroupNames=efs_security_groups)
-
-                    efs_security_groupid = [security_group.group_id 
-                                            for security_group in security_groups]
-                    for subnet in subnets:
-                        cmt = efs_client.create_mount_target
-                        cmt(FileSystemId=FileSystemId, 
-                            SubnetId=subnet.id, 
-                            SecurityGroups=efs_security_groupid
-                           )
-                user_data = '#!/bin/bash\n mkdir {}\n'.format(mount_point)
-                dnsname = '{}.efs.{}.amazonaws.com'.format(FileSystemId, region)
-                mount_command = 'mount -t nfs -o nfsvers=4.1,rsize=1048576,'
-                mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
-                mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
-                user_data += mount_command
-                user_data += ' chmod go+rw {}\n'.format(mount_point)
-            else:
-                user_data = None
-            rsi = self.ec2_resource.meta.client.request_spot_instances
-            
-            response = rsi(ClientToken=str(uuid.uuid4()),
-                           InstanceCount=count,
-                           SpotPrice=price,
-                           Type='persistent',
-                           LaunchGroup=launch_group,
-                           LaunchSpecification={
-                                                'SecurityGroups': security_groups,
-                                                'ImageId': image_id,
-                                                'InstanceType': instance_type,
-                                                'KeyName': self.key_name,
-                                                'UserData': base64.b64encode(user_data)
-                                               })
-            self.instance_count = count
-            self.launch_group = launch_group
-            self.spot_instance_request_ids = [sir['SpotInstanceRequestId'] for sir in response['SpotInstanceRequests']]
-        if username is None:
-            raise ValueError('Error - no username supplied')
-        self.username = username
-        self.connected_instances = None
         self.outputs = None
         self.exit_statuses = None
         self.status = None
         self.instances = None
-        az = response['SpotInstanceRequests'][0]['LaunchSpecification']['Placement']['AvailabilityZone']
-        self.meter = SpotMeter(instance_type, az, count=count)
+        self.connected_instances = None
         self.refresh()
-        
         
     def update(self):
         """Update the status of the pool"""
