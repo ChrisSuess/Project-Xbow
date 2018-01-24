@@ -1,8 +1,0 @@
-#!/bin/bash
-chmod +x $1
-nohup ./$1 2>&1 </dev/null &
-ps -e | grep $1 | awk '{print $1}'
-
-#!/bin/bash
-sleep 30
-ls -al .. > output.out

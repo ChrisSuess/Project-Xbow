@@ -1,16 +1,4 @@
-*.pem
 *.pyc
-
-.DS_Store
-
-TEST_FILES/
-gromacs_example/
-gromacs/
-Dir/
-Mountpoint/
-S3/
-Launch_Scripts/
-
 
 # Compiled source #
 ###################
