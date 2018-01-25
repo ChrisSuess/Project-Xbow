@@ -1,3 +1,5 @@
+from __future__ import print_function
+import sys
 """
 Introduction
 ============
@@ -408,3 +410,35 @@ class Pipeline(object):
         else:
             outputs = outputs.result()
         return outputs
+
+    def dryrun(self, inputs):
+        """
+        Do a dry run of the pipeline.
+        Print out the commands that would be run. 
+
+        Args:
+            inputs (dict or list): the inputs to the first kernel in the
+                pipeline.
+        Returns:
+            dict or list: the outputs from the last kernel.
+        """
+        inp = inputs
+        out = inp
+        ik = 0
+        for k in self.klist:
+            if k.operation != 'compute':
+                print('===== Kernel {} ====='.format(ik))
+                if isinstance(inp, list) and k.operation != 'gather':
+                   out = [k.run(i) for i in inp]
+                else:
+                   out = k.run(inp)
+                if isinstance(out, list):
+                    for o in out:
+                        print(o['cmd'])
+                        print('--------------')
+                else:
+                    print(out['cmd'])
+                inp = out
+                ik += 1
+        print('======================')
+        return out
