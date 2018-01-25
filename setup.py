@@ -100,7 +100,8 @@ setup_args = {
     'packages': find_packages(),
 
     'scripts': ['scripts/xbow-create_cluster',
-                'scripts/xbow-delete_cluster'],
+                'scripts/xbow-delete_cluster',
+                'scripts/xbow-login_instance'],
 
     'install_requires': ['boto3',
                          'paramiko',
