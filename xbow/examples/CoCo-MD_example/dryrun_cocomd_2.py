@@ -2,7 +2,7 @@ from __future__ import print_function
 #import subprocess
 #import socket
 #from dask.distributed import Client
-from xbow_workflows.pipelines import InterfaceKernel, GenericKernel, DummyKernel, Pipeline
+from xbowflow.pipelines import InterfaceKernel, GenericKernel, DummyKernel, Pipeline
 
 cx1 = [
         ['tmp',             '=',  '$TMPDIR'                                 ],

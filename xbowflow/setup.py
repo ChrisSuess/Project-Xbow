@@ -48,7 +48,7 @@ def read(*rnames):
 
 """Discover the package version"""
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-VERSIONFILE = "xbow_workflows/_version.py"
+VERSIONFILE = "xbowflow/_version.py"
 verstrline = open(VERSIONFILE, "rt").read()
 mo = re.search(VSRE, verstrline, re.M)
 if mo:
@@ -71,7 +71,7 @@ class Extension(Ext, object):
     pass
 
 setup_args = {
-    'name':             "xbow_workflows",
+    'name':             "xbowflow",
     'version':          verstr,
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",

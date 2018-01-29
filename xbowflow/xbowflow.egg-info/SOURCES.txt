@@ -1,0 +1,14 @@
+MANIFEST.in
+README.rst
+setup.cfg
+setup.py
+test/__init__.py
+test/test_xbow_spot_pool.py
+xbowflow/__init__.py
+xbowflow/_version.py
+xbowflow/pipelines.py
+xbowflow.egg-info/PKG-INFO
+xbowflow.egg-info/SOURCES.txt
+xbowflow.egg-info/dependency_links.txt
+xbowflow.egg-info/not-zip-safe
+xbowflow.egg-info/top_level.txt
