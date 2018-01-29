@@ -1,5 +1,6 @@
 from __future__ import print_function
 import sys
+import tempfile
 """
 Introduction
 ============
@@ -175,7 +176,7 @@ class InterfaceKernel(object):
         input for the next execution kernel.
 
         Args:
-            connections (list):  A list of tuples constructed according to
+            connections (list):  A list of lists constructed according to
                 the interface definitions language.
         Attributes:
             operation (str): the type of interface. takes values 'link', 
@@ -191,11 +192,17 @@ class InterfaceKernel(object):
         self.connections = connections
         self.scatterwidth = None
         self.operation = 'link'
-        for con in connections:
-            if con[1] == '>':
+        for i in range(len(connections)):
+            if connections[i][1] == '>':
                 self.operation = 'scatter'
-            if con[1] == '<':
+            if connections[i][1] == '<':
                 self.operation = 'gather'
+            if len(connections[i]) != 3:
+                print('Error: {}'.format(connections[i]))
+                exit(1)
+            if connections[i][2] == '$TMPDIR':
+                self.connections[i][2] = tempfile.mkdtemp()
+                
 
     def run(self, inputs):
         """
@@ -212,9 +219,9 @@ class InterfaceKernel(object):
                 that of the previous kernel in the pipeline that exited with
                 a non-zero returncode.
         """
-        for tup in self.connections:
-            if tup[1] == '>':
-                scatterwidth = len(tup[2].format(**inputs).split())
+        for con in self.connections:
+            if con[1] == '>':
+                scatterwidth = len(con[2].format(**inputs).split())
                 if self.scatterwidth is not None:
                     if self.scatterwidth != scatterwidth:
                         raise ValueError('Error - inconsistent widths in scatter interface')
@@ -227,13 +234,16 @@ class InterfaceKernel(object):
                 if inputs['returncode'] != 0:
                     return outputs
             try:
-                for connection in self.connections:
-                    if connection[1] == '=':
-                        outputs[connection[0]] = connection[2].format(**outputs)
-                    elif connection[1] == '+':
-                        outputs[connection[0]] = int(inputs[connection[0]]) + int(connection[2])
+                for con in self.connections:
+                    if con[1] == '=':
+                        if con[0] != 'template':
+                            outputs[con[0]] = con[2].format(**outputs)
+                        else:
+                            outputs[con[0]] = con[2]
+                    elif con[1] == '+':
+                        outputs[con[0]] = int(inputs[con[0]]) + int(con[2])
                     else:
-                        raise ValueError('Error - unknown interface operation {}'.format(connection))
+                        raise ValueError('Error - unknown interface operation {}'.format(con))
                 outputs['cmd'] = outputs['template'].format(**outputs)
                 outputs['returncode'] = 0
                 return outputs
@@ -250,16 +260,16 @@ class InterfaceKernel(object):
                         outputs = inp.copy()
                 if outputs['returncode'] != 0:
                     return outputs
-                for connection in self.connections:
-                    if connection[1] == '<':
-                        outputs[connection[0]] = connection[2].format(**outputs)
-                    if connection[0] == 'template':
-                        outputs['template'] = connection[2]
+                for con in self.connections:
+                    if con[1] == '<':
+                        outputs[con[0]] = con[2].format(**outputs)
+                    if con[0] == 'template':
+                        outputs['template'] = con[2]
                 for inp in inputs[1:]:
-                    for connection in self.connections:
-                        if not connection[0] =='template':
-                            if connection[1] == '<':
-                                outputs[connection[0]] = outputs[connection[0]] + ' ' + connection[2].format(**inp)
+                    for con in self.connections:
+                        if not con[0] =='template':
+                            if con[1] == '<':
+                                outputs[con[0]] = outputs[con[0]] + ' ' + con[2].format(**inp)
                 
                 outputs['cmd'] = outputs['template'].format(**outputs)
                 outputs['returncode'] = 0
@@ -277,13 +287,16 @@ class InterfaceKernel(object):
                 outputs = []
                 for i in range(self.scatterwidth):
                     output = inputs.copy()
-                    for connection in self.connections:
-                        if connection[1] == '>':
-                            output[connection[0]] = connection[2].format(**output).split()[i]                         
-                        elif connection[1] == '+':
-                            output[connection[0]] = int(output[connection[0]]) + int(connection[2])
-                        elif connection[1] == '=':
-                            output[connection[0]] = connection[2].format(**output)
+                    for con in self.connections:
+                        if con[1] == '>':
+                            output[con[0]] = con[2].format(**output).split()[i]                         
+                        elif con[1] == '+':
+                            output[con[0]] = int(output[con[0]]) + int(con[2])
+                        elif con[1] == '=':
+                            if con[0] != 'template':
+                                output[con[0]] = con[2].format(**output)
+                            else:
+                                output[con[0]] = con[2]
                     output['cmd'] = output['template'].format(**output)
                     output['returncode'] = 0
                     outputs.append(output)
@@ -297,6 +310,7 @@ class InterfaceKernel(object):
                 return outputs
         
     
+
 class GenericKernel(object):
     def __init__(self):
         """
@@ -306,6 +320,7 @@ class GenericKernel(object):
             operation (str): takes the value 'compute'
         """
         self.operation = 'compute'
+
 
     def run(self, inputs):
         """
@@ -326,7 +341,9 @@ class GenericKernel(object):
             if inputs['returncode'] != 0:
                 return outputs
         try:
-            result = subprocess.check_output(inputs['cmd'].split(), stderr=subprocess.STDOUT)
+            result = subprocess.check_output(inputs['cmd'], 
+                                             stderr=subprocess.STDOUT,
+                                             shell=True)
             outputs['output'] = result
         except subprocess.CalledProcessError as e:
             outputs['returncode'] = e.returncode
@@ -435,9 +452,13 @@ class Pipeline(object):
                 if isinstance(out, list):
                     for o in out:
                         print(o['cmd'])
+                        if o['returncode'] != 0:
+                            print('Error: {}'.format(o['output']))
                         print('--------------')
                 else:
                     print(out['cmd'])
+                    if out['returncode'] != 0:
+                        print('Error: {}'.format(out['output']))
                 inp = out
                 ik += 1
         print('======================')

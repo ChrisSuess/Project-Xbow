@@ -204,9 +204,21 @@ class ConnectedInstance(object):
         self.instance.terminate()
         
 
-def create_instance(image_id, instance_type, region=None, name=None, 
-                    user_data=None, security_groups=None, username=None,
-                    shared_file_system=None, mount_point=None):
+def get_by_name(name, region=None):
+    """
+    Return a list of instances with this name. The list may be empty..
+    """
+    if region is None:
+        region = boto3.session.Session().region_name
+    if region is None:
+        raise ValueError('Error - no region identified')
+    ec2_resource = boto3.resource('ec2', region_name=region)
+    instances = list(ec2_resource.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+    return instances 
+
+def create(image_id, instance_type, region=None, name=None, 
+           user_data=None, security_groups=None, username=None,
+           shared_file_system=None, mount_point=None):
     """
     Creates a single connected instance - not in the spot pool
     """
@@ -219,15 +231,17 @@ def create_instance(image_id, instance_type, region=None, name=None,
         name = str(uuid.uuid4())[:8]
     key_name = name
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
-    response = ec2_resource.meta.client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [key_name]}])
-    if len(response['KeyPairs']) == 0:
+    kp = ec2_resource.KeyPair(key_name)
+    try:
+        kp.load()
+    except:
         response = ec2_resource.meta.client.create_key_pair(KeyName=key_name)
         with open(pem_file, 'w') as f:
             f.write(response['KeyMaterial'])
         os.chmod(pem_file, 0600)
 
-    response = ec2_resource.meta.client.describe_instances(Filters=[{'Name': 'key-name', 'Values': ['key_name']}])
-    if len(response['Reservations']) > 0:
+    instances = get_by_name(key_name)
+    if len(instances) > 0:
         raise ValueError('Error - an instance with this name already exists')
         
     image = ec2_resource.Image(image_id)

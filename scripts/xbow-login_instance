@@ -14,7 +14,7 @@ def login_instance(name=None, instance_id=None, region=None):
 
     ec2 = boto3.resource('ec2', region_name=region)
     if name is not None:
-        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}]))
+        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
     else:
         instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
 
