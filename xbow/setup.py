@@ -48,7 +48,7 @@ def read(*rnames):
 
 """Discover the package version"""
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-VERSIONFILE = "xbow/core/_version.py"
+VERSIONFILE = "xbow/_version.py"
 verstrline = open(VERSIONFILE, "rt").read()
 mo = re.search(VSRE, verstrline, re.M)
 if mo:
@@ -104,7 +104,7 @@ setup_args = {
                 'scripts/xbow-login_instance'],
 
     'install_requires': ['boto3',
-                         'paramiko']
+                         'paramiko'],
 
     'zip_safe': False,
 }
