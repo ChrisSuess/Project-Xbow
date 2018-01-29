@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import xbow
+import boto3
+import argparse
+
+def login_instance(name=None, instance_id=None, region=None):
+    """
+    returns a string that could be used to log in to the selected instance
+    """
+    if name is None and instance_id is None:
+        raise ValueError('Error - either the name or instance_id must be provided')
+
+    ec2 = boto3.resource('ec2', region_name=region)
+    if name is not None:
+        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+    else:
+        instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
+
+    if len(instances) == 0:
+        raise ValueError('Error - no such instance')
+    elif len(instances) > 1:
+        raise ValueError('Error - more than one instance has that name')
+    else:
+        instance = instances[0]
+        name = instance.key_name
+        username = None
+        if instance.tags is not None:
+            for tag in instance.tags:
+                if tag['Key'] == 'username':
+                    username = tag['Value']
+        if username is None:
+            print('Warning: cannot determine username, assuming it is ubuntu')
+
+        pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
+        launch_command = 'ssh -i {} {}@{}'.format(pem_file, username, instance.public_dns_name)
+        return launch_command
+        
+parser  = argparse.ArgumentParser(description='Print the command required to ssh into the instance.')
+action = parser.add_mutually_exclusive_group(required=True)
+action.add_argument('-n', '--name', help='the instance name')
+action.add_argument('-i', '--id', help='the instance id')
+args = parser.parse_args()
+
+try:
+    result = login_instance(name=args.name, instance_id=args.id)
+    print(result)
+except ValueError as e:
+    print(e)

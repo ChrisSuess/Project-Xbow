@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+from xbow import instances, pools
+
+# Data: this should all go in a configuration file 
+region                  = 'eu-west-1'
+price                   = '0.4'
+worker_instance_type    = 'm4.large'
+scheduler_instance_type = 't2.small'
+image_id                = 'ami-7612730f' # new image created 26nd Jan
+ec2_security_groups     = ['efs-walkthrough1-ec2-sg']
+efs_security_groups     = ['efs-walkthrough1-mt-sg']
+shared_file_system      = 'MyTestFileSystem'
+mount_point             = '/home/ubuntu/shared'
+cluster_name            = 'MyDaskCluster'
+scheduler_name          = 'MyDaskScheduler'
+worker_pool_name        = 'MyDaskWorkers'
+pool_size               = 2
+
+schedulers = instances.get_by_name(scheduler_name)
+if len(schedulers) > 1:
+    print('Error - there is more than one scheduler already running with this name.')
+    exit(1)
+if len(schedulers) == 1:
+    inst = schedulers[0]
+    print('Scheduler already running, now starting workers. This may take some time...')
+else:
+    print("Starting the scheduler node - this may take a time...")
+
+    user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log >2&1 &\n'.format(mount_point)
+    inst = instances.create(
+                            name=scheduler_name,
+                            image_id=image_id,
+                            instance_type=scheduler_instance_type,
+                            shared_file_system=shared_file_system,
+                            mount_point=mount_point,
+                            security_groups=ec2_security_groups,
+                            user_data=user_data
+                      )
+    print("Scheduler ready, now starting workers. This may take some time...")
+
+user_data = 'dask-worker --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(mount_point)
+sip = pools.create_spot_pool(count=pool_size,
+                        name=worker_pool_name,
+                        price=price,
+                        image_id=image_id,
+                        instance_type=worker_instance_type,
+                        shared_file_system=shared_file_system,
+                        mount_point=mount_point,
+                        security_groups=ec2_security_groups,
+                        user_data=user_data
+                      )
+print("Instance running, now waiting until xbow-cluster is accessible...")
+
+ci = instances.ConnectedInstance(inst)
+print("All ready for use")
