@@ -3,7 +3,7 @@ import os
 import uuid
 import base64
 import time
-import xbow
+import xbow.core
 
 from metering import SpotMeter
 from instances import ConnectedInstance
@@ -52,7 +52,7 @@ def create_spot_pool(count=1, price=1.0, image_id=None, region=None,
     else:
         key_name = str(uuid.uuid4())[:8]
         launch_group = key_name
-    pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
+    pem_file = os.path.join(xbow.core.XBOW_CONFIGDIR, launch_group) + '.pem'
     response = ec2_resource.meta.client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [key_name]}])
     if len(response['KeyPairs']) == 0:
         response = ec2_resource.meta.client.create_key_pair(KeyName=key_name)

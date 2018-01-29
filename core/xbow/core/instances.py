@@ -4,7 +4,7 @@ import time
 import uuid
 import datetime
 import os
-import xbow
+import xbow.core
 
 class ConnectedInstance(object):
     """ An Instance you can talk to"""
@@ -49,11 +49,11 @@ class ConnectedInstance(object):
                     raise ValueError('Error - no username was supplied and the instance is not tagged.')
         
         if key_filename is None:
-            filename = os.path.join(xbow.XBOW_CONFIGDIR, self.instance.key_name) + '.pem'
+            filename = os.path.join(xbow.core.XBOW_CONFIGDIR, self.instance.key_name) + '.pem'
             if os.path.exists(filename):
                 key_filename = filename
-            elif os.path.exists(os.path.join(xbow.XBOW_CONFIGDIR, 'xbow.pem')):
-                key_filename = os.path.join(xbow.XBOW_CONFIGDIR, 'xbow.pem')
+            elif os.path.exists(os.path.join(xbow.core.XBOW_CONFIGDIR, 'xbow.pem')):
+                key_filename = os.path.join(xbow.core.XBOW_CONFIGDIR, 'xbow.pem')
             else:
                 raise ValueError('Error - no key file was supplied and it cannot be guessed.')
                 
@@ -230,7 +230,7 @@ def create(image_id, instance_type, region=None, name=None,
     if name is None:
         name = str(uuid.uuid4())[:8]
     key_name = name
-    pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
+    pem_file = os.path.join(xbow.core.XBOW_CONFIGDIR, key_name) + '.pem'
     kp = ec2_resource.KeyPair(key_name)
     try:
         kp.load()
