@@ -1,7 +1,7 @@
 from __future__ import print_function
-import subprocess
-import socket
-from dask.distributed import Client
+#import subprocess
+#import socket
+#from dask.distributed import Client
 from xbow.pipelines.pipelines import InterfaceKernel, GenericKernel, DummyKernel, Pipeline
 
 cx1 = [
@@ -87,15 +87,15 @@ coco_kernel = GenericKernel()
 #amber_kernel = DummyKernel()
 #coco_kernel = DummyKernel()
 
-ip = socket.gethostbyname(socket.gethostname())
-dask_scheduler = '{}:8786'.format(ip)
-client = Client(dask_scheduler)
-#client = None
+#ip = socket.gethostbyname(socket.gethostname())
+#dask_scheduler = '{}:8786'.format(ip)
+#client = Client(dask_scheduler)
+client = None
 
 prepipe = Pipeline(client, [ix1])
 mainpipe = Pipeline(client, [amber_kernel, i12, amber_kernel, i23, amber_kernel,
                              i34, coco_kernel, i41])
-out = prepipe.run(inits)
+out = prepipe.dryrun(inits)
 for i in range(2):
-    out = mainpipe.run(out)
+    out = mainpipe.dryrun(out)
 print(out)
