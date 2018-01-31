@@ -53,59 +53,85 @@ When interface kernels are instantiated, you provide them with information
 as to how they should 're-wire' the inputs dictionary/list to produce the
 output dictionary/list.
 
-This is done by passing a list of 3-item tuples. Each tuple takes the form
-(*key*, *operator*, *definition*). The *key* is the key in the output 
-dictionary. It may relate to one from the input dictionary, or may define a 
-new one. *Operator* defines how the value for the key is generated from the 
-third argument: the *definition*. This is required because the *definition* 
-item has limited flexibility - it is always a string, and is only variable in
-that it may contain standard python string ("{}"-type) format definitions, 
-each of which is associated with a key in the current version of the output
-dictionary. The word _current_ is important, because the way in which the
-output dictionary is built up from the input dictionary is iterative: to
-begin with the output dictionary is a straight copy of the input dictionary,
-then the actions defined in each of the tuples in the list is applied to the
-output dictionary in sequence. For example, if the list was:
+This is done by passing a list of strings. The first word in the string is
+the *key*. The *key* is a key in the output dictionary. It may relate to one 
+from the input dictionary, or may define a new one. The second word in the
+string is the *operator*. This defines how the value for the *key* is generated
+from all the words in the rest of the string: the *definition*. The available
+*operators* are:
+    $=  : *key* gets the value of *definition* when the string format function
+          is applied to this with the current output dictionary as the argument.
+          Example:
+              input dict: {'rep': '1'}
+              operation:  'file $= input{rep}.txt'
+              output dict: {'rep': '1', 'file': 'input1.txt'}
 
+    ?=  : As above, except that after applying the format function the string
+          is passed to the python eval() function.
+          Example:
+              input dict: {'rep':, 1}
+              operation:  'next ?= {rep} + 1'
+              output dict: {'rep': 1, 'next': 2}}
+
+    ]=  : The scatter operator. Each output dictionary in the list of output
+          dictionaries produced by this kernel will set the *key* to one word
+          from the list of words in the *definition*.
+          Example:
+              input dict: {'reps': '1 2'}
+              operation:  'rep ]= {reps}'
+              output dicts: [{'rep': '1', 'reps': '1 2'}, 
+                             {'rep': '2', 'reps': '1 2'}]
+
+    [=  : The gather operator. The *key* gets the space-separated list of 
+          values of the *definition* from each of the input dictionaries in the
+          list of input dictionaries.
+          Example:
+              input dicts [{'rep': 1}, {'rep': 2}]
+              operation:  'reps [= {rep}'
+              output dict: {'reps': '1 2', 'rep': 2}
+              (note how the value of 'rep' in the output dict is set from the
+              value in the last input dict)
+
+The list of operation strings are used to modify the input dict (or list of
+dicts) and produce the output dict (or list of dicts) as follows. First the 
+input dict is copied to the output dict unchanged. Then each operation
+string in the interface definition list is applied in turn, each time
+updating the current state of the output dict(s). For example, if the interface
+definition list is:
     [
-        ('a', '=', '{x}-'  ),
-        ('a', '=', '{a}{y}')
+        'a $= {x}-',
+        'a $= {a}{y}'
     ]
 then if the inputs dictionary was {'x': 'big', 'y': 'top'}, the parsing would
 be:
 
 Step 1: copy the inputs dictionary to the outputs:
     outputs = {'x': 'big', 'y': 'top'}
-Step 2: apply the first definition tuple:
+Step 2: apply the first operation:
     outputs = {'x': 'big', 'y': 'top', 'a': 'big-'}
-Step 3: apply the second definition tuple:
+Step 3: apply the second operation:
     outputs = {'x': 'big', 'y': 'top', 'a': 'big-top'}
 
-*Note*: You can see from the above that the order of the tuples is important!
-
-The last tuple in every definitions list *must* have the key 'template', and
+The last operation in every definitions list *must* have the key 'template', and
 defines the precise command that the following execution kernel will run.
 E.g.:
     [
-        ('a',        '=', '{x}-'    ),
-        ('a',        '=', '{a}{y}'  ),
-        ('template', '=', 'echo {a}')
+        'a        $= {x}-',
+        'a        $= {a}{y}',
+        'template $= echo {a}'
     ]
 
-Now more about the operator item. In many cases, you want to perform some
-simple mathematical operation on a variable - e.g. update the step number
-from one kernel to the next. You can't do this with string formatting, so
-there is a simple increment operator '+'.
-E.g. given inputs dictionary:
+Example with ?= operator::
 
+Given input dictionary:
     {'x': 'big', 'y': 'cycle', 'count': 4}
 
 and interface definitions:
     [
-        ('a',        '=', '{x}-'    ),
-        ('a',        '=', '{a}{y}'  ),
-        ('count'     '+'  1         ),
-        ('template', '=', 'echo {a}-{count}')
+       'a        $=  {x}-',
+       'a        $=  {a}{y}',
+       'count    ?= {count} + 1',
+       'template $= echo {a}-{count}'
     ]
 
 will produce the outputs dictionary:
@@ -113,30 +139,24 @@ will produce the outputs dictionary:
     {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle', 
       'template': 'echo big-cycle-5'}}
 
-b) Writing gather and scatter interface definitions.
-----------------------------------------------------
-Not all pipelines are linear. Very often a kernel is required to integrate
-data from a number of previous tasks (gather), or generate multiple inputs
-for multiple instances of the next kernel in the pipeline (scatter).
-
-A scatter operation might look like this:
-
+Scatter example::
 inputs:
     {'a': 'file', 'copies': 'copy1 copy2'}
 desired outputs:
-    [{'a': 'file-copy1'}, {'a': 'file-copy2'}]
+    [{'template': 'cat file-copy1'}, {'template': 'cat file-copy2'}]
 scatter definition:
-    [('copy', '>', '{copies}'), # Note the '>' operator
-     ('a', '=', '{a}-{copy}')]
+    ['copy ]= {copies}', 
+     'a =   {a}-{copy}',
+     'template $= cat {a}']
 
-A gather operation might look like this:
-
+Gather example:
 inputs:
     [{'a': 'file-copy1'}, {'a': 'file-copy2'}]
 desired outputs:
-    {'file_list': 'file-copy1 file-copy2'}
+    {'template': 'cat file-copy1 file-copy2'}
 gather definition:
-    [('file_list', '<', '{a}')]  # Note the '<' operator
+    ['file_list [= {a}',
+     'template $= cat {file_list}']] 
 
 Note that in reality, as existing keys in the input dictionary also appear
 in the output dictionary, the actual outputs in both examples above will
@@ -177,7 +197,7 @@ class InterfaceKernel(object):
         input for the next execution kernel.
 
         Args:
-            connections (list):  A list of lists constructed according to
+            connections (list):  A list of strings constructed according to
                 the interface definitions language.
         Attributes:
             operation (str): the type of interface. takes values 'link', 
@@ -190,18 +210,24 @@ class InterfaceKernel(object):
                 until the run() method is called, since it depends on the
                 data in the input dict.
         """
-        self.connections = connections
+        self.connections = []
+        for con in connections:
+            w = con.split()
+            key = w[0]
+            operator = w[1]
+            defn = ' '.join(w[2:])
+            self.connections.append([key, operator, defn])
         self.scatterwidth = None
         self.operation = 'link'
-        for i in range(len(connections)):
-            if connections[i][1] == '>':
+        for i in range(len(self.connections)):
+            if self.connections[i][1] == ']=':
                 self.operation = 'scatter'
-            if connections[i][1] == '<':
+            if self.connections[i][1] == '[=':
                 self.operation = 'gather'
-            if len(connections[i]) != 3:
-                print('Error: {}'.format(connections[i]))
+            if len(self.connections[i]) != 3:
+                print('Error: {}'.format(self.connections[i]))
                 exit(1)
-            if connections[i][2] == '$TMPDIR':
+            if self.connections[i][2] == '$TMPDIR':
                 self.connections[i][2] = tempfile.mkdtemp()
                 
 
@@ -221,7 +247,7 @@ class InterfaceKernel(object):
                 a non-zero returncode.
         """
         for con in self.connections:
-            if con[1] == '>':
+            if con[1] == ']=':
                 scatterwidth = len(con[2].format(**inputs).split())
                 if self.scatterwidth is not None:
                     if self.scatterwidth != scatterwidth:
@@ -236,13 +262,13 @@ class InterfaceKernel(object):
                     return outputs
             try:
                 for con in self.connections:
-                    if con[1] == '=':
+                    if con[1] == '$=':
                         if con[0] != 'template':
                             outputs[con[0]] = con[2].format(**outputs)
                         else:
                             outputs[con[0]] = con[2]
-                    elif con[1] == '+':
-                        outputs[con[0]] = int(inputs[con[0]]) + int(con[2])
+                    elif con[1] == '?=':
+                        outputs[con[0]] = str(eval(con[2].format(**outputs)))
                     else:
                         raise ValueError('Error - unknown interface operation {}'.format(con))
                 outputs['cmd'] = outputs['template'].format(**outputs)
@@ -262,14 +288,14 @@ class InterfaceKernel(object):
                 if outputs['returncode'] != 0:
                     return outputs
                 for con in self.connections:
-                    if con[1] == '<':
+                    if con[1] == '[=':
                         outputs[con[0]] = con[2].format(**outputs)
                     if con[0] == 'template':
                         outputs['template'] = con[2]
                 for inp in inputs[1:]:
                     for con in self.connections:
                         if not con[0] =='template':
-                            if con[1] == '<':
+                            if con[1] == '[=':
                                 outputs[con[0]] = outputs[con[0]] + ' ' + con[2].format(**inp)
                 
                 outputs['cmd'] = outputs['template'].format(**outputs)
@@ -289,11 +315,11 @@ class InterfaceKernel(object):
                 for i in range(self.scatterwidth):
                     output = inputs.copy()
                     for con in self.connections:
-                        if con[1] == '>':
+                        if con[1] == ']=':
                             output[con[0]] = con[2].format(**output).split()[i]                         
-                        elif con[1] == '+':
-                            output[con[0]] = int(output[con[0]]) + int(con[2])
-                        elif con[1] == '=':
+                        elif con[1] == '?=':
+                            output[con[0]] = str(eval(con[2].format(**output)))
+                        elif con[1] == '$=':
                             if con[0] != 'template':
                                 output[con[0]] = con[2].format(**output)
                             else:
@@ -310,12 +336,11 @@ class InterfaceKernel(object):
                     outputs[i]['output'] = sys.exc_info()
                 return outputs
         
-    
 
-class GenericKernel(object):
+class SubprocessKernel(object):
     def __init__(self):
         """
-        A general-purpose execution kernel.
+        Executes key 'cmd' in the input dict using the Python subprocess module
         
         Attributes:
             operation (str): takes the value 'compute'
@@ -347,6 +372,84 @@ class GenericKernel(object):
                                              shell=True)
             outputs['output'] = result
         except subprocess.CalledProcessError as e:
+            outputs['returncode'] = e.returncode
+            outputs['cmd'] = e.cmd
+            outputs['output'] = e.output
+        return outputs
+
+class EvalKernel(object):
+    def __init__(self):
+        """
+        Applies the Python eval() command to the string defined by key 'cmd'
+        in the input dict.
+        
+        Attributes:
+            operation (str): takes the value 'compute'
+        """
+        self.operation = 'compute'
+
+
+    def run(self, inputs):
+        """
+        Run the kernel with the given inputs.
+        Args:
+            inputs (dict): the inputs. Must contain a key 'cmd' which
+                contains a string that defines the command to be run.
+
+        Returns:
+            dict : contains a copy of the input dictionary, with at least
+                three keys:
+                    'output' : the standard output and error from the command
+                    'returncode' : the exit code for the command
+                    'cmd' : the command that was run.
+        """
+        outputs = inputs
+        if 'returncode' in inputs:
+            if inputs['returncode'] != 0:
+                return outputs
+        try:
+            result = eval(inputs['cmd'])
+            outputs['output'] = result
+        except Error as e:
+            outputs['returncode'] = e.returncode
+            outputs['cmd'] = e.cmd
+            outputs['output'] = e.output
+        return outputs
+
+class FunctionKernel(object):
+    def __init__(self, func):
+        """
+        Applies a given python function to the string defined by key 'cmd' in
+        the input dict..
+        
+        Attributes:
+            operation (str): takes the value 'compute'
+        """
+        self.operation = 'compute'
+        self.func = func
+
+    def run(self, inputs):
+        """
+        Run the kernel with the given inputs.
+        Args:
+            inputs (dict): the inputs. Must contain a key 'cmd' which
+                contains a string that defines the command to be run.
+
+        Returns:
+            dict : contains a copy of the input dictionary, with at least
+                three keys:
+                    'output' : the standard output and error from the command
+                    'returncode' : the exit code for the command
+                    'cmd' : the command that was run.
+        """
+        outputs = inputs
+        if 'returncode' in inputs:
+            if inputs['returncode'] != 0:
+                return outputs
+        try:
+            result = func(inputs['cmd']) 
+            outputs['output'] = result
+        except Error as e:
             outputs['returncode'] = e.returncode
             outputs['cmd'] = e.cmd
             outputs['output'] = e.output
@@ -388,7 +491,6 @@ class DummyKernel(object):
             outputs['cmd'] = 'DummyKernel ran with {}'.format(outputs['cmd'])
         return outputs
     
-
     
 class Pipeline(object):
     def __init__(self, client, klist):
