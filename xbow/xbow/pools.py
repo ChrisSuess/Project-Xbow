@@ -53,8 +53,11 @@ def create_spot_pool(count=1, price=1.0, image_id=None, region=None,
         key_name = str(uuid.uuid4())[:8]
         launch_group = key_name
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
-    response = ec2_resource.meta.client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [key_name]}])
-    if len(response['KeyPairs']) == 0:
+    if not os.path.exists(pem_file):
+        response = ec2_resource.meta.client.describe_key_pairs(KeyNames=[key_name])
+        if len(response['KeyPairs']) > 0:
+            kp = ec2_resource.KeyPair(key_name)
+            kp.delete()
         response = ec2_resource.meta.client.create_key_pair(KeyName=key_name)
         with open(pem_file, 'w') as f:
             f.write(response['KeyMaterial'])

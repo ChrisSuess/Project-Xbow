@@ -246,15 +246,6 @@ class InterfaceKernel(object):
                 that of the previous kernel in the pipeline that exited with
                 a non-zero returncode.
         """
-        for con in self.connections:
-            if con[1] == ']=':
-                scatterwidth = len(con[2].format(**inputs).split())
-                if self.scatterwidth is not None:
-                    if self.scatterwidth != scatterwidth:
-                        raise ValueError('Error - inconsistent widths in scatter interface')
-                else:
-                    self.scatterwidth = scatterwidth
-                            
         if self.operation == 'link':
             outputs = inputs.copy()
             if 'returncode' in inputs:
@@ -308,8 +299,16 @@ class InterfaceKernel(object):
                 return outputs
         else:
             if inputs['returncode'] != 0:
-                outputs = [inputs] * self.scatterwidth
+                outputs = [inputs] 
                 return outputs
+            for con in self.connections:
+                if con[1] == ']=':
+                    scatterwidth = len(con[2].format(**inputs).split())
+                    if self.scatterwidth is not None:
+                        if self.scatterwidth != scatterwidth:
+                            raise ValueError('Error - inconsistent widths in scatter interface')
+                    else:
+                        self.scatterwidth = scatterwidth
             try:
                 outputs = []
                 for i in range(self.scatterwidth):

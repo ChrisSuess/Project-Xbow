@@ -230,20 +230,21 @@ def create(image_id, instance_type, region=None, name=None,
     if name is None:
         name = str(uuid.uuid4())[:8]
     key_name = name
+    instances = get_by_name(key_name)
+    if len(instances) > 0:
+        raise ValueError('Error - an instance with this name already exists')
+        
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
-    kp = ec2_resource.KeyPair(key_name)
-    try:
-        kp.load()
-    except:
+    if not os.path.exists(pem_file):
+        response = ec2_resource.meta.client.describe_key_pairs(KeyNames=[key_name])
+        if len(response['KeyPairs']) > 0:
+            kp = ec2_resource.KeyPair(key_name)
+            kp.delete()
         response = ec2_resource.meta.client.create_key_pair(KeyName=key_name)
         with open(pem_file, 'w') as f:
             f.write(response['KeyMaterial'])
         os.chmod(pem_file, 0600)
 
-    instances = get_by_name(key_name)
-    if len(instances) > 0:
-        raise ValueError('Error - an instance with this name already exists')
-        
     image = ec2_resource.Image(image_id)
     if username is None:   
         if image.tags is None:
