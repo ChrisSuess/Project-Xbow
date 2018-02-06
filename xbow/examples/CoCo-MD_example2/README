@@ -1,0 +1,19 @@
+The files in this folder show how to run a CoCo_MD enhanced sampling simulation
+for cyclosporine A, using AMBER as the MD code.
+
+The Python script runs the workflow, and contains most of the documentation.
+
+The workflow goes someting like this:
+
+1. From an ensemble of structures, use pyCoCo to identify unsampled regions
+   and generate possible new structures that correspond to them.
+2. Using a set of targeted MD simulations, move a well-equilibrated structure 
+   of the molecule towards each of the CoCo generated structures (as these 
+   themselves can be too 'rough' for use directly).
+3. Run production MD from each of the optimised structures, and add the new
+   trajectory data to the ensemble.
+4. Go back to step 1, until you have enough data.
+
+Charlie Laughton
+
+23/1/18
