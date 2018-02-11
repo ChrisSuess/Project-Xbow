@@ -2,6 +2,7 @@ MANIFEST.in
 README.rst
 setup.cfg
 setup.py
+scripts/xbow-configure
 scripts/xbow-create_cluster
 scripts/xbow-delete_cluster
 scripts/xbow-login_instance

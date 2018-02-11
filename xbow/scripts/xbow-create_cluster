@@ -30,7 +30,7 @@ else:
 
     user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log >2&1 &\n'.format(mount_point)
     inst = instances.create(
-                            name=scheduler_name,
+                            scheduler_name,
                             image_id=image_id,
                             instance_type=scheduler_instance_type,
                             shared_file_system=shared_file_system,
@@ -41,8 +41,8 @@ else:
     print("Scheduler ready, now starting workers. This may take some time...")
 
 user_data = 'dask-worker --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(mount_point)
-sip = pools.create_spot_pool(count=pool_size,
-                        name=worker_pool_name,
+sip = pools.create_spot_pool(worker_pool_name,
+                        count=pool_size,
                         price=price,
                         image_id=image_id,
                         instance_type=worker_instance_type,

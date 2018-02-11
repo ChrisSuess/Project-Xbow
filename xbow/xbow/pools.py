@@ -8,21 +8,21 @@ import xbow
 from metering import SpotMeter
 from instances import ConnectedInstance
 
-def create_spot_pool(count=1, price=1.0, image_id=None, region=None,
-                     instance_type=None, name=None, user_data=None,
+def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
+                     instance_type=None, user_data=None,
                      security_groups=None, username=None,
                      shared_file_system=None, mount_point=None):
     """
     Creates an instance of a SpotInstancePool.
 
     Args:
+        name (str): The name to give the SpotInstancePool. It must not match 
+            any known pool in the same region.
         count (int, optional): Number of ConnectedInstances in the pool.
         price (float, optional): The target spot price, in dollars.
         image_id (str): The AMI to use.
         region (str, optional): The EC2 region to create instances in. If not
             specified the value in tbe boto3 configuration file is used.
-        name (str, optional): The name to give the SpotInstancePool. If
-            supplied, it must not mach any known pool in the same region.
         security_groups (list): List of security groups for the instance.
         username (str, optional): The username to connect to the instance. If
             not supplied, an attempt will be name to find it from the tags
@@ -41,27 +41,16 @@ def create_spot_pool(count=1, price=1.0, image_id=None, region=None,
     if region is None:
         raise ValueError('Error - no region identified')
     ec2_resource = boto3.resource('ec2', region_name=region)
-    if name is not None:
-        response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[name]},
-          {'Name': 'state', 'Values': ['open', 'active']}])
-        spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
-        if len(spot_instance_request_ids) > 0:
-            raise ValueError('Error - spot pool {} already exists'.format(name))
-        launch_group = name
-        key_name = launch_group
-    else:
-        key_name = str(uuid.uuid4())[:8]
-        launch_group = key_name
+    response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[name]},
+      {'Name': 'state', 'Values': ['open', 'active']}])
+    spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+    if len(spot_instance_request_ids) > 0:
+        raise ValueError('Error - spot pool {} already exists'.format(name))
+    launch_group = name
+    key_name = launch_group
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
     if not os.path.exists(pem_file):
-        response = ec2_resource.meta.client.describe_key_pairs(KeyNames=[key_name])
-        if len(response['KeyPairs']) > 0:
-            kp = ec2_resource.KeyPair(key_name)
-            kp.delete()
-        response = ec2_resource.meta.client.create_key_pair(KeyName=key_name)
-        with open(pem_file, 'w') as f:
-            f.write(response['KeyMaterial'])
-        os.chmod(pem_file, 0600)
+        raise RuntimeError('Error - cannot find key file {}'.format(pem_file))
 
     if username is None:
         image = ec2_resource.Image(image_id)

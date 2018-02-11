@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import xbow
+import boto3
+import argparse
+import os
+
+def configure(region=None, force=False):
+    """
+    Configure xbow by creating the two key pars "MyDaskScheduler" and
+    "MyDaskWorkers".
+    """
+    ec2 = boto3.resource('ec2', region_name=region)
+    keynames = ['MyDaskScheduler', 'MyDaskWorkers']
+    for keyname in keynames:
+        try:
+            response = ec2.meta.client.describe_key_pairs(KeyNames=[keyname])
+            exists = True
+        except:
+            exists = False
+        if exists:
+            if not force:
+                raise ValueError('Error: The key {} already exists'.format(keyname))
+            else:
+                kp = ec2.KeyPair(keyname)
+                kp.delete()
+        response = ec2.meta.client.create_key_pair(KeyName=keyname)
+        pem_file = os.path.join(xbow.XBOW_CONFIGDIR, keyname) + '.pem'
+        with open(pem_file, 'w') as f:
+            f.write(response['KeyMaterial'])
+        os.chmod(pem_file, 0600)
+
+parser  = argparse.ArgumentParser(description='Configure the xbow cluster keys')
+parser.add_argument('-f', '--force', action='store_true', help='create new keys even if they already exist')
+parser.add_argument('-r', '--region', help='AWS region in which to create the keys - defaults to the home region')
+args = parser.parse_args()
+
+try:
+    result = configure(region=args.region, force=args.force)
+except ValueError as e:
+    print(e)

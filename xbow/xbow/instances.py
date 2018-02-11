@@ -49,13 +49,9 @@ class ConnectedInstance(object):
                     raise ValueError('Error - no username was supplied and the instance is not tagged.')
         
         if key_filename is None:
-            filename = os.path.join(xbow.XBOW_CONFIGDIR, self.instance.key_name) + '.pem'
-            if os.path.exists(filename):
-                key_filename = filename
-            elif os.path.exists(os.path.join(xbow.XBOW_CONFIGDIR, 'xbow.pem')):
-                key_filename = os.path.join(xbow.XBOW_CONFIGDIR, 'xbow.pem')
-            else:
-                raise ValueError('Error - no key file was supplied and it cannot be guessed.')
+            key_filename = os.path.join(xbow.XBOW_CONFIGDIR, self.instance.key_name) + '.pem'
+        if not os.path.exists(key_filename):
+            raise RuntimeError('Error - cannot find the key file {}'.format(key_filename))
                 
         self.sshclient.connect(instance.public_ip_address, username=username,
                                key_filename=key_filename, timeout=10)
@@ -216,7 +212,7 @@ def get_by_name(name, region=None):
     instances = list(ec2_resource.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
     return instances 
 
-def create(image_id, instance_type, region=None, name=None, 
+def create(name, image_id, instance_type, region=None, 
            user_data=None, security_groups=None, username=None,
            shared_file_system=None, mount_point=None):
     """
@@ -227,24 +223,15 @@ def create(image_id, instance_type, region=None, name=None,
     if region is None:
         raise ValueError('Error - no region identified')
     ec2_resource = boto3.resource('ec2', region_name=region)
-    if name is None:
-        name = str(uuid.uuid4())[:8]
     key_name = name
+    pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
+    if not os.path.exists(pem_file):
+        raise RuntimeError('Error - cannot find {}'.format(pem_file))
+
     instances = get_by_name(key_name)
     if len(instances) > 0:
         raise ValueError('Error - an instance with this name already exists')
         
-    pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
-    if not os.path.exists(pem_file):
-        response = ec2_resource.meta.client.describe_key_pairs(KeyNames=[key_name])
-        if len(response['KeyPairs']) > 0:
-            kp = ec2_resource.KeyPair(key_name)
-            kp.delete()
-        response = ec2_resource.meta.client.create_key_pair(KeyName=key_name)
-        with open(pem_file, 'w') as f:
-            f.write(response['KeyMaterial'])
-        os.chmod(pem_file, 0600)
-
     image = ec2_resource.Image(image_id)
     if username is None:   
         if image.tags is None:

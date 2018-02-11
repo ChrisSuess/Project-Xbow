@@ -101,6 +101,7 @@ setup_args = {
 
     'scripts': ['scripts/xbow-create_cluster',
                 'scripts/xbow-delete_cluster',
+                'scripts/xbow-configure',
                 'scripts/xbow-login_instance'],
 
     'install_requires': ['boto3',
