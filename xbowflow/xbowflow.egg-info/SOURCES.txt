@@ -3,6 +3,7 @@ README.rst
 setup.cfg
 setup.py
 test/__init__.py
+test/dryrun_cocomd_2.py
 test/test_xbow_spot_pool.py
 xbowflow/__init__.py
 xbowflow/_version.py

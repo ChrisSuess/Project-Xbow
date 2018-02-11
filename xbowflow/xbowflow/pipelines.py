@@ -112,16 +112,7 @@ Step 2: apply the first operation:
 Step 3: apply the second operation:
     outputs = {'x': 'big', 'y': 'top', 'a': 'big-top'}
 
-The last operation in every definitions list *must* have the key 'template', and
-defines the precise command that the following execution kernel will run.
-E.g.:
-    [
-        'a        $= {x}-',
-        'a        $= {a}{y}',
-        'template $= echo {a}'
-    ]
-
-Example with ?= operator::
+Example with ?= operator:
 
 Given input dictionary:
     {'x': 'big', 'y': 'cycle', 'count': 4}
@@ -131,36 +122,62 @@ and interface definitions:
        'a        $=  {x}-',
        'a        $=  {a}{y}',
        'count    ?= {count} + 1',
-       'template $= echo {a}-{count}'
     ]
 
 will produce the outputs dictionary:
 
-    {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle', 
-      'template': 'echo big-cycle-5'}}
+    {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle'} 
 
 Scatter example::
 inputs:
-    {'a': 'file', 'copies': 'copy1 copy2'}
+    {'file': 'data', 'sections': 'section1 section2'}
 desired outputs:
-    [{'template': 'cat file-copy1'}, {'template': 'cat file-copy2'}]
+    [{'filename': 'data-section1'}, {'filename': 'data-section2'}]
 scatter definition:
-    ['copy ]= {copies}', 
-     'a =   {a}-{copy}',
-     'template $= cat {a}']
+    ['section ]= {sections}', 
+     'filename $=   {file}-{section}']
 
 Gather example:
 inputs:
-    [{'a': 'file-copy1'}, {'a': 'file-copy2'}]
+    [{'filename': 'data-section1'}, {'filename': 'data-section2'}]
 desired outputs:
-    {'template': 'cat file-copy1 file-copy2'}
+    {'filenames': 'data-section1 data-section2'}
 gather definition:
-    ['file_list [= {a}',
-     'template $= cat {file_list}']] 
+    ['filenames [= {filename}']
 
 Note that in reality, as existing keys in the input dictionary also appear
 in the output dictionary, the actual outputs in both examples above will
 include other keys as well.
+
+Configuring Execution Kernels
+=============================
+Execution kernels do most of the "heavy lifting". They come in two flavours:
+SubprocessKernels and FunctionKernels.
+
+SubprocessKernels
+-----------------
+These are initiated with a string argument, which is the template for the
+command the kernel will execute, as a Python subprocess. The template can
+contain placeholders for data from the input dictionary that will be 
+passed to it, e.g.:
+
+    append_kernel = SubprocessKernel('cat {input} >> {output}')
+    result = append_kernel.run({'input': 'newdata.dat', 'output': 'all.dat'})
+
+FunctionKernels
+---------------
+These are initiated with a Python function that, when the run method is called,
+will be executed with the input dictionary as the sole argument, and produce
+the output dictionary, e.g.:
+
+    def myfunc(inputs):
+        outputs = inputs
+        outputs['count'] = len(inputs['filenames'].split())
+        return outputs
+
+    count_kernel = FunctionKernel(myfunc)
+    result = count_kernel.run({'filenames': 'file1 file2 file3'})
+
 
 Implementation details
 ======================
@@ -262,12 +279,10 @@ class InterfaceKernel(object):
                         outputs[con[0]] = str(eval(con[2].format(**outputs)))
                     else:
                         raise ValueError('Error - unknown interface operation {}'.format(con))
-                outputs['cmd'] = outputs['template'].format(**outputs)
                 outputs['returncode'] = 0
                 return outputs
             except:
                 outputs['returncode'] = 1
-                outputs['cmd'] = 'interface'
                 outputs['output'] = sys.exc_info()
                 return outputs
         elif self.operation == 'gather':
@@ -281,20 +296,15 @@ class InterfaceKernel(object):
                 for con in self.connections:
                     if con[1] == '[=':
                         outputs[con[0]] = con[2].format(**outputs)
-                    if con[0] == 'template':
-                        outputs['template'] = con[2]
                 for inp in inputs[1:]:
                     for con in self.connections:
-                        if not con[0] =='template':
-                            if con[1] == '[=':
-                                outputs[con[0]] = outputs[con[0]] + ' ' + con[2].format(**inp)
+                        if con[1] == '[=':
+                            outputs[con[0]] = outputs[con[0]] + ' ' + con[2].format(**inp)
                 
-                outputs['cmd'] = outputs['template'].format(**outputs)
                 outputs['returncode'] = 0
                 return outputs
             except:
                 outputs['returncode'] = 1
-                outputs['cmd'] = 'interface'
                 outputs['output'] = sys.exc_info()
                 return outputs
         else:
@@ -319,11 +329,7 @@ class InterfaceKernel(object):
                         elif con[1] == '?=':
                             output[con[0]] = str(eval(con[2].format(**output)))
                         elif con[1] == '$=':
-                            if con[0] != 'template':
-                                output[con[0]] = con[2].format(**output)
-                            else:
-                                output[con[0]] = con[2]
-                    output['cmd'] = output['template'].format(**output)
+                            output[con[0]] = con[2].format(**output)
                     output['returncode'] = 0
                     outputs.append(output)
                 return outputs
@@ -331,28 +337,32 @@ class InterfaceKernel(object):
                 raise
                 for i in range(self.scatterwidth):
                     outputs[i]['returncode'] = 1
-                    outputs[i]['cmd'] = 'interface'
                     outputs[i]['output'] = sys.exc_info()
                 return outputs
         
 
 class SubprocessKernel(object):
-    def __init__(self):
+    def __init__(self, template):
         """
-        Executes key 'cmd' in the input dict using the Python subprocess module
+        Builds a command fro the template string and the input dict, then
+        executes it  using the Python subprocess module
         
         Attributes:
+            template (str): the template for the command to be executed
             operation (str): takes the value 'compute'
         """
+        self.template = template
         self.operation = 'compute'
 
 
-    def run(self, inputs):
+    def run(self, inputs, dryrun=False):
         """
         Run the kernel with the given inputs.
         Args:
             inputs (dict): the inputs. Must contain a key 'cmd' which
                 contains a string that defines the command to be run.
+            dryrun (Bool, optional): if True, the command is not actually
+                executed
 
         Returns:
             dict : contains a copy of the input dictionary, with at least
@@ -361,65 +371,37 @@ class SubprocessKernel(object):
                     'returncode' : the exit code for the command
                     'cmd' : the command that was run.
         """
+        if not isinstance(inputs, dict):
+            print(inputs)
+            raise TypeError('Inputs is not a dict')
         outputs = inputs
         if 'returncode' in inputs:
             if inputs['returncode'] != 0:
                 return outputs
         try:
-            result = subprocess.check_output(inputs['cmd'], 
+            cmd = self.template.format(**inputs)
+        except KeyError:
+            print([key for key in inputs])
+            print(self.template)
+            raise
+        try:
+            outputs['cmd'] = cmd
+            if not dryrun:
+                result = subprocess.check_output(cmd, 
                                              stderr=subprocess.STDOUT,
                                              shell=True)
-            outputs['output'] = result
+                outputs['output'] = result
         except subprocess.CalledProcessError as e:
             outputs['returncode'] = e.returncode
             outputs['cmd'] = e.cmd
             outputs['output'] = e.output
         return outputs
 
-class EvalKernel(object):
-    def __init__(self):
-        """
-        Applies the Python eval() command to the string defined by key 'cmd'
-        in the input dict.
-        
-        Attributes:
-            operation (str): takes the value 'compute'
-        """
-        self.operation = 'compute'
-
-
-    def run(self, inputs):
-        """
-        Run the kernel with the given inputs.
-        Args:
-            inputs (dict): the inputs. Must contain a key 'cmd' which
-                contains a string that defines the command to be run.
-
-        Returns:
-            dict : contains a copy of the input dictionary, with at least
-                three keys:
-                    'output' : the standard output and error from the command
-                    'returncode' : the exit code for the command
-                    'cmd' : the command that was run.
-        """
-        outputs = inputs
-        if 'returncode' in inputs:
-            if inputs['returncode'] != 0:
-                return outputs
-        try:
-            result = eval(inputs['cmd'])
-            outputs['output'] = result
-        except Error as e:
-            outputs['returncode'] = e.returncode
-            outputs['cmd'] = e.cmd
-            outputs['output'] = e.output
-        return outputs
 
 class FunctionKernel(object):
     def __init__(self, func):
         """
-        Applies a given python function to the string defined by key 'cmd' in
-        the input dict..
+        Applies a given Python function to the input dict
         
         Attributes:
             operation (str): takes the value 'compute'
@@ -427,69 +409,37 @@ class FunctionKernel(object):
         self.operation = 'compute'
         self.func = func
 
-    def run(self, inputs):
+    def run(self, inputs, dryrun=False):
         """
         Run the kernel with the given inputs.
         Args:
-            inputs (dict): the inputs. Must contain a key 'cmd' which
-                contains a string that defines the command to be run.
+            inputs (dict): the inputs.
+            dryrun (Bool, optional): if True, the function is not actually
+                evaluated.
 
         Returns:
             dict : contains a copy of the input dictionary, with at least
-                three keys:
-                    'output' : the standard output and error from the command
+                one key:
                     'returncode' : the exit code for the command
-                    'cmd' : the command that was run.
+                typically it will also feature new or modified keys
+                produced by the function.
         """
         outputs = inputs
         if 'returncode' in inputs:
             if inputs['returncode'] != 0:
                 return outputs
         try:
-            result = func(inputs['cmd']) 
-            outputs['output'] = result
+            outputs['cmd'] = self.func.__name__
+            if not dryrun:
+                result = self.func(inputs) 
+                for key in result:
+                    outputs[key] = result[key]
         except Error as e:
             outputs['returncode'] = e.returncode
             outputs['cmd'] = e.cmd
             outputs['output'] = e.output
         return outputs
 
-class DummyKernel(object):
-    def __init__(self):
-        """
-        A dummy kernel for testing. Just copies the input dictionary to the
-        output dict.
-        
-        Attributes:
-            operation (str): takes the value 'compute'
-        """
-        self.operation = 'compute'
-    
-    def run(self, inputs, fail=False):
-        """
-        Run the kernel with the given inputs.
-        Args:
-            inputs (dict): the inputs. Must contain a key 'cmd' which
-                contains a string that defines the command to be run.
-
-        Returns:
-            dict : contains a copy of the input dictionary, with at least
-                three keys:
-                    'output' : the standard output and error from the command
-                    'returncode' : the exit code for the command
-                    'cmd' : the command that was run.
-        """
-        outputs = inputs
-        if outputs['returncode'] != 0:
-            return outputs
-        if fail:
-            outputs['returncode'] = 1
-            outputs['output'] = 'DummyKernel failed'
-        else:
-            outputs['returncode'] = 0
-            outputs['cmd'] = 'DummyKernel ran with {}'.format(outputs['cmd'])
-        return outputs
-    
     
 class Pipeline(object):
     def __init__(self, client, klist):
@@ -542,26 +492,28 @@ class Pipeline(object):
             dict or list: the outputs from the last kernel.
         """
         inp = inputs
-        out = inp
         ik = 0
         for k in self.klist:
             if k.operation != 'compute':
-                print('===== Kernel {} ====='.format(ik))
                 if isinstance(inp, list) and k.operation != 'gather':
                    out = [k.run(i) for i in inp]
                 else:
                    out = k.run(inp)
-                if isinstance(out, list):
+            else:
+                print('===== Kernel {} ====='.format(ik))
+                if isinstance(inp, list):
+                    out = [k.run(i, dryrun=True) for i in inp]
                     for o in out:
                         print(o['cmd'])
                         if o['returncode'] != 0:
                             print('Error: {}'.format(o['output']))
                         print('--------------')
                 else:
+                    out = k.run(inp, dryrun=True)
                     print(out['cmd'])
                     if out['returncode'] != 0:
                         print('Error: {}'.format(out['output']))
-                inp = out
                 ik += 1
+            inp = out
         print('======================')
         return out

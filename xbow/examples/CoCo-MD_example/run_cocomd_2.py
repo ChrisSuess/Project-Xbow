@@ -6,7 +6,7 @@ from xbowflow.pipelines import InterfaceKernel, SubprocessKernel, Pipeline
 
 cx1 = [
         'tmp             $=  $TMPDIR',
-        'run_md          $= mkdir - p {tmp}; cd {tmp}; mpirun -np 2 pmemd.MPI',
+        'run_md          $= mkdir -p {tmp}; cd {tmp}; mpirun -np 2 pmemd.MPI',
         'stage           ?= 0',
         'cycle           ?= 0',
         'shared          $= /home/ubuntu/shared/CoCo-MD_example',
@@ -93,7 +93,7 @@ client = Client(dask_scheduler)
 
 prepipe = Pipeline(client, [ix1])
 mainpipe = Pipeline(client, [amber_kernel, i12, amber_kernel, i23, amber_kernel, i34, coco_kernel, i41])
-out = prepipe.yrun(inits)
+out = prepipe.run(inits)
 for i in range(2):
     out = mainpipe.run(out)
 print(out)
