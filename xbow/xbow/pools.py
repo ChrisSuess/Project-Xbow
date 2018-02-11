@@ -290,7 +290,7 @@ class SpotInstancePool(object):
                 complete before returning.
         """
 
-        sel()
+        self.get_status()
         if self.status == 'unavailable':
             self.refresh()
         if len(commandlist) > self.instance_count:
