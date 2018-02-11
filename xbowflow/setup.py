@@ -99,7 +99,10 @@ setup_args = {
 
     'packages': find_packages(),
 
-    'scripts': [],
+    'scripts': [
+                'scripts/xflow-run',
+                'scripts/xflow-submit',
+               ],
 
     'install_requires': [],
 
