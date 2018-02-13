@@ -21,5 +21,5 @@ fname = tempfile.NamedTemporaryFile().name
 with open(fname, 'w') as f:
     f.write(cmd)
 
-result = subprocess.check_output(['at', '-f', fname, now], stderr=subprocess.STDOUT)
+result = subprocess.check_output(['at', '-f', fname, 'now'], stderr=subprocess.STDOUT)
 print(result)

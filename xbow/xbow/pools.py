@@ -165,7 +165,7 @@ class SpotInstancePool(object):
         self.launch_group = name
         self.key_name = name
         self.kp = self.ec2_resource.KeyPair(self.key_name)
-        self.pem_file = os.path.join(xbow.XBOW_CONFIGDIR, self.keyname) + '.pem'
+        self.pem_file = os.path.join(xbow.XBOW_CONFIGDIR, self.key_name) + '.pem'
 
         image_id = response['SpotInstanceRequests'][0]['LaunchSpecification']['ImageId']
         image = self.ec2_resource.Image(image_id)

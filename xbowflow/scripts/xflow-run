@@ -8,14 +8,16 @@ import sys
 import os
 import socket
 
-#ip = socket.gethostbyname(socket.gethostname())
-#dask_scheduler = '{}:8786'.format(ip)
-#client = Client(dask_scheduler)
-client = Client()
+ip = socket.gethostbyname(socket.gethostname())
+dask_scheduler = '{}:8786'.format(ip)
+try:
+    client = Client(dask_scheduler)
+iexcept IOError:
+    client = Client()
 cmd = ' '.join(sys.argv[1:])
 
-cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
-kernel = SubprocessKernel(cmd)
+full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
+kernel = SubprocessKernel(full_cmd)
 pipe = Pipeline(client, [kernel])
 result = pipe.run({})
 print(result['output'])
