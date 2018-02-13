@@ -2,18 +2,11 @@
 from __future__ import print_function
 from xbowflow._version import __version__
 
-from dask.distributed import Client
+import xbowflow
 from xbowflow.pipelines import SubprocessKernel, Pipeline
 import sys
-import os
-import socket
 
-ip = socket.gethostbyname(socket.gethostname())
-dask_scheduler = '{}:8786'.format(ip)
-try:
-    client = Client(dask_scheduler)
-except IOError:
-    client = Client()
+client = xbowflow.client
 cmd = ' '.join(sys.argv[1:])
 
 full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
