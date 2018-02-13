@@ -12,7 +12,7 @@ ip = socket.gethostbyname(socket.gethostname())
 dask_scheduler = '{}:8786'.format(ip)
 try:
     client = Client(dask_scheduler)
-iexcept IOError:
+except IOError:
     client = Client()
 cmd = ' '.join(sys.argv[1:])
 
