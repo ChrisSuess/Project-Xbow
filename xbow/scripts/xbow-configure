@@ -13,6 +13,8 @@ def configure(region=None, force=False):
     """
     ec2 = boto3.resource('ec2', region_name=region)
     keynames = ['MyDaskScheduler', 'MyDaskWorkers']
+    if not os.path.exists(xbow.XBOW_CONFIGDIR):
+        os.mkdir(xbow.XBOW_CONFIGDIR)
     for keyname in keynames:
         try:
             response = ec2.meta.client.describe_key_pairs(KeyNames=[keyname])
