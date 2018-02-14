@@ -10,7 +10,7 @@ from instances import ConnectedInstance
 
 def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                      instance_type=None, user_data=None,
-                     security_groups=None, username=None,
+                     efs_security_groups=None, ec2_security_groups=None, username=None,
                      shared_file_system=None, mount_point=None):
     """
     Creates an instance of a SpotInstancePool.
@@ -70,19 +70,22 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
             response = cfs(CreationToken=shared_file_system)
             FileSystemId = response['FileSystemId']
 
-            subnets = ec2_resource.subnets.all()
-            sgf = ec2_resource.security_groups.filter
-            security_groups = sgf(GroupNames=efs_security_groups)
-
-            efs_security_groupid = [security_group.group_id
+        subnets = ec2_resource.subnets.all()
+        sgf = ec2_resource.security_groups.filter
+        security_groups = sgf(GroupNames=efs_security_groups)
+        efs_security_groupid = [security_group.group_id
                                     for security_group in security_groups]
-            for subnet in subnets:
+        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+	mounttargets = response["MountTargets"]
+	if len(mounttargets) == 0:
+	    for subnet in subnets:
                 cmt = efs_client.create_mount_target
                 cmt(FileSystemId=FileSystemId,
                     SubnetId=subnet.id,
                     SecurityGroups=efs_security_groupid
                    )
-        mount_command = '#!/bin/bash\n mkdir {}\n'.format(mount_point)
+
+        mount_command = '#!/bin/bash\n mkdir -p {}\n'.format(mount_point)
         dnsname = '{}.efs.{}.amazonaws.com'.format(FileSystemId, region)
         mount_command += 'mount -t nfs -o nfsvers=4.1,rsize=1048576,'
         mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
@@ -102,7 +105,7 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                    Type='persistent',
                    LaunchGroup=launch_group,
                    LaunchSpecification={
-                                        'SecurityGroups': security_groups,
+                                        'SecurityGroups': ec2_security_groups,
                                         'ImageId': image_id,
                                         'InstanceType': instance_type,
                                         'KeyName': key_name,
@@ -165,7 +168,7 @@ class SpotInstancePool(object):
         self.launch_group = name
         self.key_name = name
         self.kp = self.ec2_resource.KeyPair(self.key_name)
-        self.pem_file = '/Users/pazcal/.xbow/{}.pem'.format(name)
+        self.pem_file = os.path.join(xbow.XBOW_CONFIGDIR, self.key_name) + '.pem'
 
         image_id = response['SpotInstanceRequests'][0]['LaunchSpecification']['ImageId']
         image = self.ec2_resource.Image(image_id)

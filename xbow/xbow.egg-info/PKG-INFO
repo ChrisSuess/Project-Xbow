@@ -6,7 +6,6 @@ Home-page: UNKNOWN
 Author: Charlie Laughton
 Author-email: charles.laughton@nottingham.ac.uk
 License: MIT license.
-Description-Content-Type: UNKNOWN
 Description: A system to ease the use of cloud resources for MD simulations.
 Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha
