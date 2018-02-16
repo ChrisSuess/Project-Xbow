@@ -5,12 +5,14 @@ setup.cfg
 setup.py
 scripts/xflow-foo
 scripts/xflow-run
+scripts/xflow-runall
 scripts/xflow-submit
 test/__init__.py
 test/test_pipeline_1.py
 test/test_pipeline_2.py
 xbowflow/__init__.py
 xbowflow/_version.py
+xbowflow/clients.py
 xbowflow/pipelines.py
 xbowflow.egg-info/PKG-INFO
 xbowflow.egg-info/SOURCES.txt

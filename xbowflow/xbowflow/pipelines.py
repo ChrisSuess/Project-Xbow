@@ -244,8 +244,6 @@ class InterfaceKernel(object):
             if len(self.connections[i]) != 3:
                 print('Error: {}'.format(self.connections[i]))
                 exit(1)
-            if self.connections[i][2] == '$TMPDIR':
-                self.connections[i][2] = tempfile.mkdtemp()
                 
 
     def run(self, inputs):
@@ -466,6 +464,9 @@ class Pipeline(object):
         Returns:
             dict or list: the outputs from the last kernel.
         """
+        if self.client == None:
+            return self.dryrun(inputs)
+
         intermediates = [inputs]
         for ki in self.klist:
             inp = intermediates[-1]

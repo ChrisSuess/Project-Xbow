@@ -1,30 +1,29 @@
 from __future__ import print_function
-#import subprocess
-#import socket
-#from dask.distributed import Client
-from xbowflow.pipelines import InterfaceKernel, GenericKernel, DummyKernel, Pipeline
+from xbowflow.pipelines import InterfaceKernel, SubprocessKernel, Pipeline
+from xbowflow.clients import dask_client
 
 cx1 = [
-        ['shared',          '=', '/home/ubuntu/shared/multirun'             ],
-        ['workdir',         '=', '{shared}/rep{rep:03d}'                    ],
-        ['run_md',          '=', 'cd {workdir}; mpirun -np 2 pmemd.MPI'     ],
-        ['template',        '=', '{run_md} -O -c {workdir}/start.rst'\
-                                 ' -p {shared}/system.top '\
-                                 ' -i {shared}/run.in'\
-                                 ' -x {workdir}/trajectory.nc'             ]
+         'shared   $= /home/ubuntu/shared/multirun',
+         'workdir  $= {shared}/rep{rep:03d}',
+         'preamble $= cd {workdir}; mpirun -np 2',
       ]
+
+a1 = '{preamble} pmemd.MPI -O -c {workdir}/start.rst'\
+                         ' -p {shared}/system.top '\
+                         ' -i {shared}/run.in'\
+                         ' -x {workdir}/trajectory.nc' 
 
 inits = [{'rep' : i} for i in range(4)]
 
 ix1 = InterfaceKernel(cx1)
 
-amber_kernel = GenericKernel()
+amber_kernel = SubprocessKernel(a1)
 
-#ip = socket.gethostbyname(socket.gethostname())
-#dask_scheduler = '{}:8786'.format(ip)
-#client = Client(dask_scheduler)
+#client = dask_client()
 client = None
 
-pipe = Pipeline(client, [ix1])
-out = pipe.dryrun(inits)
-print(out)
+pipe = Pipeline(client, [ix1, amber_kernel])
+out = pipe.run(inits)
+for d in out:
+    if d['returncode'] != 0:
+        print( d)

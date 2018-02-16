@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from xbowflow._version import __version__
-
-import xbowflow
 from xbowflow.pipelines import SubprocessKernel, Pipeline
+from xbowflow.clients import dask_client
 import sys
+import os
 
-client = xbowflow.client
+client = dask_client()
 cmd = ' '.join(sys.argv[1:])
 
 full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)

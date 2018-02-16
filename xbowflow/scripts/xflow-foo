@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+from __future__ import print_function
+#
+# A simple executable to test xbowflow
+#
+# invoked as:
+#
+#    xflow-foo -i inputs -o outputs
+#
+# where inputs and outputs are lists of one or more filenames.
+#
+# The program checks for the existence of each file in inputs, and
+# produces an empty file with the name of each filename in outputs.
+
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-i', '--input', nargs='*', help='list or one or more input files')
+parser.add_argument('-o', '--output', nargs='*', help='list of one or more outputs files')
+
+args = parser.parse_args()
+
+for infile in args.input:
+    with open(infile, 'r') as f:
+        pass
+
+for outfile in args.output:
+    with open(outfile, 'w') as f:
+        pass

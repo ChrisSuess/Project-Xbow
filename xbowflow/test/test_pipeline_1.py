@@ -1,6 +1,7 @@
 from __future__ import print_function
 import xbowflow
 from xbowflow.pipelines import InterfaceKernel, SubprocessKernel, Pipeline
+from xbowflow.clients import dask_client
 
 cx1 = [
         'cycle             ?= 0',
@@ -14,16 +15,17 @@ c12 = [
         'output_file       $= {name}_cycle_{cycle}_stage_{stage}.out',
       ]
 
-foo_template = 'xflow.foo -i {input_file} -o {output_file}'
+foo_template = 'xflow-foo -i {input_file} -o {output_file}'
 
 foo_kernel = SubprocessKernel(foo_template)
 
 ix1 = InterfaceKernel(cx1)
 i12 = InterfaceKernel(c12)
 
-client = xbowflow.client
+client = dask_client(local=True)
 pipe = Pipeline(client, [ix1, foo_kernel, i12, foo_kernel])
 
 inputs = {'name': 'foo'}
 outputs = pipe.run(inputs)
-print(out)
+print(outputs)
+client.close()
