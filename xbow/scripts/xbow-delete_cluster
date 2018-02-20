@@ -1,3 +1,32 @@
 #!/usr/bin/env python
 from __future__ import print_function
+
+import boto3
+
+from xbow import instances
+
 print("Delete a cluster")
+
+client = boto3.client('ec2')
+
+response = client.describe_instances()
+
+for reservation in response["Reservations"]:
+    for instance in reservation["Instances"]:
+	#instance_live = instance.filter(Filters=[{'Values': ['running']}])
+        print("Deleting instance " + instance["InstanceId"])
+	#response.instances.filter(InstanceIds=instance["InstanceId"]).terminate()
+	response.instances.filter(InstanceIds=[]).terminate()
+
+#connected = ec2.instance.filter()
+#	Filters=[{'Name': 'instance-state-name', 'Values': ['running']}])
+#for instance in connected:
+#    print(instance.id, instance.instance_type)
+
+#ec2 = boto3.resource('ec2')
+#instance = ec2.Instance(id)
+
+#print(ec2)
+
+#print(instance)
+
