@@ -26,7 +26,7 @@ if len(schedulers) == 1:
     inst = schedulers[0]
     print('Scheduler already running, now starting workers. This may take some time...')
 else:
-    print("Starting the scheduler node - this may take a time...")
+    print("Starting the scheduler node - this may take some time...")
 
     user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(mount_point)
     inst = instances.create(
