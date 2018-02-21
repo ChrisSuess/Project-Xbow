@@ -3,30 +3,17 @@ from __future__ import print_function
 
 import boto3
 
-from xbow import instances
+# Terminates all running instances
+# TO DO:
+# - 'Hard' Terminate = Cancels all persistent spot requests, terminates all instances
+# - 'Soft' Terminate = Cancels all persistent spot requests, only terminates workers
 
-print("Delete a cluster")
-
-client = boto3.client('ec2')
-
-response = client.describe_instances()
+ec2 = boto3.client('ec2')
+response = ec2.describe_instances()
 
 for reservation in response["Reservations"]:
     for instance in reservation["Instances"]:
-	#instance_live = instance.filter(Filters=[{'Values': ['running']}])
-        print("Deleting instance " + instance["InstanceId"])
-	#response.instances.filter(InstanceIds=instance["InstanceId"]).terminate()
-	response.instances.filter(InstanceIds=[]).terminate()
+	instanceId = instance["InstanceId"]
+	ec2.terminate_instances(InstanceIds=[instanceId], DryRun=False)
 
-#connected = ec2.instance.filter()
-#	Filters=[{'Name': 'instance-state-name', 'Values': ['running']}])
-#for instance in connected:
-#    print(instance.id, instance.instance_type)
-
-#ec2 = boto3.resource('ec2')
-#instance = ec2.Instance(id)
-
-#print(ec2)
-
-#print(instance)
 
