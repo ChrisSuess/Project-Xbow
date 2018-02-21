@@ -14,6 +14,9 @@ response = ec2.describe_instances()
 for reservation in response["Reservations"]:
     for instance in reservation["Instances"]:
 	instanceId = instance["InstanceId"]
+	sir = instance["SpotInstanceRequestId"]
+	#print(sir)
+	ec2.cancel_spot_instance_requests(SpotInstanceRequestIds=[sir])
 	ec2.terminate_instances(InstanceIds=[instanceId], DryRun=False)
 
 
