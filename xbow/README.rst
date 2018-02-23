@@ -8,6 +8,41 @@ allowing you to run your science how you like it.
 Using Xbow
 ----------
 
+The following steps assumes your cloud account is set up to work
+from the command line. For information on getting AWS to work
+from the command line see the section "Setting up AWS" below.
+
+Getting and Installing Xbow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The recommended method to install Xbow is using PyPi
+
+``pip install xbow``
+
+or using easy_install
+
+``git clone https://github.com/ChrisSuess/Project-Xbow``
+
+``easy_install setup.py``
+
+
+Running Xbow
+~~~~~~~~~~~~
+
+Xbow is designed to give you the tools to set up a cluster in the
+cloud.
+
+1. Configure Xbow ``xbow-configure``
+2. Launch Xbow ``xbow-create_cluster``
+3. Login to Xbow ``xbow-login_instance``
+4. Stop Xbow ``xbow-delete_cluster``
+
+Xbowflow is then used in order to run simulations.
+
+
+Setting up AWS
+~~~~~~~~~~~~~~
+
 Xbow currently makes use of Amazon Web Services (AWS). If you have never
 run AWS from the command line an additional configuration step is
 necessary. If this is already setup you can ignore this step!
@@ -48,29 +83,3 @@ Make sure there is no blank space at the end of each line.
 
 **IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!**
 
-Getting and Installing Xbow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The recommended method to install Xbow is using PyPi
-
-``pip install xbow``
-
-or using easy_install
-
-``git clone https://github.com/ChrisSuess/Project-Xbow``
-
-``easy_install setup.py``
-
-
-Running Xbow
-~~~~~~~~~~~~
-
-Xbow is designed to give you the tools to set up a cluster in the 
-cloud.
-
-1. Configure Xbow ``xbow-configure``
-2. Launch Xbow ``xbow-create_cluster``
-3. Login to Xbow ``xbow-login_instance``
-4. Stop Xbow ``xbow-delete_cluster``
-
-Xbowflow is then used in order to run simulations.
