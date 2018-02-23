@@ -48,58 +48,29 @@ Make sure there is no blank space at the end of each line.
 
 **IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!**
 
-Installing and Configuriing Xbow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Getting and Installing Xbow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Update: pip install or conda package?
+The recommended method to install Xbow is using PyPi
 
-Prerequisites
-^^^^^^^^^^^^^
+``pip install xbow``
 
-Xbow is being developed to work out of the box. For now, the following
-are currently necessary to be installed before using Xbow.
-
--  paramiko ``pip install paramiko --user``
-
-   -  Currently if using a Linux distro (Ubuntu/centOS) is is necessary
-      to ``pip install python-gssapi --user``
-
--  boto ``pip install boto --user``
-
-Getting Xbow
-~~~~~~~~~~~~
+or using easy_install
 
 ``git clone https://github.com/ChrisSuess/Project-Xbow``
+
+``easy_install setup.py``
+
 
 Running Xbow
 ~~~~~~~~~~~~
 
-Xbow is designed to give you the tools to work how you want to.
+Xbow is designed to give you the tools to set up a cluster in the 
+cloud.
 
-The recommended steps to using Xbow are as follows:
+1. Configure Xbow ``xbow-configure``
+2. Launch Xbow ``xbow-create_cluster``
+3. Login to Xbow ``xbow-login_instance``
+4. Stop Xbow ``xbow-delete_cluster``
 
-1. Load an instance ``python xbow.py -n $NAME_OF_JOB``
-2. Check if instance is ready (instances can take several minutes to
-   boot!) ``python xbow.py -n $NAME_OF_JOB -r``
-3. Transfer (aim) data from client to cloud
-   ``python xbow.py -n $NAME_OF_JOB -a``
-4. Fire job using a bash script
-   ``python xbow.py -n $NAME_OF_JOB -s $SCRIPT_NAME``
-5. Collect data from cloud to client
-   ``python xbow.py -n $NAME_OF_JOB -c``
-6. Terminate instance ``python xbow.py -n $NAME_OF_JOB -t``
-
-A. To interact directly with the cloud instance
-``python xbow.py -n $NAME_OF_JOB -i``
-
-Example
-~~~~~~~
-
-1. ``cd Xbow/Example``
-2. ``python ../xbow.py -n TestSim``
-3. ``python ../xbow.py -n TestSim -r``
-4. ``python ../xbow.py -n TestSim -a``
-5. ``python ../xbow.py -n TestSim -s launch_instructions.sh``
-6. ``python ../xbow.py -n TestSim -c``
-7. ``python ../xbow.py -n TestSim -t``
-
+Xbowflow is then used in order to run simulations.
