@@ -50,3 +50,16 @@ for stage in wconfig['workflow']['stages']:
         n_its = 1
     for i in range(n_its):
         output = pipeline.run(output)
+
+ok = True
+if isinstance(output, list):
+    for o in output:
+        if o['returncode'] != 0:
+            print(o['output'])
+            ok = False
+else:
+    if output['returncode'] != 0:
+        print(output['output'])
+        ok = False
+if ok:
+    print('Workflow completed without errors')
