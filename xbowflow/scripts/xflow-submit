@@ -16,7 +16,7 @@ parser.add_argument('-o', '--output', type=str, help='file to receive standard o
 args = parser.parse_args()
 
 output = os.path.join(os.getcwd(), args.output)
-cmd = 'xflow-run {} > {} 2>&1'.format(args.cmd, output)
+cmd = '{} > {} 2>&1'.format(args.cmd, output)
 fname = tempfile.NamedTemporaryFile().name
 with open(fname, 'w') as f:
     f.write(cmd)

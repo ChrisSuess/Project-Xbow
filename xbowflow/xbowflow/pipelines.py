@@ -287,10 +287,12 @@ class InterfaceKernel(object):
             try:
                 outputs = inputs[0].copy()
                 for inp in inputs:
-                    if inp['returncode'] != 0:
-                        outputs = inp.copy()
-                if outputs['returncode'] != 0:
-                    return outputs
+                    if 'returncode' in inp:
+                        if inp['returncode'] != 0:
+                            outputs = inp.copy()
+                if 'returncode' in outputs:
+                    if outputs['returncode'] != 0:
+                        return outputs
                 for con in self.connections:
                     if con[1] == '[=':
                         outputs[con[0]] = con[2].format(**outputs)
@@ -306,9 +308,10 @@ class InterfaceKernel(object):
                 outputs['output'] = sys.exc_info()
                 return outputs
         else:
-            if inputs['returncode'] != 0:
-                outputs = [inputs] 
-                return outputs
+            if 'returncode' in inputs:
+                if inputs['returncode'] != 0:
+                    outputs = [inputs] 
+                    return outputs
             for con in self.connections:
                 if con[1] == ']=':
                     scatterwidth = len(con[2].format(**inputs).split())
@@ -317,9 +320,9 @@ class InterfaceKernel(object):
                             raise ValueError('Error - inconsistent widths in scatter interface')
                     else:
                         self.scatterwidth = scatterwidth
-            try:
-                outputs = []
-                for i in range(self.scatterwidth):
+            outputs = []
+            for i in range(self.scatterwidth):
+                try:
                     output = inputs.copy()
                     for con in self.connections:
                         if con[1] == ']=':
@@ -329,20 +332,17 @@ class InterfaceKernel(object):
                         elif con[1] == '$=':
                             output[con[0]] = con[2].format(**output)
                     output['returncode'] = 0
-                    outputs.append(output)
-                return outputs
-            except:
-                raise
-                for i in range(self.scatterwidth):
-                    outputs[i]['returncode'] = 1
-                    outputs[i]['output'] = sys.exc_info()
-                return outputs
+                except:
+                    output['returncode'] = 1
+                    output['output'] = sys.exc_info()
+                outputs.append(output)
+            return outputs
         
 
 class SubprocessKernel(object):
     def __init__(self, template):
         """
-        Builds a command fro the template string and the input dict, then
+        Builds a command from the template string and the input dict, then
         executes it  using the Python subprocess module
         
         Attributes:
@@ -378,6 +378,9 @@ class SubprocessKernel(object):
                 return outputs
         try:
             cmd = self.template.format(**inputs)
+            tmpdir = tempfile.mkdtemp()
+            preamble = 'mkdir -p {}; cd {}; '.format(tmpdir, tmpdir)
+            cmd = preamble + cmd
         except KeyError:
             print([key for key in inputs])
             print(self.template)
@@ -505,9 +508,10 @@ class Pipeline(object):
                 if isinstance(inp, list):
                     out = [k.run(i, dryrun=True) for i in inp]
                     for o in out:
-                        print(o['cmd'])
                         if o['returncode'] != 0:
                             print('Error: {}'.format(o['output']))
+                        else:
+                            print(o['cmd'])
                         print('--------------')
                 else:
                     out = k.run(inp, dryrun=True)

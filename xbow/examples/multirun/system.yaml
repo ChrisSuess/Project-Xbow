@@ -1,0 +1,5 @@
+parmtop: system.top
+inpcrd: system.crd
+mdin: md.in
+trajfile: system.nc
+reps: rep0 rep1 rep2 rep3

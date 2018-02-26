@@ -1,17 +1,52 @@
 #!/usr/bin/env python
 from __future__ import print_function
-from xbowflow._version import __version__
-from xbowflow.pipelines import SubprocessKernel, Pipeline
-from xbowflow.clients import dask_client
-import sys
 import os
+import sys
+import yaml
+from xbowflow.pipelines import InterfaceKernel, SubprocessKernel, Pipeline
+from xbowflow.clients import dask_client
+import argparse
 
-client = dask_client()
-cmd = ' '.join(sys.argv[1:])
+parser = argparse.ArgumentParser(description='Run an xbowflow workflow')
+parser.add_argument('configfile', help='Name of the workflow configuration file')
+parser.add_argument('inputsfile', help='Name of the workflow job inputs file')
 
-full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
-kernel = SubprocessKernel(full_cmd)
-pipe = Pipeline(client, [kernel])
-result = pipe.run({})
-print(result['output'])
-client.close()
+args = parser.parse_args()
+
+kernels = {
+           'interfacekernel': InterfaceKernel,
+           'subprocesskernel': SubprocessKernel,
+          }
+
+with open(args.configfile) as f:
+    wconfig = yaml.load(f)
+
+with open(args.inputsfile) as f:
+    inputs = yaml.load(f)
+
+if 'inputs' in wconfig:
+    for k in wconfig['inputs']:
+        if not k in inputs:
+            raise RuntimeError('Error - inputs is missing parameter {}'.format(k))
+
+if wconfig['workflow']['dryrun']:
+    client = None
+else:
+    client = dask_client()
+
+mykernels = {}
+for stage in wconfig['workflow']['stages']:
+    for step in wconfig[stage]['steps']:
+        ktype = wconfig[step]['type']
+        mykernels[step] = kernels[ktype](wconfig[step]['configuration'])
+
+output = inputs
+for stage in wconfig['workflow']['stages']:
+    klist = [mykernels[k] for k in wconfig[stage]['steps']]
+    pipeline = Pipeline(client, klist)
+    if 'iterations' in wconfig[stage]:
+        n_its = inputs[wconfig[stage]['iterations']]
+    else:
+        n_its = 1
+    for i in range(n_its):
+        output = pipeline.run(output)
