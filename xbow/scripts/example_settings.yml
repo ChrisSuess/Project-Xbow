@@ -1,0 +1,13 @@
+region: eu-west-1 # region that instance should be launched in
+price: '0.5' # max spot price 
+worker_instance_type: m4.large # instance(s) that jobs will run on
+scheduler_instance_type: t2.small # head node instance
+image_id: ami-3730464e # new image created 11th Feb
+ec2_security_groups: ['efs-walkthrough1-ec2-sg']
+efs_security_groups: ['efs-walkthrough1-mt-sg']
+shared_file_system: MyTestFileSystem
+mount_point: /home/ubuntu/shared
+cluster_name: MyDaskCluster
+scheduler_name: MyDaskScheduler
+worker_pool_name: MyDaskWorkers
+pool_size: 2 # How many workers required
