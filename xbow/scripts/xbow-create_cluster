@@ -3,22 +3,18 @@ from __future__ import print_function
 
 from xbow import instances, pools
 
-# Data: this should all go in a configuration file 
-region                  = 'eu-west-1'
-price                   = '0.5'
-worker_instance_type    = 'm4.large'
-scheduler_instance_type = 't2.small'
-image_id                = 'ami-3730464e' # new image created 11th Feb
-ec2_security_groups     = ['efs-walkthrough1-ec2-sg']
-efs_security_groups     = ['efs-walkthrough1-mt-sg']
-shared_file_system      = 'MyTestFileSystem'
-mount_point             = '/home/ubuntu/shared'
-cluster_name            = 'MyDaskCluster'
-scheduler_name          = 'MyDaskScheduler'
-worker_pool_name        = 'MyDaskWorkers'
-pool_size               = 2
+import xbow
+import yaml
+import os
 
-schedulers = instances.get_by_name(scheduler_name)
+# Configuration file should be in ~/.xbow/settings.yml
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+schedulers = instances.get_by_name(cfg['scheduler_name'])
 if len(schedulers) > 1:
     print('Error - there is more than one scheduler already running with this name.')
     exit(1)
@@ -26,32 +22,31 @@ if len(schedulers) == 1:
     inst = schedulers[0]
     print('Scheduler already running, now starting workers. This may take some time...')
 else:
-    print("Starting the scheduler node - this may take a time...")
+    print("Starting the scheduler node - this may take some time...")
 
-    user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(mount_point)
+    user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'])
     inst = instances.create(
-                            scheduler_name,
-                            image_id=image_id,
-                            instance_type=scheduler_instance_type,
-                            shared_file_system=shared_file_system,
-                            mount_point=mount_point,
-                            ec2_security_groups = ec2_security_groups,
-			    efs_security_groups = efs_security_groups,
+                            cfg['scheduler_name'],
+                            image_id=cfg['image_id'],
+                            instance_type=cfg['scheduler_instance_type'],
+                            shared_file_system=cfg['shared_file_system'],
+                            mount_point=cfg['mount_point'],
+                            ec2_security_groups = cfg['ec2_security_groups'],
+			    efs_security_groups = cfg['efs_security_groups'],
                             user_data=user_data
                       )
     print("Scheduler ready, now starting workers. This may take some time...")
 
-user_data = 'dask-worker --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(mount_point)
-sip = pools.create_spot_pool(worker_pool_name,
-                        count=pool_size,
-                        price=price,
-                        image_id=image_id,
-                        instance_type=worker_instance_type,
-                        shared_file_system=shared_file_system,
-                        mount_point=mount_point,
-                        ec2_security_groups=ec2_security_groups,
-	                efs_security_groups=efs_security_groups,
-
+user_data = 'dask-worker --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+sip = pools.create_spot_pool(cfg['worker_pool_name'],
+                        count=cfg['pool_size'],
+                        price=cfg['price'],
+                        image_id=cfg['image_id'],
+                        instance_type=cfg['worker_instance_type'],
+                        shared_file_system=cfg['shared_file_system'],
+                        mount_point=cfg['mount_point'],
+                        ec2_security_groups=cfg['ec2_security_groups'],
+	                efs_security_groups=cfg['efs_security_groups'],
                         user_data=user_data
                       )
 print("Instance running, now waiting until xbow-cluster is accessible...")
