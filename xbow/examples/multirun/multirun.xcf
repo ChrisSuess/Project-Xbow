@@ -1,0 +1,31 @@
+workflow:
+    dryrun: True
+    stages:
+        - stage1
+
+stage1:
+    steps:
+        - ix1
+        - amber
+
+ix1:
+    type: interfacekernel
+    configuration: 
+        - shared   $= /home/ubuntu/shared/multirun
+        - rep      ]= {reps}
+        - workdir  $= {shared}/{rep}
+        
+amber:
+    type: subprocesskernel
+    configuration: >
+        mpirun -np 2 pmemd.MPI -O -c {workdir}/{inpcrd}
+        -p {shared}/{parmtop}
+        -i {shared}/{mdin}
+        -x {workdir}/{trajfile}
+
+inputs:
+    - parmtop # topology file
+    - mdin # MD input file
+    - inpcrd # starting coordinates
+    - trajfile # name of output trajectory file
+    - reps # whitespace separated list of replicate subdirectory names

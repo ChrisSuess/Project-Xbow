@@ -102,7 +102,8 @@ setup_args = {
     'scripts': [
                 'scripts/xflow-foo',
                 'scripts/xflow-run',
-                'scripts/xflow-runall',
+                'scripts/xflow-exec',
+                'scripts/xflow-execall',
                 'scripts/xflow-submit',
                ],
 

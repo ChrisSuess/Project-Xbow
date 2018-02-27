@@ -5,6 +5,16 @@ import subprocess
 import os
 import socket
 
+import sys
+import argparse
+
+parser = argparse.ArgumentParser(description='Execute a command on all workers')
+parser.add_argument('cmd', nargs='*', help='The command to execute')
+
+args = parser.parse_args()
+
+cmd = ' '.join(args.cmd)
+
 ip = socket.gethostbyname(socket.gethostname())
 dask_scheduler = '{}:8786'.format(ip)
 try:
@@ -12,9 +22,6 @@ try:
 except IOError:
     print('Warning: using local dask client')
     client = Client()
-import sys
-
-cmd = ' '.join(sys.argv[1:])
 
 full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
 def myfunc(cmd):

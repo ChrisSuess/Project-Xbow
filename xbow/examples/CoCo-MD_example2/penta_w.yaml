@@ -1,0 +1,23 @@
+# Input file for CoCo-MD run on cyclosporine A
+# A: General parameters
+system_name:       penta_w
+shared_dir:        /home/ubuntu/shared/CoCo-MD_example2
+ncycles:           2
+# B: MD parameters
+md_exe:            mpirun -np 2 pmemd.MPI
+start_coordinates: /home/ubuntu/shared/CoCo-MD_example2/penta_w.crd
+target_coordinates_list: > 
+                   /home/ubuntu/shared/CoCo-MD_example2/penta_w.crd
+                   /home/ubuntu/shared/CoCo-MD_example2/penta_w.crd
+repids:            0 1
+topfile:           /home/ubuntu/shared/CoCo-MD_example2/penta_w.top
+md_input_1:        /home/ubuntu/shared/CoCo-MD_example2/min1.in
+md_input_2:        /home/ubuntu/shared/CoCo-MD_example2/min2.in
+md_input_3:        /home/ubuntu/shared/CoCo-MD_example2/md.in
+# C: CoCo parameters
+coco_exe:          pyCoCo -v
+refpdb:            /home/ubuntu/shared/CoCo-MD_example2/penta_w.pdb
+grid_size:         30
+ndims:             3
+nreps:             2
+selection:         '"(not water) and mass > 2.0"'

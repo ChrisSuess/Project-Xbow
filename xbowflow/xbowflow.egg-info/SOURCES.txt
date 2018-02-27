@@ -3,9 +3,10 @@ MANIFEST.in
 README.rst
 setup.cfg
 setup.py
+scripts/xflow-exec
+scripts/xflow-execall
 scripts/xflow-foo
 scripts/xflow-run
-scripts/xflow-runall
 scripts/xflow-submit
 test/__init__.py
 test/test_pipeline_1.py
