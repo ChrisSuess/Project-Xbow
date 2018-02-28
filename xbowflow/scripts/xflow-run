@@ -29,7 +29,7 @@ if 'inputs' in wconfig:
         if not k in inputs:
             raise RuntimeError('Error - inputs is missing parameter {}'.format(k))
 
-if wconfig['workflow']['dryrun']:
+if wconfig['workflow'].get('dryrun', False):
     client = None
 else:
     client = dask_client()
