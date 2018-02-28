@@ -1,0 +1,39 @@
+# A workflow with scatter and gather steps
+workflow:
+    dryrun: True
+    stages:
+        - stage1
+
+stage1:
+    steps:
+        - minimise
+        - min2md
+        - md
+        - md2analysis
+        - analysis
+
+minimise:
+    type: subprocesskernel
+    configuration: minimise -i {inputfile} -o {outputfile}
+
+min2md:
+    type: interfacekernel
+    configuration:
+        - inputfile $= {outputfile}
+        - replicate ]= {replicates}
+        - seed ]= {seeds}
+        - outputfile $= trajectory_{replicate}.dat
+
+md:
+    type: subprocesskernel
+    configuration: run_md -I {inputfile} -o {outputfile} --random_seed {seed}
+
+md2analysis:
+    type: interfacekernel
+    configuration:
+        - inputfiles [= {outputfile}
+        - outputfile $= {analout}
+
+analysis:
+    type: subprocesskernel
+    configuration: analyse -i {inputfiles} -o {outputfile}

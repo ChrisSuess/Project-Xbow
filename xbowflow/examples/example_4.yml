@@ -1,0 +1,5 @@
+inputfile: start.crds
+outputfile: minimised.crds
+analout: analysis.out
+replicates: 1 2
+seeds: 12345 54321

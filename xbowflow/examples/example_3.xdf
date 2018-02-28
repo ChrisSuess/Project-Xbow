@@ -1,0 +1,34 @@
+# A workflow with a loop
+workflow:
+    dryrun: True
+    stages:
+        - preloop
+        - mainloop
+
+preloop:
+    steps:
+        - preloop_step
+
+mainloop:
+    steps:
+        - refine_step
+        - refine_interface
+    iterations: n_iterations
+
+preloop_step:
+    type: interfacekernel
+    configuration:
+        - inputfile $= {startfile}
+        - cycle ?= 1
+        - outputfile $= refined_cycle_{cycle}.dat
+
+refine_step:
+    type: subprocesskernel
+    configuration: refine -i {inputfile} -o {outputfile}
+
+refine_interface:
+    type: interfacekernel
+    configuration:
+        - inputfile $= {outputfile}
+        - cycle ?= {cycle} + 1
+        - outputfile $= refined_cycle_{cycle}.dat

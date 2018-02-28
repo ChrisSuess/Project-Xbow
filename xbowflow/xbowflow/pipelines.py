@@ -294,8 +294,10 @@ class InterfaceKernel(object):
                     if outputs['returncode'] != 0:
                         return outputs
                 for con in self.connections:
-                    if con[1] == '[=':
+                    if con[1] == '[=' or con[1] == '$=':
                         outputs[con[0]] = con[2].format(**outputs)
+                    elif con[1] == '?=':
+                        outputs[con[0]] = str(eval(con[2].format(**outputs)))
                 for inp in inputs[1:]:
                     for con in self.connections:
                         if con[1] == '[=':
@@ -376,6 +378,8 @@ class SubprocessKernel(object):
         if 'returncode' in inputs:
             if inputs['returncode'] != 0:
                 return outputs
+        else:
+            outputs['returncode'] = 0
         try:
             cmd = self.template.format(**inputs)
             tmpdir = tempfile.mkdtemp()
