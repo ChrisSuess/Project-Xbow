@@ -4,7 +4,12 @@ from __future__ import print_function
 import xbow
 import boto3
 import argparse
-import os
+import os, yaml
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 def configure(region=None, force=False):
     """
@@ -12,7 +17,7 @@ def configure(region=None, force=False):
     "MyDaskWorkers".
     """
     ec2 = boto3.resource('ec2', region_name=region)
-    keynames = ['MyDaskScheduler', 'MyDaskWorkers']
+    keynames = [cfg['scheduler_name'], cfg['worker_pool_name']]
     if not os.path.exists(xbow.XBOW_CONFIGDIR):
         os.mkdir(xbow.XBOW_CONFIGDIR)
     for keyname in keynames:
