@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import xbow
+from botocore.exceptions import ClientError
 import boto3
 import argparse
 import os, yaml
@@ -11,10 +12,10 @@ cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
-def configure(region=None, force=False):
+def configure_pem_keys(region=None, force=False):
     """
-    Configure xbow by creating the two key pars "MyDaskScheduler" and
-    "MyDaskWorkers".
+    Configure xbow by creating the two key pairs for use with scheduler_name
+    and worker_pool_name defined in .xbow/settings.yml
     """
     ec2 = boto3.resource('ec2', region_name=region)
     keynames = [cfg['scheduler_name'], cfg['worker_pool_name']]
@@ -28,7 +29,7 @@ def configure(region=None, force=False):
             exists = False
         if exists:
             if not force:
-                raise ValueError('Error: The key {} already exists'.format(keyname))
+                raise ValueError('The private key {} already exists'.format(keyname))
             else:
                 kp = ec2.KeyPair(keyname)
                 kp.delete()
@@ -38,12 +39,54 @@ def configure(region=None, force=False):
             f.write(response['KeyMaterial'])
         os.chmod(pem_file, 0600)
 
+def configure_sg_groups(region=None, force=False):
+    """
+    Configure security groups for use with EC2 and EFS
+    """
+
+    ec2 = boto3.client('ec2')
+
+    response = ec2.describe_vpcs()
+    vpc_id = response.get('Vpcs', [{}])[0].get('VpcId', '')
+
+    try:
+        response = ec2.create_security_group(GroupName='SG-Xbow',
+                                             Description='Security groups for Xbow',
+                                             VpcId=vpc_id)
+        security_group_id = response['GroupId']
+        print('Security Group Created %s in vpc %s.' % (security_group_id, vpc_id))
+
+        data = ec2.authorize_security_group_ingress(
+            GroupId=security_group_id,
+            IpPermissions=[
+                {'IpProtocol': 'tcp',
+                 'FromPort': 80,
+                 'ToPort': 80,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+                {'IpProtocol': 'tcp',
+                 'FromPort': 22,
+                 'ToPort': 22,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
+            ])
+        print('Ingress Successfully Set %s' % data)
+    except ClientError as e:
+#        print(e)
+	print('The security key SG-Xbow already exists')
+
+
 parser  = argparse.ArgumentParser(description='Configure the xbow cluster keys')
 parser.add_argument('-f', '--force', action='store_true', help='create new keys even if they already exist')
 parser.add_argument('-r', '--region', help='AWS region in which to create the keys - defaults to the home region')
 args = parser.parse_args()
 
 try:
-    result = configure(region=args.region, force=args.force)
+    result = configure_pem_keys(region=args.region, force=args.force)
 except ValueError as e:
     print(e)
+
+try:
+    result2 = configure_sg_groups(region=args.region, force=args.force)
+except ClientError as e:
+    print('Error: The security key xbow already exists')
+
+print('Configuration Successful')
