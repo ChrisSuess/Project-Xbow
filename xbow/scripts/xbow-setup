@@ -3,10 +3,12 @@ from __future__ import print_function
 
 import os, yaml
 
-#cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
-
-#with open(cfg_file, 'r') as ymlfile:
-#    cfg = yaml.load(ymlfile)
+def create_aws():
+    print('Setting up AWS Credentials\n'
+	  'AWS Access Key ID: foo\n'
+          'AWS Secret Access Key: bar\n'
+	  'Default region name [us-west-2]: us-west-2\n'
+	  'Default output format [None]: json')
 
 def create_settings():
     """
@@ -63,6 +65,8 @@ def create_settings():
               '"~/.xbow/settings.yml", you will have to do this manually. The '
               'user documentation details the information that should be in this '
               'file.')
+
+create_aws()
 
 try:
     result3 = create_settings()
