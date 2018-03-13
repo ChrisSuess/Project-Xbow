@@ -73,11 +73,71 @@ def configure_sg_groups(region=None, force=False):
 #        print(e)
 	print('The security key SG-Xbow already exists')
 
+def create_settings():
+    """
+    Create a settings configuration file for use with xbow
+    """
+    try:
+
+        # Test for the old directory presence (IE updating).
+        if os.path.isdir(os.path.expanduser('~/.Xbow')):
+
+            os.rename(os.path.expanduser('~/.Xbow'),
+                      os.path.expanduser('~/.xbow'))
+        
+	# Setting up the .xbow directory.
+        if not os.path.isfile(os.path.expanduser('~/.xbow/settings.yml')):
+
+            print('Xbow will create a hidden directory in your $HOME directory \n'
+                  'in which it will create the hosts configuration file. You will\n'
+                  'need to edit this file with your cloud preferences for the \n'
+                  'cloud machines you wish to use. See documentation for more \n'
+                  'information on best cloud practices.')
+
+            #os.mkdir(os.path.expanduser('~/.xbow'))
+
+            HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
+	    #HOSTFILE = open(cfg_file, 'w+')
+
+	    HOSTFILE.write('region: eu-west-1\n')
+	    HOSTFILE.write("price: '0.5'\n")
+	    HOSTFILE.write('worker_instance_type: m4.large\n')
+	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
+	    HOSTFILE.write('image_id: ami-3730464e # new image created 11th Feb\n')
+	    HOSTFILE.write("#ec2_security_groups: ['SG-Xbow']\n")
+	    HOSTFILE.write("ec2_security_groups: ['efs-walkthrough1-ec2-sg']\n")
+	    HOSTFILE.write("efs_security_groups: ['efs-walkthrough1-mt-sg']\n")
+	    HOSTFILE.write('shared_file_system: MyTestFileSystem\n')
+	    HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
+	    HOSTFILE.write('cluster_name: MyDaskCluster\n')
+	    HOSTFILE.write('scheduler_name: MyDaskScheduler\n')
+	    HOSTFILE.write('worker_pool_name: MyDaskWorkers\n')
+	    HOSTFILE.write('pool_size: 2\n')
+
+	    HOSTFILE.close()
+
+
+        else:
+
+            print("Settings.yml already exists at '~/.xbow, xbow is skipping "
+                  "creating a new one.")
+
+    except IOError:
+
+        print('Xbow failed to create the host configuration file in '
+              '"~/.xbow/settings.yml", you will have to do this manually. The '
+              'user documentation details the information that should be in this '
+              'file.')
 
 parser  = argparse.ArgumentParser(description='Configure the xbow cluster keys')
 parser.add_argument('-f', '--force', action='store_true', help='create new keys even if they already exist')
 parser.add_argument('-r', '--region', help='AWS region in which to create the keys - defaults to the home region')
 args = parser.parse_args()
+
+try:
+    result3 = create_settings()
+except IOError as e:
+    print(e)
 
 try:
     result = configure_pem_keys(region=args.region, force=args.force)
@@ -89,4 +149,3 @@ try:
 except ClientError as e:
     print('Error: The security key xbow already exists')
 
-print('Configuration Successful')
