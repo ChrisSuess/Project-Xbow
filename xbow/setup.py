@@ -105,7 +105,8 @@ setup_args = {
                 'scripts/xbow-login_instance'],
 
     'install_requires': ['boto3',
-                         'paramiko'],
+                         'paramiko',
+			 'pyYAML'],
 
     'zip_safe': False,
 }
