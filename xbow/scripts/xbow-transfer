@@ -3,13 +3,16 @@ from __future__ import print_function
 
 import xbow
 import boto3
-import argparse
-import os
-import subprocess
+import argparse, os, subprocess, yaml
 
-def login_instance(name=None, instance_id=None, region=None):
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+def upload_data(name=None, instance_id=None, region=None):
     """
-    returns a string that could be used to log in to the selected instance
+    Uses rysnc to transfer data to the shared filesystem
     """
     if name is None and instance_id is None:
         raise ValueError('Error - either the name or instance_id must be provided')
@@ -36,22 +39,61 @@ def login_instance(name=None, instance_id=None, region=None):
             print('Warning: cannot determine username, assuming it is ubuntu')
 
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        launch_command = 'ssh -i {} {}@{}'.format(pem_file, username, instance.public_dns_name)
 	cwd = os.getcwd()
-	upload = 'rsync -avz -e "ssh -i {}" {}/* {}@{}:/home/ubuntu/shared/Test'.format(pem_file, cwd, username, instance.public_dns_name)
-        return upload
+	base = os.path.basename(cwd)
+        mount_point = cfg['mount_point']
+	upload = 'rsync -avz --progress -e "ssh -i {}" {}/ {}@{}:{}/{}/'.format(pem_file, cwd, username, instance.public_dns_name, mount_point, base)
+	#return upload
 	subprocess.call(upload, shell=True)
         
+def download_data(name=None, instance_id=None, region=None):
+    """
+    Uses rysnc to download data to the shared filesystem
+    """
+    if name is None and instance_id is None:
+        raise ValueError('Error - either the name or instance_id must be provided')
+
+    ec2 = boto3.resource('ec2', region_name=region)
+    if name is not None:
+        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+    else:
+        instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
+
+    if len(instances) == 0:
+        raise ValueError('Error - no such instance')
+    elif len(instances) > 1:
+        raise ValueError('Error - more than one instance has that name')
+    else:
+        instance = instances[0]
+        name = instance.key_name
+        username = None
+        if instance.tags is not None:
+            for tag in instance.tags:
+                if tag['Key'] == 'username':
+                    username = tag['Value']
+        if username is None:
+            print('Warning: cannot determine username, assuming it is ubuntu')
+
+        pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
+        mount_point = cfg['mount_point']
+	cwd = os.getcwd()
+	base = os.path.basename(cwd)
+        upload = 'rsync -avz -e "ssh -i {}" {}@{}:{}/{}/ {}/'.format(pem_file, username, instance.public_dns_name, mount_point, base, cwd)
+	#return upload
+        subprocess.call(upload, shell=True)
+
 parser  = argparse.ArgumentParser(description='Print the command required to ssh into the instance.')
 action = parser.add_mutually_exclusive_group(required=True)
 action.add_argument('-n', '--name', help='the instance name')
 action.add_argument('-i', '--id', help='the instance id')
+parser.add_argument('-u', '--upload', help='Transfers data from client with EC2', action='store_true')
+parser.add_argument('-d', '--download', help='Collects data simulation', action='store_true')
 args = parser.parse_args()
 
-try:
-    result = login_instance(name=args.name, instance_id=args.id)
+if args.upload:
+    result = upload_data(name=args.name, instance_id=args.id)
     print(result)
-except ValueError as e:
-    print(e)
 
-
+if args.download:
+    result = download_data(name=args.name, instance_id=args.id)
+    print(result)
