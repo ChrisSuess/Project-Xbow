@@ -13,15 +13,17 @@ with open(cfg_file, 'r') as ymlfile:
 client = boto3.client('efs')
 
 #response = client.describe_file_systems(CreationToken=cfg['creation_token'])
-#response = client.describe_file_systems(CreationToken='MyTestFileSystem')
+response = client.describe_file_systems(CreationToken='MyTestFileSystem')
 
 #FileSystemID = json.loads('response')
 
+['ResponseMetadata', u'FileSystems']
 
-#FileSystemId = [s['FileSystemId'] for s in response]
 
-#print(response)
-#print(FileSystemId)
+FileSystemId = [s['FileSystemId'] for s in response['FileSystems']]
+
+print(response)
+print(FileSystemId)
 
 def create_FS():
     response = client.create_file_system(
