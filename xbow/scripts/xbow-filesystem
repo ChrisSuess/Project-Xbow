@@ -12,18 +12,13 @@ with open(cfg_file, 'r') as ymlfile:
 
 client = boto3.client('efs')
 
-#response = client.describe_file_systems(CreationToken=cfg['creation_token'])
-response = client.describe_file_systems(CreationToken='MyTestFileSystem')
+response = client.describe_file_systems(CreationToken=cfg['creation_token'])
 
-#FileSystemID = json.loads('response')
+for fileID in response['FileSystems']:
+    FileSysID = fileID['FileSystemId']
+    #print(FileSysID)
 
-['ResponseMetadata', u'FileSystems']
-
-
-FileSystemId = [s['FileSystemId'] for s in response['FileSystems']]
-
-print(response)
-print(FileSystemId)
+#print(FileSysID)
 
 def create_FS():
     response = client.create_file_system(
@@ -34,7 +29,7 @@ def create_FS():
 
 def tag_FS():
     client.create_tags(
-        FileSystemId='fs-77ce46be',
+        FileSystemId=FileSysID,
         Tags=[
             {
                 'Key': 'Name',
@@ -44,7 +39,8 @@ def tag_FS():
     )
 
 try:
-    result = create_FS()
-    print(result)
+    result = tag_FS()
+    #print(result)
 except ValueError as e:
     print(e)
+
