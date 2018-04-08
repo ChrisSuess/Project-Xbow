@@ -266,7 +266,7 @@ class InterfaceKernel(object):
                 if not isinstance(i, dict):
                     raise RuntimeError('Error: argument passed to run is a list of type {}. It must be a dict or list of dicts'.format(type(i)))
         elif not isinstance(inputs, dict):
-            raise RuntimeError('Error: argument passed to run is of type {}. it must be a dict or list of dicts'.format(type(inputs)))
+            raise RuntimeError('Error: argument {} passed to run is of type {}. it must be a dict or list of dicts'.format(inputs, type(inputs)))
 
         if self.operation == 'link':
             outputs = inputs.copy()
