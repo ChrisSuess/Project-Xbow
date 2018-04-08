@@ -484,10 +484,10 @@ class Pipeline(object):
         intermediates = [inputs]
         for ki in self.klist:
             inp = intermediates[-1]
-            if isinstance(inp, list) and ki.operation != 'gather':
-                intermediates.append(self.client.map(ki.run, inp, pure=False))
+            if isinstance(inp, list) and ki.operation == 'gather':
+                intermediates.append(self.client.run(ki.run, inp, pure=False))
             else:
-                if ki.operation == 'scatter':
+                if isinstance(inp, list):
                     intermediates.append(self.client.map(ki.run, inp, 
                                                          pure=False))
                 else:
