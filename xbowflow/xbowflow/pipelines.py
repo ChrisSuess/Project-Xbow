@@ -261,6 +261,13 @@ class InterfaceKernel(object):
                 that of the previous kernel in the pipeline that exited with
                 a non-zero returncode.
         """
+        if isinstance(inputs, list):
+            for i in inputs:
+                if not isinstance(i, dict):
+                    raise RuntimeError('Error: argument passed to run is a list of type {}. It must be a dict or list of dicts'.format(type(i)))
+        elif not isinstance(inputs, dict):
+            raise RuntimeError('Error: argument passed to run is of type {}. it must be a dict or list of dicts'.format(type(inputs)))
+
         if self.operation == 'link':
             outputs = inputs.copy()
             if 'returncode' in inputs:
@@ -480,7 +487,12 @@ class Pipeline(object):
             if isinstance(inp, list) and ki.operation != 'gather':
                 intermediates.append(self.client.map(ki.run, inp, pure=False))
             else:
-                intermediates.append(self.client.submit(ki.run, inp, pure=False))
+                if ki.operation == 'scatter':
+                    intermediates.append(self.client.map(ki.run, inp, 
+                                                         pure=False))
+                else:
+                    intermediates.append(self.client.submit(ki.run, inp, 
+                                                            pure=False))
         outputs = intermediates[-1]
         if isinstance(outputs, list):
             outputs = self.client.gather(outputs)
