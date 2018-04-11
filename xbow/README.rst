@@ -9,9 +9,9 @@ Currently Xbow runs only on Amazon Web Services (AWS), and you must have an AWS 
 Getting and Installing Xbow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The recommended method to install Xbow is using PyPi
+The recommended method to install Xbow is using PyPi::
 
-``pip install xbow``
+pip install xbow
 
 or using easy_install
 
