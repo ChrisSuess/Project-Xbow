@@ -1,16 +1,10 @@
 Project-Xbow
 ============
 
-Xbow has been built to mirror the elasticity of cloud computing. It
-provides an easy interface to the cloud but remains incredibly flexible
-allowing you to run your science how you like it.
+Xbow allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
 
-Using Xbow
-----------
+Currently Xbow runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use Xbow.
 
-The following steps assumes your cloud account is set up to work
-from the command line. For information on getting AWS to work
-from the command line see the section "Setting up AWS" below.
 
 Getting and Installing Xbow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,60 +20,42 @@ or using easy_install
 ``easy_install setup.py``
 
 
-Running Xbow
-~~~~~~~~~~~~
+Configuring Xbow
+~~~~~~~~~~~~~~~~
 
-Xbow is designed to give you the tools to set up a cluster in the
-cloud.
+Before configuring Xbow, you must configure your AWS environment. Follow the instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) to do that.
 
-1. Configure Xbow ``xbow-configure``
-2. Launch Xbow ``xbow-create_cluster``
-3. Login to Xbow ``xbow-login_instance``
-4. Stop Xbow ``xbow-delete_cluster``
-
-Xbowflow is then used in order to run simulations.
+Then you can configure Xbow itself, by running the command:
+```
+xbow-configure
+```
+This command creates a directory `$HOME/.xbow` containing a number of files, including `settings.yml` which you can edit at any time in the future to adjust the make-up of your Xbow cluster.
 
 
-Setting up AWS
-~~~~~~~~~~~~~~
+Creating an Xbow Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Xbow currently makes use of Amazon Web Services (AWS). If you have never
-run AWS from the command line an additional configuration step is
-necessary. If this is already setup you can ignore this step!
+To create a new Xbow cluster, run the command:
+```
+xbow-create_cluster
+```
+This command will create the head node, worker nodes, and shared file system according to the specification in your `settings.yml` file.
 
-When communicating with cloud resources a user must use access keys. The
-Access Key and the Secret Access Key are not your standard user name and
-password, but are special tokens that allow our services to communicate
-with your AWS account by making secure REST or Query protocol requests
-to the AWS service API.
+Using Your Xbow Cluster
+~~~~~~~~~~~~~~~~~~~~~~~
 
-To find your Access Key and Secret Access Key:
+Log in to the head node using the command:
+```
+xbow-login_instance
+```
+The simplest way to run jobs on your Xbow cluster is to use the `Xflow` tool. See here for details.
 
-1. Log in to your AWS Management Console.
-2. Click on your user name at the top right of the page.
-3. Click on the Security Credentials link from the drop-down menu.
-4. Find the Access Credentials section, and copy the latest Access Key
-   ID.
-5. Click on the Show link in the same row, and copy the Secret Access
-   Key.
+Deleting Your Xbow Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then in your terminal:
+Remember that, as a cloud resource, you are paying for your Xbow cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new Xbow cluster and your data will still be there. 
 
-6. Make the directory: ``mkdir /home/$USER/.aws/``
-7. Create a file: ``touch /home/$USER/.aws/credentials``
-8. Add access and secret access keys to:
-   ``/home/$USER/.aws/credentials``
-
-::
-
-    [default]
-    aws_access_key_id = YOUR_ACCESS_KEY
-    aws_secret_access_key = YOUR_SECRET_ACCESS_KEY
-
-9. Change file permissions of this file for security:
-   ``chmod 400 /home/$USER/.aws/credentials``
-
-Make sure there is no blank space at the end of each line.
-
-**IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!**
-
+To delete the cluster give the command:
+```
+xbow-delete_cluster
+```
