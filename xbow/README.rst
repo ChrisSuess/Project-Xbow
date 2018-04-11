@@ -22,8 +22,8 @@ or using easy_install::
 Configuring Xbow
 ~~~~~~~~~~~~~~~~
 
-Before configuring Xbow, you must configure your AWS environment. Follow the instructions here__ to do that.
-__https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+Before configuring Xbow, you must configure your AWS environment. Follow the instructions `here`__ to do that.
+__ https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 
 Then you can configure Xbow itself, by running the command::
 
