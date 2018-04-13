@@ -22,9 +22,8 @@ but if you prefer you can use easy_install::
 Configuring **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~
 
-Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here`__ to do that.
+Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
 
-__ https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 
 Then you can configure **Xbow** itself, by running the command::
 
@@ -49,8 +48,7 @@ Log in to the head node using the command::
 
     xbow-login_instance
 
-The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here`__ for details.
-__https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows
+The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
