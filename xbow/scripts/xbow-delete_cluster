@@ -1,22 +1,46 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import xbow
 import boto3
+import argparse
 
-# Terminates all running instances
-# TO DO:
-# - 'Hard' Terminate = Cancels all persistent spot requests, terminates all instances
-# - 'Soft' Terminate = Cancels all persistent spot requests, only terminates workers
+def terminate_cluster(name=None, region=None):
+    """
+    Terminates the cluster given by the name specified in settings.yml
+    """
+    if name is None and instance_id is None:
+        raise ValueError('Error - the name of cluster to be deleted must be provided')
 
-ec2 = boto3.client('ec2')
-response = ec2.describe_instances()
+    client = boto3.client('ec2')
+    ec2 = boto3.resource('ec2', region_name=region)
+    if name is not None:
+	response = ec2.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values': [name]}])
+#	print(response)
+	spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+#	print(spot_instance_request_ids)
+        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+	if len(instances) == 0:
+            raise ValueError('Error - no such cluster')
 
-for reservation in response["Reservations"]:
-    for instance in reservation["Instances"]:
-	instanceId = instance["InstanceId"]
-	sir = instance["SpotInstanceRequestId"]
-	#print(sir)
-	ec2.cancel_spot_instance_requests(SpotInstanceRequestIds=[sir])
-	ec2.terminate_instances(InstanceIds=[instanceId], DryRun=False)
+	shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
+#	print(instances)
+#	print(shansh)
+	if len(spot_instance_request_ids) > 1:
+            client.cancel_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids, DryRun=False)
+	    print('cancelling all spot requests')
 
+	shansh.terminate(DryRun=False)
+	print('Terminating instances')
+	
 
+parser  = argparse.ArgumentParser(description='Print the command required to ssh into the instance.')
+action = parser.add_mutually_exclusive_group(required=True)
+action.add_argument('-n', '--name', help='the instance name')
+args = parser.parse_args()
+
+try:
+    result = terminate_cluster(name=args.name)
+#    print(result)
+except ValueError as e:
+    print(e)

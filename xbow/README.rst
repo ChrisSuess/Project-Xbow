@@ -1,85 +1,61 @@
 Project-Xbow
 ============
 
-Xbow has been built to mirror the elasticity of cloud computing. It
-provides an easy interface to the cloud but remains incredibly flexible
-allowing you to run your science how you like it.
+**Xbow** allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
 
-Using Xbow
-----------
+Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
 
-The following steps assumes your cloud account is set up to work
-from the command line. For information on getting AWS to work
-from the command line see the section "Setting up AWS" below.
 
-Getting and Installing Xbow
+Getting and Installing **Xbow**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The recommended method to install **Xbow** is using pip::
+
+    pip install xbow
+
+but if you prefer you can use easy_install::
+
+    git clone https://github.com/ChrisSuess/Project-Xbow
+    easy_install setup.py
+
+
+Configuring **Xbow**
+~~~~~~~~~~~~~~~~~~~~~
+
+Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here`__ to do that.
+
+__ https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+
+Then you can configure **Xbow** itself, by running the command::
+
+    xbow-configure
+
+This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster.
+
+
+Creating an **Xbow** Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a new **Xbow** cluster, run the command::
+
+    xbow-create_cluster
+
+This command will create the head node, worker nodes, and shared file system according to the specification in your ``settings.yml`` file.
+
+Using Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The recommended method to install Xbow is using PyPi
+Log in to the head node using the command::
 
-``pip install xbow``
+    xbow-login_instance
 
-or using easy_install
+The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See ``here`` for details.
 
-``git clone https://github.com/ChrisSuess/Project-Xbow``
+Deleting Your **Xbow** Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``easy_install setup.py``
+Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there. 
 
+To delete the cluster give the command::
 
-Running Xbow
-~~~~~~~~~~~~
-
-Xbow is designed to give you the tools to set up a cluster in the
-cloud.
-
-1. Configure Xbow ``xbow-configure``
-2. Launch Xbow ``xbow-create_cluster``
-3. Login to Xbow ``xbow-login_instance``
-4. Stop Xbow ``xbow-delete_cluster``
-
-Xbowflow is then used in order to run simulations.
-
-
-Setting up AWS
-~~~~~~~~~~~~~~
-
-Xbow currently makes use of Amazon Web Services (AWS). If you have never
-run AWS from the command line an additional configuration step is
-necessary. If this is already setup you can ignore this step!
-
-When communicating with cloud resources a user must use access keys. The
-Access Key and the Secret Access Key are not your standard user name and
-password, but are special tokens that allow our services to communicate
-with your AWS account by making secure REST or Query protocol requests
-to the AWS service API.
-
-To find your Access Key and Secret Access Key:
-
-1. Log in to your AWS Management Console.
-2. Click on your user name at the top right of the page.
-3. Click on the Security Credentials link from the drop-down menu.
-4. Find the Access Credentials section, and copy the latest Access Key
-   ID.
-5. Click on the Show link in the same row, and copy the Secret Access
-   Key.
-
-Then in your terminal:
-
-6. Make the directory: ``mkdir /home/$USER/.aws/``
-7. Create a file: ``touch /home/$USER/.aws/credentials``
-8. Add access and secret access keys to:
-   ``/home/$USER/.aws/credentials``
-
-::
-
-    [default]
-    aws_access_key_id = YOUR_ACCESS_KEY
-    aws_secret_access_key = YOUR_SECRET_ACCESS_KEY
-
-9. Change file permissions of this file for security:
-   ``chmod 400 /home/$USER/.aws/credentials``
-
-Make sure there is no blank space at the end of each line.
-
-**IMPORTANT: NEVER MAKE THIS VISIBLE OR SHARE THIS INFORMATION!!!**
-
+    xbow-delete_cluster
