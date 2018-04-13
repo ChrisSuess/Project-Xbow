@@ -49,7 +49,8 @@ Log in to the head node using the command::
 
     xbow-login_instance
 
-The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See ``here`` for details.
+The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here`__ for details.
+__https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows
 
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
