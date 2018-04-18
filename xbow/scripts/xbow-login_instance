@@ -35,7 +35,7 @@ def login_instance(name=None, instance_id=None, region=None):
             print('Warning: cannot determine username, assuming it is ubuntu')
 
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        launch_command = 'ssh -i {} {}@{}'.format(pem_file, username, instance.public_dns_name)
+        launch_command = 'ssh -i {} {}@{} -oStrictHostKeyChecking=no'.format(pem_file, username, instance.public_dns_name)
         #return launch_command
 	#print(launch_command)
 	subprocess.call(launch_command, shell=True)
