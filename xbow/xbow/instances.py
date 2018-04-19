@@ -199,6 +199,8 @@ class ConnectedInstance(object):
     def terminate(self):
         self.instance.terminate()
         
+    def Shansh(self):
+	print('this is a test')
 
 def get_by_name(name, region=None):
     """
@@ -212,12 +214,93 @@ def get_by_name(name, region=None):
     instances = list(ec2_resource.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
     return instances 
 
+def CreateFS(name, image_id, instance_type, region=None,
+           user_data=None, efs_security_groups=None, ec2_security_groups=None, username=None,
+           shared_file_system=None, mount_point=None):
+
+    efs_client = boto3.client('efs', region_name=region)
+    ec2_resource = boto3.resource('ec2', region_name=region)
+
+    print("Creating your filesystem")
+
+    if shared_file_system is not None:
+        dfs = efs_client.describe_file_systems
+        response = dfs(CreationToken=shared_file_system)['FileSystems']
+        if len(response) > 0:
+            FileSystemId = response[0]['FileSystemId']
+	    LifeState = response[0]['LifeCycleState']
+	    #print(LifeState)
+        else:
+            cfs = efs_client.create_file_system
+            response = cfs(CreationToken=shared_file_system, Encrypted=True)
+            FileSystemId = response['FileSystemId']
+	    LifeState = response['LifeCycleState']
+            #print(LifeState)
+
+	time.sleep(5)
+
+        subnets = ec2_resource.subnets.all()
+        sgf = ec2_resource.security_groups.filter
+        security_groups = sgf(GroupNames=efs_security_groups)
+        efs_security_groupid = [security_group.group_id
+                                    for security_group in security_groups]
+        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+	
+	mounttargets = response["MountTargets"]
+	#ready = mounttargets[0]['LifeCycleState']
+	#print(mounttargets)
+        if len(mounttargets) == 0:
+            for subnet in subnets:
+                cmt = efs_client.create_mount_target
+                cmt(FileSystemId=FileSystemId,
+                    SubnetId=subnet.id,
+                    SecurityGroups=efs_security_groupid
+                   )
+
+        mount_command = '#!/bin/bash\n mkdir -p {}\n'.format(mount_point)
+        dnsname = '{}.efs.{}.amazonaws.com'.format(FileSystemId, region)
+        mount_command += 'mount -t nfs -o nfsvers=4.1,rsize=1048576,'
+        mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
+        mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
+        mount_command += ' chmod go+rw {}\n'.format(mount_point)
+	
+        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+        mounttargets = response["MountTargets"]
+        #print(mounttargets)
+	ready = mounttargets[0]['LifeCycleState']
+	#print(ready)
+        try:
+            available = 0
+	    print("Checking targets for availability")
+            while available == 0:
+                #time.sleep(5)
+		response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+		mounttargets = response["MountTargets"]
+                ready2 = mounttargets[0]['LifeCycleState']
+		#print(ready2)
+		time.sleep(5)
+                if ready2 == 'available':
+                    available = 1
+            if available == 1:
+                print("Mount Targets are Available")
+                return True
+        except Exception as e:
+            print(e)
+
+    else:
+        mount_command = None
+    if user_data is None:
+        user_data = mount_command
+    else:
+        user_data = mount_command + user_data
+
 def create(name, image_id, instance_type, region=None, 
            user_data=None, efs_security_groups=None, ec2_security_groups=None, username=None,
            shared_file_system=None, mount_point=None):
     """
     Creates a single connected instance - not in the spot pool
     """
+
     if region is None:
         region = boto3.session.Session().region_name
     if region is None:
@@ -254,15 +337,25 @@ def create(name, image_id, instance_type, region=None,
                 image.create_tags(Tags=[{'Name': 'username', 'Values': [username]}])
 
     efs_client = boto3.client('efs', region_name=region)
+    ec2_resource = boto3.resource('ec2', region_name=region)
+
+    print("Creating your filesystem")
+
     if shared_file_system is not None:
         dfs = efs_client.describe_file_systems
         response = dfs(CreationToken=shared_file_system)['FileSystems']
         if len(response) > 0:
             FileSystemId = response[0]['FileSystemId']
+	    LifeState = response[0]['LifeCycleState']
+	    #print(LifeState)
         else:
             cfs = efs_client.create_file_system
-            response = cfs(CreationToken=shared_file_system)
+            response = cfs(CreationToken=shared_file_system, Encrypted=True)
             FileSystemId = response['FileSystemId']
+	    LifeState = response['LifeCycleState']
+            #print(LifeState)
+
+	time.sleep(5)
 
         subnets = ec2_resource.subnets.all()
         sgf = ec2_resource.security_groups.filter
@@ -270,7 +363,10 @@ def create(name, image_id, instance_type, region=None,
         efs_security_groupid = [security_group.group_id
                                     for security_group in security_groups]
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-        mounttargets = response["MountTargets"]
+	
+	mounttargets = response["MountTargets"]
+	#ready = mounttargets[0]['LifeCycleState']
+	#print(mounttargets)
         if len(mounttargets) == 0:
             for subnet in subnets:
                 cmt = efs_client.create_mount_target
@@ -285,13 +381,37 @@ def create(name, image_id, instance_type, region=None,
         mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
+	
+        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+        mounttargets = response["MountTargets"]
+        #print(mounttargets)
+	ready = mounttargets[0]['LifeCycleState']
+	#print(ready)
+        try:
+            available = 0
+	    print("Checking targets for availability")
+            while available == 0:
+                #time.sleep(5)
+		response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+		mounttargets = response["MountTargets"]
+                ready2 = mounttargets[0]['LifeCycleState']
+		#print(ready2)
+		time.sleep(5)
+                if ready2 == 'available':
+                    available = 1
+            if available == 1:
+                print("Mount Targets are Available")
+                return True
+        except Exception as e:
+            print(e)
+
     else:
         mount_command = None
     if user_data is None:
         user_data = mount_command
     else:
         user_data = mount_command + user_data
-        
+
     instance = ec2_resource.create_instances(ImageId=image_id, InstanceType=instance_type, KeyName=key_name,
                                               UserData=user_data, SecurityGroups=ec2_security_groups,
                                               ClientToken=str(uuid.uuid4()), MaxCount=1, MinCount=1)[0]
