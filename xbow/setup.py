@@ -75,8 +75,8 @@ setup_args = {
     'version':          verstr,
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",
-    'authors':          "Christian Suess, Charlie Laughton",
-    'author_email':     "charles.laughton@nottingham.ac.uk",
+    'author':          "Christian Suess, Charlie Laughton",
+    'author_email':     "christian.suess1@nottingham.ac.uk, charles.laughton@nottingham.ac.uk",
     'url':              "",
     'license':          "MIT license.",
 
