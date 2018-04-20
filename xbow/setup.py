@@ -75,7 +75,7 @@ setup_args = {
     'version':          verstr,
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",
-    'author':           "Charlie Laughton",
+    'authors':          "Christian Suess, Charlie Laughton",
     'author_email':     "charles.laughton@nottingham.ac.uk",
     'url':              "",
     'license':          "MIT license.",
@@ -101,6 +101,7 @@ setup_args = {
 
     'scripts': ['scripts/xbow-create_cluster',
                 'scripts/xbow-delete_cluster',
+		'scripts/xbow-create_filesystem',
                 'scripts/xbow-configure',
                 'scripts/xbow-login_instance'],
 
