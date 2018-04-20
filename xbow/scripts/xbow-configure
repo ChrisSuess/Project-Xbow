@@ -43,7 +43,7 @@ def create_settings():
                   'cloud machines you wish to use. See documentation for more \n'
                   'information on best cloud practices.')
 
-            #os.mkdir(os.path.expanduser('~/.xbow'))
+            os.mkdir(os.path.expanduser('~/.xbow'))
 
             HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
 	    #HOSTFILE = open(cfg_file, 'w+')
