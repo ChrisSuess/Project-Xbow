@@ -31,6 +31,14 @@ Then you can configure **Xbow** itself, by running the command::
 
 This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster.
 
+Creating an Xbow Filesystem
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If this is the first time you have used **Xbow** you will need to create a shared filesystem for use with **Xbow**. This is done by running the command::
+
+    xbow-create_filesystem
+
+This only needs to be performed once and **Xbow** handles all the configuration settings.
 
 Creating an **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,11 +58,32 @@ Log in to the head node using the command::
 
 The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
+Transferring Data to your **Xbow** Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Xbow** treats data as *buckets* and syncs the working directory with the cluster.
+
+To **Upload** data to your machine to your **Xbow** cluster use the command::
+
+    xbow-transfer -n $scheduler_name -u
+
+where ``$scheduler_name`` is the scheduler name in your ``settings.yml`` file.
+
+To **Download** data to your machine from the **Xbow** cluster use the command::
+
+    xbow-transfer -n $scheduler_name -d
+
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there. 
 
-To delete the cluster give the command::
+To delete the scheduler give the command::
 
-    xbow-delete_cluster
+    xbow-delete_cluster -n $scheduler_name
+
+To delete the workers give the command::
+
+    xbow-delete_cluster -n $worker_pool_name
+
+These names are the ones given in the ``settings.yml``. 
