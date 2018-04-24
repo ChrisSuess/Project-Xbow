@@ -103,6 +103,7 @@ setup_args = {
                 'scripts/xbow-delete_cluster',
 		'scripts/xbow-delete_workers',
 		'scripts/xbow-create_filesystem',
+		'scripts/xbow-sync',
                 'scripts/xbow-configure',
                 'scripts/xbow-login'],
 
