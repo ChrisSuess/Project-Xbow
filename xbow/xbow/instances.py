@@ -202,10 +202,14 @@ class ConnectedInstance(object):
     def Shansh(self):
 	print('this is a test')
 
+def cluster_buster():
+    print('Test')
+
 def get_by_name(name, region=None):
     """
     Return a list of instances with this name. The list may be empty..
     """
+    print('this is a test')
     if region is None:
         region = boto3.session.Session().region_name
     if region is None:
@@ -418,3 +422,27 @@ def create(name, image_id, instance_type, region=None,
     instance.wait_until_running()
     instance.create_tags(Tags=[{'Key': 'username', 'Value': username}, {'Key': 'name', 'Value': name}])
     return instance
+
+def terminate_cluster(name=None, region=None):
+    """
+    Terminates the cluster given by the name specified in settings.yml
+    """
+    if name is None and instance_id is None:
+        raise ValueError('Error - the name of cluster to be deleted must be provided')
+
+    client = boto3.client('ec2')
+    ec2 = boto3.resource('ec2', region_name=region)
+    if name is not None:
+	response = ec2.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values': [name]}])
+	spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+	if len(instances) == 0:
+            raise ValueError('Error - no such cluster')
+
+	shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
+	if len(spot_instance_request_ids) > 1:
+            client.cancel_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids, DryRun=False)
+	    print('cancelling all spot requests')
+
+	shansh.terminate(DryRun=False)
+	print('Terminating instances')
