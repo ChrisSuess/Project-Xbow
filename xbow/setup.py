@@ -72,7 +72,7 @@ class Extension(Ext, object):
 
 setup_args = {
     'name':             "xbow",
-    'version':          verstr,
+    'version':          "0.3",
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",
     'author':          "Christian Suess, Charlie Laughton",
