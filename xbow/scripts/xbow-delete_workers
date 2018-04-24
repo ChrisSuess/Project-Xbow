@@ -37,7 +37,6 @@ with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
 try:
-    result = terminate_cluster(name=cfg['scheduler_name'])
     result2 = terminate_cluster(name=cfg['worker_pool_name'])
 except ValueError as e:
     print(e)
