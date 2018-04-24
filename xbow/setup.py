@@ -103,7 +103,7 @@ setup_args = {
                 'scripts/xbow-delete_cluster',
 		'scripts/xbow-create_filesystem',
                 'scripts/xbow-configure',
-                'scripts/xbow-login_instance'],
+                'scripts/xbow-login'],
 
     'install_requires': ['boto3',
                          'paramiko',
