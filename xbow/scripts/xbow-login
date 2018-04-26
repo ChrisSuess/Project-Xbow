@@ -11,7 +11,7 @@ cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
-def login_instance(name=cfg['scheduler_name'], instance_id=None, region=None):
+def login_instance(name=None, instance_id=None, region=None):
     """
     returns a string that could be used to log in to the selected instance
     """
@@ -47,6 +47,6 @@ def login_instance(name=cfg['scheduler_name'], instance_id=None, region=None):
      
 
 try:
-    result = login_instance()
+    result = login_instance(name=cfg['scheduler_name'])
 except ValueError as e:
     print(e)
