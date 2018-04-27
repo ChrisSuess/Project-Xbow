@@ -72,12 +72,10 @@ Deleting Your **Xbow** Cluster
 
 Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there. 
 
-To delete the scheduler give the command::
+To delete the entire cluster::
 
-    xbow-delete_cluster -n $scheduler_name
+    xbow-delete_cluster
 
-To delete the workers give the command::
+To delete the workers and keep the head node alive use the command::
 
-    xbow-delete_cluster -n $worker_pool_name
-
-These names are the ones given in the ``settings.yml``. 
+    xbow-delete_workers
