@@ -95,20 +95,20 @@ Example **Xbow** Job
 
 5. Navigate to the directory containing the example files::
 
-`` cd shared/$Example_files ``
+``cd shared/$Example_files``
 
 6. Using **Xflow** run the example::
 
-`` xflow-exec csh run.dhfr `` 
+``xflow-exec csh run.dhfr`` 
 
 7. Log off **Xbow** cluster::
 
-`` ctrl + d ``
+``ctrl + d``
 
 8. Sync the data back from the **Xbow** cluster::
 
-`` xbow-sync ``
+``xbow-sync``
 
 9. Delete the cluster::
 
-`` xbow-delete_cluster ``
+``xbow-delete_cluster``
