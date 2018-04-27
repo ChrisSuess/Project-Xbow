@@ -63,15 +63,9 @@ Transferring Data to your **Xbow** Cluster
 
 **Xbow** treats data as *buckets* and syncs the working directory with the cluster.
 
-To **Upload** data to your machine to your **Xbow** cluster use the command::
+To **Sync** data between your machine and your **Xbow** cluster use the command::
 
-    xbow-transfer -n $scheduler_name -u
-
-where ``$scheduler_name`` is the scheduler name in your ``settings.yml`` file.
-
-To **Download** data to your machine from the **Xbow** cluster use the command::
-
-    xbow-transfer -n $scheduler_name -d
+    xbow-sync
 
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
