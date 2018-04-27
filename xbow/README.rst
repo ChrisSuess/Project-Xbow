@@ -85,7 +85,7 @@ Example **Xbow** Job
 
 1. Download an example from the link below::
 
-``wget https://github.com/ChrisSuess/Xbow-Example/archive/master.zip``
+``wget https://github.com/ChrisSuess/Xbow-Example/archive/master.zip && unzip master.zip``
 
 2. Create a **Xbow** cluster::
 
