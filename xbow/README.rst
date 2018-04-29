@@ -89,9 +89,15 @@ Example **Xbow** Job
 
 2. Create a **Xbow** cluster::
 
+``xbow-create_cluster``
+
 3. Navigate to the directory containing the example files. Sync the data with **Xbow** cluster::
 
+``xbow-sync``
+
 4. Login to your **Xbow** cluster::
+
+``xbow-login``
 
 5. Navigate to the directory containing the example files::
 
