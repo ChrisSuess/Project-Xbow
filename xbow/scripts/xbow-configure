@@ -44,7 +44,7 @@ def create_settings():
 	    HOSTFILE.write("price: '0.5'\n")
 	    HOSTFILE.write('worker_instance_type: g2.2xlarge\n')
 	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
-	    HOSTFILE.write('image_id: ami-3730464e # new image created 11th Feb\n')
+	    HOSTFILE.write('image_id: ami-812d04f8 # new image created 30/4/2018\n')
 	    HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
 	    HOSTFILE.write("ec2_sg: Xbow-SG-ec2 # This should be the same as ec2_security_groups except without the brackets\n")
 	    HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
