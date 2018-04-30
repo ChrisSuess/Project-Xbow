@@ -334,9 +334,6 @@ def create(name, image_id, instance_type, region=None,
                 image.create_tags(Tags=[{'Name': 'username', 'Values': [username]}])
 
     efs_client = boto3.client('efs', region_name=region)
-    ec2_resource = boto3.resource('ec2', region_name=region)
-
-    print("Creating your filesystem")
 
     if shared_file_system is not None:
         dfs = efs_client.describe_file_systems
@@ -352,8 +349,6 @@ def create(name, image_id, instance_type, region=None,
 	    LifeState = response['LifeCycleState']
             #print(LifeState)
 
-	time.sleep(5)
-
         subnets = ec2_resource.subnets.all()
         sgf = ec2_resource.security_groups.filter
         security_groups = sgf(GroupNames=efs_security_groups)
@@ -362,8 +357,6 @@ def create(name, image_id, instance_type, region=None,
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
 	
 	mounttargets = response["MountTargets"]
-	#ready = mounttargets[0]['LifeCycleState']
-	#print(mounttargets)
         if len(mounttargets) == 0:
             for subnet in subnets:
                 cmt = efs_client.create_mount_target
@@ -379,29 +372,6 @@ def create(name, image_id, instance_type, region=None,
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
 	
-        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-        mounttargets = response["MountTargets"]
-        #print(mounttargets)
-	ready = mounttargets[0]['LifeCycleState']
-	#print(ready)
-        try:
-            available = 0
-	    print("Checking targets for availability")
-            while available == 0:
-                #time.sleep(5)
-		response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-		mounttargets = response["MountTargets"]
-                ready2 = mounttargets[0]['LifeCycleState']
-		#print(ready2)
-		time.sleep(5)
-                if ready2 == 'available':
-                    available = 1
-            if available == 1:
-                print("Mount Targets are Available")
-                return True
-        except Exception as e:
-            print(e)
-
     else:
         mount_command = None
     if user_data is None:
