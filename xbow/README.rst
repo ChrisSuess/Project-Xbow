@@ -99,6 +99,10 @@ Example **Xbow** Job
 
 ``xbow-login``
 
+Depending on the age of the AMI it may be necessary to update **XbowFlow**. Once logged in to your **Xbow** cluster execute the following::
+
+``sudo pip install xbowflow --upgrade``
+
 5. Navigate to the directory containing the example files::
 
 ``cd shared/$Example_files``
