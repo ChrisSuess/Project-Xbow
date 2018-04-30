@@ -115,7 +115,7 @@ def configure_sg_groups(region=None, force=False):
     vpc_id = response.get('Vpcs', [{}])[0].get('VpcId', '')
 
     try:
-        response = ec2.create_security_group(GroupName='Xbow-SG-mt',
+        response = ec2.create_security_group(GroupName=cfg['efs_security_groups'],
                                              Description='Mount security group for Xbow',
                                              VpcId=vpc_id)
         security_group_id = response['GroupId']
@@ -135,7 +135,7 @@ def configure_sg_groups(region=None, force=False):
 	print('The security key SG-Xbow already exists')
 
     try:
-        response = ec2.create_security_group(GroupName='Xbow-SG-ec2',
+        response = ec2.create_security_group(GroupName=cfg['ec2_security_groups'],
                                              Description='Mount security group for Xbow',
                                              VpcId=vpc_id)
         security_group_id = response['GroupId']
