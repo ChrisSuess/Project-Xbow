@@ -199,17 +199,10 @@ class ConnectedInstance(object):
     def terminate(self):
         self.instance.terminate()
         
-    def Shansh(self):
-	print('this is a test')
-
-def cluster_buster():
-    print('Test')
-
 def get_by_name(name, region=None):
     """
     Return a list of instances with this name. The list may be empty..
     """
-    print('this is a test')
     if region is None:
         region = boto3.session.Session().region_name
     if region is None:
@@ -225,7 +218,7 @@ def CreateFS(name, image_id, instance_type, region=None,
     efs_client = boto3.client('efs', region_name=region)
     ec2_resource = boto3.resource('ec2', region_name=region)
 
-    print("Creating your filesystem")
+    #print("Creating your filesystem")
 
     if shared_file_system is not None:
         dfs = efs_client.describe_file_systems
@@ -275,7 +268,7 @@ def CreateFS(name, image_id, instance_type, region=None,
 	#print(ready)
         try:
             available = 0
-	    print("Checking targets for availability")
+	    #print("Checking targets for availability")
             while available == 0:
                 #time.sleep(5)
 		response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
@@ -286,7 +279,7 @@ def CreateFS(name, image_id, instance_type, region=None,
                 if ready2 == 'available':
                     available = 1
             if available == 1:
-                print("Mount Targets are Available")
+                #print("Mount Targets are Available")
                 return True
         except Exception as e:
             print(e)
