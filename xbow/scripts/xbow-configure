@@ -7,14 +7,6 @@ import boto3
 import argparse
 import os, yaml
 
-"""
-cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
-
-with open(cfg_file, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
-"""
-
-
 def create_aws():
     print('Setting up AWS Credentials\n'
 	  'AWS Access Key ID: foo\n'
