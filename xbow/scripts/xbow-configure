@@ -19,6 +19,9 @@ def create_settings():
     Create a settings configuration file for use with xbow
     """
     try:
+	
+	if not os.path.exists(os.path.expanduser('~/.xbow')):
+	    os.makedirs(os.path.expanduser('~/.xbow'))
 
         # Test for the old directory presence (IE updating).
         if os.path.isdir(os.path.expanduser('~/.Xbow')):
@@ -35,7 +38,7 @@ def create_settings():
                   'cloud machines you wish to use. See documentation for more \n'
                   'information on best cloud practices.')
 
-            os.mkdir(os.path.expanduser('~/.xbow'))
+            #os.mkdir(os.path.expanduser('~/.xbow'))
 
             HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
 	    #HOSTFILE = open(cfg_file, 'w+')
