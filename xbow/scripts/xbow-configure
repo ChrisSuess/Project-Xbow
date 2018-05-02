@@ -49,9 +49,9 @@ def create_settings():
 	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
 	    HOSTFILE.write('image_id: ami-812d04f8 # new image created 30/4/2018\n')
 	    HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
-	    HOSTFILE.write("ec2_sg: Xbow-SG-ec2 # This should be the same as ec2_security_groups except without the brackets\n")
+	    #HOSTFILE.write("ec2_sg: Xbow-SG-ec2 # This should be the same as ec2_security_groups except without the brackets\n")
 	    HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
-	    HOSTFILE.write("efs_sg: Xbow-SG-mt # This should be the same as efs_security_groups except without the brackets\n")
+	    #HOSTFILE.write("efs_sg: Xbow-SG-mt # This should be the same as efs_security_groups except without the brackets\n")
 	    HOSTFILE.write('shared_file_system: MyFileSystem\n')
 	    HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
 	    HOSTFILE.write('cluster_name: MyCluster\n')
@@ -112,7 +112,7 @@ def configure_sg_groups(region=None, force=False):
     vpc_id = response.get('Vpcs', [{}])[0].get('VpcId', '')
 
     try:
-        response = ec2.create_security_group(GroupName=cfg['efs_sg'],
+        response = ec2.create_security_group(GroupName=cfg['efs_security_groups'][0],
                                              Description='Mount security group for Xbow',
                                              VpcId=vpc_id)
         security_group_id = response['GroupId']
@@ -132,7 +132,7 @@ def configure_sg_groups(region=None, force=False):
 	print('The security key SG-Xbow already exists')
 
     try:
-        response = ec2.create_security_group(GroupName=cfg['ec2_sg'],
+        response = ec2.create_security_group(GroupName=cfg['ec2_security_groups'][0],
                                              Description='Mount security group for Xbow',
                                              VpcId=vpc_id)
         security_group_id = response['GroupId']
