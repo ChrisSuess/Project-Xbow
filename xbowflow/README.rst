@@ -3,8 +3,8 @@ Xbowflow
 
 Xbowflow provides a workflow system for use with Xbow clusters.
 
-Using Xbowflow
---------------
+A Quick Overview of Xbowflow
+----------------------------
 
 A. Simple jobs
 ______________
@@ -31,22 +31,18 @@ ________________
 
 To run a workflow on your xbow cluster, use *xflow-run*::
 
-  % xflow-run workflow.xcf input.dat
+  % xflow-run workflow.xcf input.yml
 
-*xflow-run* takes two input files. The first (*workflow.xcf* in this example) defines the workflow pattern. The second (*input.dat* in this example) defines the input data for this run of the workflow. The wiki pages describe how to make these files.
+*xflow-run* takes two input files. The first (*workflow.xcf* in this example) defines the workflow pattern. The second (*input.yml* in this example) defines the input data for this run of the workflow. The wiki pages describe how to make these files.
 
 Typically you will use *xflow-submit* to run your workflow in the background::
 
-  % xflow-submit -o workflow.log 'xflow-run workflow.xcf input.dat'
+  % xflow-submit -o workflow.log 'xflow-run workflow.xcf input.yml'
 
 
 
 Installing  Xbowflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Prerequisites
-^^^^^^^^^^^^^
+--------------------
 
 Xbowflow is designed to work on Xbow clusters, and assumes they have dask.distributed installed on them and configured.
 
@@ -55,10 +51,5 @@ Xbowflow itself has no dependencies outside the Python standard library.
 It is available via pip:
 ``pip install xbowflow``
 
-Getting Xbowflow
-~~~~~~~~~~~~~~~~
-Xbowflow is a sub-package of Project-Xbow:
-
-``git clone https://github.com/ChrisSuess/Project-Xbow``
 
 

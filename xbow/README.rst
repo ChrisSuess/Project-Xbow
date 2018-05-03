@@ -85,9 +85,11 @@ Example **Xbow** Job
 
 1. Download an example from the link below::
 
-``wget https://github.com/ChrisSuess/Xbow-Example/archive/master.zip && unzip master.zip``
+``curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz``
 
-2. Create a **Xbow** cluster::
+2. Create a **Xbow** filesystem and cluster::
+
+``xbow-create_filesystem``
 
 ``xbow-create_cluster``
 
