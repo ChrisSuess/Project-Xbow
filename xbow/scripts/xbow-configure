@@ -41,7 +41,6 @@ def create_settings():
             #os.mkdir(os.path.expanduser('~/.xbow'))
 
             HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
-	    #HOSTFILE = open(cfg_file, 'w+')
 
 	    HOSTFILE.write('region: eu-west-1\n')
 	    HOSTFILE.write("price: '0.5'\n")
