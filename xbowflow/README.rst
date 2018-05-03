@@ -31,13 +31,13 @@ ________________
 
 To run a workflow on your xbow cluster, use *xflow-run*::
 
-  % xflow-run workflow.xcf input.dat
+  % xflow-run workflow.xcf input.yml
 
-*xflow-run* takes two input files. The first (*workflow.xcf* in this example) defines the workflow pattern. The second (*input.dat* in this example) defines the input data for this run of the workflow. The wiki pages describe how to make these files.
+*xflow-run* takes two input files. The first (*workflow.xcf* in this example) defines the workflow pattern. The second (*input.yml* in this example) defines the input data for this run of the workflow. The wiki pages describe how to make these files.
 
 Typically you will use *xflow-submit* to run your workflow in the background::
 
-  % xflow-submit -o workflow.log 'xflow-run workflow.xcf input.dat'
+  % xflow-submit -o workflow.log 'xflow-run workflow.xcf input.yml'
 
 
 
