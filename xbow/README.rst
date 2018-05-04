@@ -83,29 +83,29 @@ To delete the workers and keep the head node alive use the command::
 Running an Example **Xbow** Job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Download an example from the link below::
+#. Download an example from the link below::
 
-``curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz``
+    curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz
 
 #. This has downloaded a compressed file featuring several examples. To uncompress this::
 
-``tar -xvf examples.tgz``
+    tar -xvf examples.tgz
 
-This should create a new folder called *examples*. For this example we are going to use the files in the folder *SimpleJobs*.
+This should create a new folder called *examples*. For this example we are going to use the files in the folder *SimpleJobs*.::
 
-``cd examples/SimpleJobs``
+    cd examples/SimpleJobs
 
 #. Now we must create our **Xbow** environment.
 
-If this is the first time using **Xbow** you need to create a filesystem.
+If this is the first time using **Xbow** you need to create a filesystem.::
 
-``xbow-create_filesystem``
+    xbow-create_filesystem
 
 If a filesystem already exists **Xbow** will detect this.
 
-Next we need to create the **Xbow** cluster.
+Next we need to create the **Xbow** cluster.::
 
-``xbow-create_cluster``
+    xbow-create_cluster
 
 #. Navigate to the directory containing the example files. Sync the data with **Xbow** cluster::
 
