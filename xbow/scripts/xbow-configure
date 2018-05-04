@@ -7,10 +7,71 @@ import boto3
 import argparse
 import os, yaml
 
-cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+def create_aws():
+    print('Setting up AWS Credentials\n'
+	  'AWS Access Key ID: foo\n'
+          'AWS Secret Access Key: bar\n'
+	  'Default region name [us-west-2]: us-west-2\n'
+	  'Default output format [None]: json')
 
-with open(cfg_file, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+def create_settings():
+    """
+    Create a settings configuration file for use with xbow
+    """
+    try:
+	
+	if not os.path.exists(os.path.expanduser('~/.xbow')):
+	    os.makedirs(os.path.expanduser('~/.xbow'))
+
+        # Test for the old directory presence (IE updating).
+        if os.path.isdir(os.path.expanduser('~/.Xbow')):
+
+            os.rename(os.path.expanduser('~/.Xbow'),
+                      os.path.expanduser('~/.xbow'))
+        
+	# Setting up the .xbow directory.
+        if not os.path.isfile(os.path.expanduser('~/.xbow/settings.yml')):
+
+            print('Xbow will create a hidden directory in your $HOME directory \n'
+                  'in which it will create the hosts configuration file. You will\n'
+                  'need to edit this file with your cloud preferences for the \n'
+                  'cloud machines you wish to use. See documentation for more \n'
+                  'information on best cloud practices.')
+
+            #os.mkdir(os.path.expanduser('~/.xbow'))
+
+            HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
+
+	    HOSTFILE.write('region: eu-west-1\n')
+	    HOSTFILE.write("price: '0.5'\n")
+	    HOSTFILE.write('worker_instance_type: g2.2xlarge\n')
+	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
+	    HOSTFILE.write('image_id: ami-812d04f8 # new image created 30/4/2018\n')
+	    HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
+	    #HOSTFILE.write("ec2_sg: Xbow-SG-ec2 # This should be the same as ec2_security_groups except without the brackets\n")
+	    HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
+	    #HOSTFILE.write("efs_sg: Xbow-SG-mt # This should be the same as efs_security_groups except without the brackets\n")
+	    HOSTFILE.write('shared_file_system: MyFileSystem\n')
+	    HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
+	    HOSTFILE.write('cluster_name: MyCluster\n')
+	    HOSTFILE.write('scheduler_name: MyScheduler\n')
+	    HOSTFILE.write('worker_pool_name: MyWorkers\n')
+	    HOSTFILE.write('pool_size: 2\n')
+
+	    HOSTFILE.close()
+
+
+        else:
+
+            print("Settings.yml already exists at '~/.xbow, xbow is skipping "
+                  "creating a new one.")
+
+    except IOError:
+
+        print('Xbow failed to create the host configuration file in '
+              '"~/.xbow/settings.yml", you will have to do this manually. The '
+              'user documentation details the information that should be in this '
+              'file.')
 
 def configure_pem_keys(region=None, force=False):
     """
@@ -28,11 +89,11 @@ def configure_pem_keys(region=None, force=False):
         except:
             exists = False
         if exists:
-            if not force:
-                raise ValueError('The private key {} already exists'.format(keyname))
-            else:
-                kp = ec2.KeyPair(keyname)
-                kp.delete()
+            #if not force:
+            #    raise ValueError('The private key {} already exists'.format(keyname))
+            #else:
+            kp = ec2.KeyPair(keyname)
+            kp.delete()
         response = ec2.meta.client.create_key_pair(KeyName=keyname)
         pem_file = os.path.join(xbow.XBOW_CONFIGDIR, keyname) + '.pem'
         with open(pem_file, 'w') as f:
@@ -50,8 +111,8 @@ def configure_sg_groups(region=None, force=False):
     vpc_id = response.get('Vpcs', [{}])[0].get('VpcId', '')
 
     try:
-        response = ec2.create_security_group(GroupName='SG-Xbow',
-                                             Description='Security groups for Xbow',
+        response = ec2.create_security_group(GroupName=cfg['efs_security_groups'][0],
+                                             Description='Mount security group for Xbow',
                                              VpcId=vpc_id)
         security_group_id = response['GroupId']
         print('Security Group Created %s in vpc %s.' % (security_group_id, vpc_id))
@@ -60,23 +121,57 @@ def configure_sg_groups(region=None, force=False):
             GroupId=security_group_id,
             IpPermissions=[
                 {'IpProtocol': 'tcp',
-                 'FromPort': 80,
-                 'ToPort': 80,
+                 'FromPort': 2049,
+                 'ToPort': 2049,
                  'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
-                {'IpProtocol': 'tcp',
-                 'FromPort': 22,
-                 'ToPort': 22,
-                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
             ])
-        print('Ingress Successfully Set %s' % data)
+        #print('Ingress Successfully Set %s' % data)
     except ClientError as e:
 #        print(e)
 	print('The security key SG-Xbow already exists')
+
+    try:
+        response = ec2.create_security_group(GroupName=cfg['ec2_security_groups'][0],
+                                             Description='Mount security group for Xbow',
+                                             VpcId=vpc_id)
+        security_group_id = response['GroupId']
+        print('Security Group Created %s in vpc %s.' % (security_group_id, vpc_id))
+
+        data = ec2.authorize_security_group_ingress(
+            GroupId=security_group_id,
+            IpPermissions=[
+                {'IpProtocol': 'tcp',
+                 'FromPort': 22,
+                 'ToPort': 22,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+                {'IpProtocol': 'tcp',
+                 'FromPort': 45792,
+                 'ToPort': 45792,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+                {'IpProtocol': 'tcp',
+                 'FromPort': 8786,
+                 'ToPort': 8786,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
+            ])
+        #print('Ingress Successfully Set %s' % data)
+    except ClientError as e:
+#        print(e)
+        print('The security key SG-Xbow already exists')
 
 parser  = argparse.ArgumentParser(description='Configure the xbow cluster keys')
 parser.add_argument('-f', '--force', action='store_true', help='create new keys even if they already exist')
 parser.add_argument('-r', '--region', help='AWS region in which to create the keys - defaults to the home region')
 args = parser.parse_args()
+
+try:
+    result3 = create_settings()
+except IOError as e:
+    print(e)
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 try:
     result = configure_pem_keys(region=args.region, force=args.force)

@@ -23,6 +23,9 @@ with open(args.configfile) as f:
 
 with open(args.inputsfile) as f:
     inputs = yaml.load(f)
+# Set the reserved variable CWD to the current working directory:
+if not 'CWD' in inputs:
+    inputs['CWD'] = os.getcwd()
 
 if 'inputs' in wconfig:
     for k in wconfig['inputs']:

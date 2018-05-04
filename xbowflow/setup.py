@@ -107,7 +107,10 @@ setup_args = {
                 'scripts/xflow-submit',
                ],
 
-    'install_requires': [],
+    'install_requires': [
+                'dask',
+                'distributed,
+               ],
 
     'zip_safe': False,
 }

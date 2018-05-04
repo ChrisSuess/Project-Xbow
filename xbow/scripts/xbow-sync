@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import xbow
+import boto3
+import argparse, os, subprocess, yaml
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+def exists_remote(name=None, instance_id=None, region=None):
+    """Test if a file exists at path on a host accessible with SSH."""
+    
+    if name is None and instance_id is None:
+        raise ValueError('Error - either the name or instance_id must be provided')
+
+    ec2 = boto3.resource('ec2', region_name=region)
+    if name is not None:
+        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+    else:
+        instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
+
+    if len(instances) == 0:
+        raise ValueError('Error - no such instance')
+    elif len(instances) > 1:
+        raise ValueError('Error - more than one instance has that name')
+    else:
+        instance = instances[0]
+        name = instance.key_name
+        username = None
+        if instance.tags is not None:
+            for tag in instance.tags:
+                if tag['Key'] == 'username':
+                    username = tag['Value']
+        if username is None:
+            print('Warning: cannot determine username, assuming it is ubuntu')
+
+    pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
+    mount_point = cfg['mount_point']
+    cwd = os.getcwd()
+    base = os.path.basename(cwd)
+
+    status = "ssh -i {} {}@{} '[ -d {}/{} ]'".format(pem_file, username, instance.public_dns_name, mount_point, base)
+    #print(status)
+    check = subprocess.call(status, shell=True)
+    if check == 1:
+        client2cloud = 'rsync -avz --progress -e "ssh -i {}" {}/ {}@{}:{}/{}/'.format(pem_file, cwd, username, instance.public_dns_name, mount_point, base)
+        subprocess.call(client2cloud, shell=True)
+	return True
+    if check == 0:
+        cloud2client = 'rsync -avz -e "ssh -i {}" {}@{}:{}/{}/ {}/'.format(pem_file, username, instance.public_dns_name, mount_point, base, cwd)
+        subprocess.call(cloud2client, shell=True)
+	return False
+    raise Exception('SSH failed')
+
+try:
+    exists_remote(name=cfg['scheduler_name'])
+except ValueError as e:
+    print(e)   

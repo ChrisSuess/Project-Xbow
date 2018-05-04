@@ -72,11 +72,11 @@ class Extension(Ext, object):
 
 setup_args = {
     'name':             "xbow",
-    'version':          verstr,
+    'version':          "0.3.5",
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",
-    'author':           "Charlie Laughton",
-    'author_email':     "charles.laughton@nottingham.ac.uk",
+    'author':          "Christian Suess, Charlie Laughton",
+    'author_email':     "christian.suess1@nottingham.ac.uk, charles.laughton@nottingham.ac.uk",
     'url':              "",
     'license':          "MIT license.",
 
@@ -101,8 +101,11 @@ setup_args = {
 
     'scripts': ['scripts/xbow-create_cluster',
                 'scripts/xbow-delete_cluster',
+		'scripts/xbow-delete_workers',
+		'scripts/xbow-create_filesystem',
+		'scripts/xbow-sync',
                 'scripts/xbow-configure',
-                'scripts/xbow-login_instance'],
+                'scripts/xbow-login'],
 
     'install_requires': ['boto3',
                          'paramiko',

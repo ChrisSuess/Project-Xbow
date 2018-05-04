@@ -3,8 +3,8 @@ price: '0.5' # max spot price
 worker_instance_type: m4.large # instance(s) that jobs will run on
 scheduler_instance_type: t2.small # head node instance
 image_id: ami-3730464e # new image created 11th Feb
-ec2_security_groups: ['efs-walkthrough1-ec2-sg']
-efs_security_groups: ['efs-walkthrough1-mt-sg']
+ec2_security_groups: ['efs-walkthrough1-ec2-sg'] #Hardcode these only need on creation
+efs_security_groups: ['efs-walkthrough1-mt-sg'] #Hardcode in xbw launch
 shared_file_system: MyTestFileSystem
 mount_point: /home/ubuntu/shared
 cluster_name: MyDaskCluster

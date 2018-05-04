@@ -22,9 +22,9 @@ but if you prefer you can use easy_install::
 Configuring **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~
 
-Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here`__ to do that.
+Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
 
-__ https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+Once a ``$HOME/.xbow`` exists containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
 Then you can configure **Xbow** itself, by running the command::
 
@@ -32,6 +32,14 @@ Then you can configure **Xbow** itself, by running the command::
 
 This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster.
 
+Creating an Xbow Filesystem
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If this is the first time you have used **Xbow** you will need to create a shared filesystem for use with **Xbow**. This is done by running the command::
+
+    xbow-create_filesystem
+
+This only needs to be performed once and **Xbow** handles all the configuration settings.
 
 Creating an **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,13 +57,91 @@ Log in to the head node using the command::
 
     xbow-login_instance
 
-The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See ``here`` for details.
+The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
+
+Transferring Data to your **Xbow** Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Xbow** treats data as *buckets* and syncs the working directory with the cluster.
+
+To **Sync** data between your machine and your **Xbow** cluster use the command::
+
+    xbow-sync
 
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there. 
 
-To delete the cluster give the command::
+To delete the entire cluster::
+
+    xbow-delete_cluster
+
+To delete the workers and keep the head node alive use the command::
+
+    xbow-delete_workers
+
+Running an Example **Xbow** Job
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Download an example from the link below::
+
+    curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz
+
+This has downloaded a compressed file featuring several examples. To uncompress this::
+
+    tar -xvf examples.tgz
+
+This should create a new folder called *examples*. For this example we are going to use the files in the folder *SimpleJobs*::
+
+    cd examples/SimpleJobs
+
+Now we must create our **Xbow** environment.
+
+If this is the first time using **Xbow** you need to create a filesystem.::
+
+    xbow-create_filesystem
+
+If a filesystem already exists **Xbow** will detect this.
+
+Next we need to create the **Xbow** cluster.::
+
+    xbow-create_cluster
+
+This is spinning up virtual instances in the cloud using the specifications in the ``settings.yml``, it may take some time!
+
+Navigate to the directory containing the example files. ::
+
+    cd examples/SimpleJobs
+
+Sync the data with **Xbow** cluster::
+
+    xbow-sync
+
+This will transfer your files in ``SimpleJobs`` folder on your machine to your **Xbow** cluster.
+
+Login to your **Xbow** cluster::
+
+    xbow-login
+
+Navigate to the directory containing the example files::
+
+    cd shared/SimpleJobs
+
+Using **Xflow** run the example::
+
+    xflow-exec bash runjob.sh
+
+Log off your **Xbow** cluster::
+
+    ctrl + d
+
+Sync the data back from the **Xbow** cluster::
+
+    xbow-sync
+
+This brings back all the your data from the cloud.
+
+Delete the cluster::
 
     xbow-delete_cluster

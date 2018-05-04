@@ -3,8 +3,13 @@ from __future__ import print_function
 
 import xbow
 import boto3
-import argparse
 import subprocess
+import os, yaml
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 def login_instance(name=None, instance_id=None, region=None):
     """
@@ -35,24 +40,13 @@ def login_instance(name=None, instance_id=None, region=None):
             print('Warning: cannot determine username, assuming it is ubuntu')
 
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        launch_command = 'ssh -i {} {}@{}'.format(pem_file, username, instance.public_dns_name)
+        launch_command = 'ssh -i {} {}@{} -oStrictHostKeyChecking=no'.format(pem_file, username, instance.public_dns_name)
         #return launch_command
 	#print(launch_command)
 	subprocess.call(launch_command, shell=True)
-        
-parser  = argparse.ArgumentParser(description='Print the command required to ssh into the instance.')
-action = parser.add_mutually_exclusive_group(required=True)
-action.add_argument('-n', '--name', help='the instance name')
-action.add_argument('-i', '--id', help='the instance id')
-parser.add_argument('-l', '--login', help='Connect to SSH', action='store_true')
-args = parser.parse_args()
+     
 
 try:
-    result = login_instance(name=args.name, instance_id=args.id)
-    #print(result)
+    result = login_instance(name=cfg['scheduler_name'])
 except ValueError as e:
     print(e)
-
-if args.login:
-    result = download_data(name=args.name, instance_id=args.id)
-    print(result)

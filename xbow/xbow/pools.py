@@ -255,7 +255,6 @@ class SpotInstancePool(object):
                                     for i in self.instances]
         self.get_status()
 
-
     def terminate(self):
         """Terminate the pool of instances"""
         csr = self.ec2_resource.meta.client.cancel_spot_instance_requests
