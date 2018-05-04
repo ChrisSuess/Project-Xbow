@@ -24,6 +24,7 @@ Configuring **Xbow**
 
 Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
 
+Once a ``$HOME/.xbow`` exists containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
 Then you can configure **Xbow** itself, by running the command::
 
