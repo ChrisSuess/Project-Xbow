@@ -80,43 +80,57 @@ To delete the workers and keep the head node alive use the command::
 
     xbow-delete_workers
 
-Example **Xbow** Job
-~~~~~~~~~~~~~~~~~~~~
+Running an Example **Xbow** Job
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. Download an example from the link below::
 
 ``curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz``
 
-2. Create a **Xbow** filesystem and cluster::
+#. This has downloaded a compressed file featuring several examples. To uncompress this::
+
+``tar -xvf examples.tgz``
+
+This should create a new folder called *examples*. For this example we are going to use the files in the folder *SimpleJobs*.
+
+``cd examples/SimpleJobs``
+
+#. Now we must create our **Xbow** environment.
+
+If this is the first time using **Xbow** you need to create a filesystem.
 
 ``xbow-create_filesystem``
 
+If a filesystem already exists **Xbow** will detect this.
+
+Next we need to create the **Xbow** cluster.
+
 ``xbow-create_cluster``
 
-3. Navigate to the directory containing the example files. Sync the data with **Xbow** cluster::
+#. Navigate to the directory containing the example files. Sync the data with **Xbow** cluster::
 
 ``xbow-sync``
 
-4. Login to your **Xbow** cluster::
+#. Login to your **Xbow** cluster::
 
 ``xbow-login``
 
-5. Navigate to the directory containing the example files::
+#. Navigate to the directory containing the example files::
 
 ``cd shared/$Example_files``
 
-6. Using **Xflow** run the example::
+#. Using **Xflow** run the example::
 
 ``xflow-exec csh run.dhfr`` 
 
-7. Log off **Xbow** cluster::
+#. Log off **Xbow** cluster::
 
 ``ctrl + d``
 
-8. Sync the data back from the **Xbow** cluster::
+#. Sync the data back from the **Xbow** cluster::
 
 ``xbow-sync``
 
-9. Delete the cluster::
+#. Delete the cluster::
 
 ``xbow-delete_cluster``
