@@ -83,19 +83,19 @@ To delete the workers and keep the head node alive use the command::
 Running an Example **Xbow** Job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. Download an example from the link below::
+Download an example from the link below::
 
     curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz
 
-#. This has downloaded a compressed file featuring several examples. To uncompress this::
+This has downloaded a compressed file featuring several examples. To uncompress this::
 
     tar -xvf examples.tgz
 
-This should create a new folder called *examples*. For this example we are going to use the files in the folder *SimpleJobs*.::
+This should create a new folder called *examples*. For this example we are going to use the files in the folder *SimpleJobs*::
 
     cd examples/SimpleJobs
 
-#. Now we must create our **Xbow** environment.
+Now we must create our **Xbow** environment.
 
 If this is the first time using **Xbow** you need to create a filesystem.::
 
@@ -107,30 +107,40 @@ Next we need to create the **Xbow** cluster.::
 
     xbow-create_cluster
 
-#. Navigate to the directory containing the example files. Sync the data with **Xbow** cluster::
+This is spinning up virtual instances in the cloud using the specifications in the ``settings.yml``, it may take some time!
 
-``xbow-sync``
+Navigate to the directory containing the example files. ::
 
-#. Login to your **Xbow** cluster::
+    cd examples/SimpleJobs
 
-``xbow-login``
+Sync the data with **Xbow** cluster::
 
-#. Navigate to the directory containing the example files::
+    xbow-sync
 
-``cd shared/$Example_files``
+This will transfer your files in ``SimpleJobs`` folder on your machine to your **Xbow** cluster.
 
-#. Using **Xflow** run the example::
+Login to your **Xbow** cluster::
 
-``xflow-exec csh run.dhfr`` 
+    xbow-login
 
-#. Log off **Xbow** cluster::
+Navigate to the directory containing the example files::
 
-``ctrl + d``
+    cd shared/SimpleJobs
 
-#. Sync the data back from the **Xbow** cluster::
+Using **Xflow** run the example::
 
-``xbow-sync``
+    xflow-exec bash runjob.sh
 
-#. Delete the cluster::
+Log off your **Xbow** cluster::
 
-``xbow-delete_cluster``
+    ctrl + d
+
+Sync the data back from the **Xbow** cluster::
+
+    xbow-sync
+
+This brings back all the your data from the cloud.
+
+Delete the cluster::
+
+    xbow-delete_cluster
