@@ -109,7 +109,7 @@ setup_args = {
 
     'install_requires': [
                 'dask',
-                'distributed,
+                'distributed',
                ],
 
     'zip_safe': False,

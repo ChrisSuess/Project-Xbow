@@ -399,9 +399,8 @@ class SubprocessKernel(object):
         try:
             outputs['cmd'] = cmd
             if not dryrun:
-                result = subprocess.check_output(cmd, 
-                                             stderr=subprocess.STDOUT,
-                                             shell=True)
+                result = subprocess.check_output(['/bin/sh', '-lc', cmd], 
+                                             stderr=subprocess.STDOUT)
                 outputs['output'] = result
         except subprocess.CalledProcessError as e:
             outputs['returncode'] = e.returncode
