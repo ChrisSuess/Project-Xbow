@@ -3,7 +3,7 @@ Project-Xbow
 
 **Xbow** allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
 
-.. image:: xbow_diagram.png
+.. image:: xbow_diagram_v2.png
 
 Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
 
