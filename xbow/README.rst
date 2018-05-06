@@ -147,7 +147,7 @@ Log off your **Xbow** cluster::
 
     ctrl + d
 
-Now you should be back in the Gromacs folder on yiur local workstation. Sync the data back from the **Xbow** cluster::
+Now you should be back in the Gromacs folder on your local workstation. Sync the data back from the **Xbow** cluster::
 
     xbow-sync
 
