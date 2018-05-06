@@ -17,7 +17,8 @@ cmd = ' '.join(args.cmd)
 def shellquote(s):
     return "'" + s.replace("'", "'\\''") + "'"
 full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
-kernel = SubprocessKernel(shellquote(full_cmd))
+#kernel = SubprocessKernel(shellquote(full_cmd))
+kernel = SubprocessKernel(full_cmd)
 pipe = Pipeline(client, [kernel])
 result = pipe.run({})
 print(result['output'].decode('utf-8'))
