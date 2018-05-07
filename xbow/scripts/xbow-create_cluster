@@ -24,7 +24,7 @@ if len(schedulers) == 1:
 else:
     print("Starting the scheduler node - this may take some time...")
 
-    user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'])
+    user_data = 'rm {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
@@ -37,7 +37,7 @@ else:
                       )
     print("Scheduler ready, now starting workers. This may take some time...")
 
-user_data = 'dask-worker --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
                         count=cfg['pool_size'],
                         price=cfg['price'],
