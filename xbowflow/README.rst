@@ -46,7 +46,7 @@ Installing  Xbowflow
 
 Xbowflow is designed to work on Xbow clusters, and assumes they have dask.distributed installed on them and configured.
 
-Xbowflow itself has no dependencies outside the Python standard library.
+Other than dask.distributed, xbowflow itself has no dependencies outside the Python standard library.
 
 It is available via pip:
 ``pip install xbowflow``
