@@ -3,6 +3,8 @@ Project-Xbow
 
 **Xbow** allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
 
+Currently **Xbow** focusses on supporting the Biomolecular Simulation community, but is potentially useful in any field.
+
 .. image:: xbow_diagram_v2.png
 
 Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
@@ -31,7 +33,7 @@ This command creates a directory ``$HOME/.xbow`` containing a number of files, i
 
 The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
-instance but the workers are "spot" instances - see the AWS documentation _`here<https://aws.amazon.com/ec2/spot/>`_. All
+instance but the workers are "spot" instances - see the AWS documentation _`here <https://aws.amazon.com/ec2/spot/>`_. All
 instances use the same image; the default provides pre-installed versions of Gromacs2018 and AmberTools16 (i.e.,
 the MD engines ``gmx mdrun``, ``sander`` and ``sander.MPI``, but not ``pmemd`` as an Amber license is required to use this and 
 we can't assume you have one).
