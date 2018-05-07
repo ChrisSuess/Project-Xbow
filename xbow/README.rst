@@ -66,7 +66,7 @@ Log in to the head node using the command::
 
 The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
-Transferring Data to your **Xbow** Cluster
+Transferring Data to and from your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use **Xbow** you first create a folder on your local workstation in which you place all required input files
