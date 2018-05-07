@@ -143,6 +143,8 @@ Using **Xflow** run the example::
 
     xflow-exec ./run.sh
 
+This job should take 60 seconds or less to run.
+
 5. Copy the results back to your local machine and delete the cluster
 ---------------------------------------------------------------------
 Log off your **Xbow** cluster::
