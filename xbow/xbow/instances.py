@@ -218,23 +218,19 @@ def CreateFS(name, image_id, instance_type, region=None,
     efs_client = boto3.client('efs', region_name=region)
     ec2_resource = boto3.resource('ec2', region_name=region)
 
-    #print("Creating your filesystem")
-
     if shared_file_system is not None:
         dfs = efs_client.describe_file_systems
         response = dfs(CreationToken=shared_file_system)['FileSystems']
         if len(response) > 0:
             FileSystemId = response[0]['FileSystemId']
-	    LifeState = response[0]['LifeCycleState']
-	    #print(LifeState)
+            LifeState = response[0]['LifeCycleState']
         else:
             cfs = efs_client.create_file_system
             response = cfs(CreationToken=shared_file_system, Encrypted=True)
             FileSystemId = response['FileSystemId']
-	    LifeState = response['LifeCycleState']
-            #print(LifeState)
+            LifeState = response['LifeCycleState']
 
-	time.sleep(5)
+        time.sleep(5)
 
         subnets = ec2_resource.subnets.all()
         sgf = ec2_resource.security_groups.filter
@@ -242,10 +238,8 @@ def CreateFS(name, image_id, instance_type, region=None,
         efs_security_groupid = [security_group.group_id
                                     for security_group in security_groups]
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-	
-	mounttargets = response["MountTargets"]
-	#ready = mounttargets[0]['LifeCycleState']
-	#print(mounttargets)
+
+        mounttargets = response["MountTargets"]
         if len(mounttargets) == 0:
             for subnet in subnets:
                 cmt = efs_client.create_mount_target
@@ -268,14 +262,11 @@ def CreateFS(name, image_id, instance_type, region=None,
 	#print(ready)
         try:
             available = 0
-	    #print("Checking targets for availability")
             while available == 0:
-                #time.sleep(5)
-		response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-		mounttargets = response["MountTargets"]
+                response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+                mounttargets = response["MountTargets"]
                 ready2 = mounttargets[0]['LifeCycleState']
-		#print(ready2)
-		time.sleep(5)
+                time.sleep(5)
                 if ready2 == 'available':
                     available = 1
             if available == 1:
@@ -340,13 +331,13 @@ def create(name, image_id, instance_type, region=None,
         response = dfs(CreationToken=shared_file_system)['FileSystems']
         if len(response) > 0:
             FileSystemId = response[0]['FileSystemId']
-	    LifeState = response[0]['LifeCycleState']
+            LifeState = response[0]['LifeCycleState']
 	    #print(LifeState)
         else:
             cfs = efs_client.create_file_system
             response = cfs(CreationToken=shared_file_system, Encrypted=True)
             FileSystemId = response['FileSystemId']
-	    LifeState = response['LifeCycleState']
+            LifeState = response['LifeCycleState']
             #print(LifeState)
 
         subnets = ec2_resource.subnets.all()
@@ -356,7 +347,7 @@ def create(name, image_id, instance_type, region=None,
                                     for security_group in security_groups]
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
 	
-	mounttargets = response["MountTargets"]
+        mounttargets = response["MountTargets"]
         if len(mounttargets) == 0:
             for subnet in subnets:
                 cmt = efs_client.create_mount_target
@@ -396,16 +387,16 @@ def terminate_cluster(name=None, region=None):
     client = boto3.client('ec2')
     ec2 = boto3.resource('ec2', region_name=region)
     if name is not None:
-	response = ec2.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values': [name]}])
-	spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+        response = ec2.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values': [name]}])
+        spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
         instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
-	if len(instances) == 0:
+        if len(instances) == 0:
             raise ValueError('Error - no such cluster')
 
-	shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
-	if len(spot_instance_request_ids) > 1:
+        shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
+        if len(spot_instance_request_ids) > 1:
             client.cancel_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids, DryRun=False)
-	    print('cancelling all spot requests')
+            print('cancelling all spot requests')
 
-	shansh.terminate(DryRun=False)
-	print('Terminating instances')
+        shansh.terminate(DryRun=False)
+        print('Terminating instances')
