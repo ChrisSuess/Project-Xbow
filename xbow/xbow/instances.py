@@ -258,8 +258,8 @@ def CreateFS(name, image_id, instance_type, region=None,
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
         mounttargets = response["MountTargets"]
         #print(mounttargets)
-	ready = mounttargets[0]['LifeCycleState']
-	#print(ready)
+        ready = mounttargets[0]['LifeCycleState']
+        #print(ready)
         try:
             available = 0
             while available == 0:
@@ -332,13 +332,11 @@ def create(name, image_id, instance_type, region=None,
         if len(response) > 0:
             FileSystemId = response[0]['FileSystemId']
             LifeState = response[0]['LifeCycleState']
-	    #print(LifeState)
         else:
             cfs = efs_client.create_file_system
             response = cfs(CreationToken=shared_file_system, Encrypted=True)
             FileSystemId = response['FileSystemId']
             LifeState = response['LifeCycleState']
-            #print(LifeState)
 
         subnets = ec2_resource.subnets.all()
         sgf = ec2_resource.security_groups.filter
@@ -346,7 +344,7 @@ def create(name, image_id, instance_type, region=None,
         efs_security_groupid = [security_group.group_id
                                     for security_group in security_groups]
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-	
+
         mounttargets = response["MountTargets"]
         if len(mounttargets) == 0:
             for subnet in subnets:
