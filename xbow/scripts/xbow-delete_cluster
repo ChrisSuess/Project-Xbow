@@ -24,7 +24,7 @@ def terminate_cluster(name=None, region=None):
             raise ValueError('Error - no such cluster')
 
 	shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
-	if len(spot_instance_request_ids) > 1:
+	if len(spot_instance_request_ids) >= 1:
             client.cancel_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids, DryRun=False)
 	    print('cancelling all spot requests')
 
