@@ -20,8 +20,8 @@ def create_settings():
     """
     try:
 	
-	if not os.path.exists(os.path.expanduser('~/.xbow')):
-	    os.makedirs(os.path.expanduser('~/.xbow'))
+        if not os.path.exists(os.path.expanduser('~/.xbow')):
+            os.makedirs(os.path.expanduser('~/.xbow'))
 
         # Test for the old directory presence (IE updating).
         if os.path.isdir(os.path.expanduser('~/.Xbow')):
@@ -96,7 +96,7 @@ def configure_pem_keys(region=None, force=False):
         pem_file = os.path.join(xbow.XBOW_CONFIGDIR, keyname) + '.pem'
         with open(pem_file, 'w') as f:
             f.write(response['KeyMaterial'])
-        os.chmod(pem_file, 0600)
+        os.chmod(pem_file, 0o600)
 
 def configure_sg_groups(region=None, force=False):
     """
@@ -123,10 +123,8 @@ def configure_sg_groups(region=None, force=False):
                  'ToPort': 2049,
                  'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
             ])
-        #print('Ingress Successfully Set %s' % data)
     except ClientError as e:
-#        print(e)
-	print('The security key SG-Xbow already exists')
+        print('The security key SG-Xbow already exists')
 
     try:
         response = ec2.create_security_group(GroupName=cfg['ec2_security_groups'][0],
