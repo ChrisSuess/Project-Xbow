@@ -42,23 +42,21 @@ def create_settings():
 
             HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
 
-	    HOSTFILE.write('region: eu-west-1\n')
-	    HOSTFILE.write("price: '0.05'\n")
-	    HOSTFILE.write('worker_instance_type: c5.large\n')
-	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
-	    HOSTFILE.write('image_id: ami-115f6a68 # new image created 08/05/2018\n')
-	    HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
-	    #HOSTFILE.write("ec2_sg: Xbow-SG-ec2 # This should be the same as ec2_security_groups except without the brackets\n")
-	    HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
-	    #HOSTFILE.write("efs_sg: Xbow-SG-mt # This should be the same as efs_security_groups except without the brackets\n")
-	    HOSTFILE.write('shared_file_system: MyFileSystem\n')
-	    HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
-	    HOSTFILE.write('cluster_name: MyCluster\n')
-	    HOSTFILE.write('scheduler_name: MyScheduler\n')
-	    HOSTFILE.write('worker_pool_name: MyWorkers\n')
-	    HOSTFILE.write('pool_size: 2\n')
+            HOSTFILE.write('region: eu-west-1\n')
+            HOSTFILE.write("price: '0.05'\n")
+            HOSTFILE.write('worker_instance_type: c5.large\n')
+            HOSTFILE.write('scheduler_instance_type: t2.small\n')
+            HOSTFILE.write('image_id: ami-115f6a68 # new image created 08/05/2018\n')
+            HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
+            HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
+            HOSTFILE.write('shared_file_system: MyFileSystem\n')
+            HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
+            HOSTFILE.write('cluster_name: MyCluster\n')
+            HOSTFILE.write('scheduler_name: MyScheduler\n')
+            HOSTFILE.write('worker_pool_name: MyWorkers\n')
+            HOSTFILE.write('pool_size: 1\n')
 
-	    HOSTFILE.close()
+            HOSTFILE.close()
 
 
         else:
