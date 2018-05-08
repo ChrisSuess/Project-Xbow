@@ -33,7 +33,7 @@ This command creates a directory ``$HOME/.xbow`` containing a number of files, i
 
 The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
-instance but the workers are "spot" instances - see the AWS documentation _`here <https://aws.amazon.com/ec2/spot/>`_. All
+instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_. All
 instances use the same image; the default provides pre-installed versions of Gromacs2018 and AmberTools16 (i.e.,
 the MD engines ``gmx mdrun``, ``sander`` and ``sander.MPI``, but not ``pmemd`` as an Amber license is required to use this and 
 we can't assume you have one).
