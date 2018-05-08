@@ -43,8 +43,8 @@ def create_settings():
             HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
 
 	    HOSTFILE.write('region: eu-west-1\n')
-	    HOSTFILE.write("price: '0.5'\n")
-	    HOSTFILE.write('worker_instance_type: g2.2xlarge\n')
+	    HOSTFILE.write("price: '0.05'\n")
+	    HOSTFILE.write('worker_instance_type: c5.large\n')
 	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
 	    HOSTFILE.write('image_id: ami-115f6a68 # new image created 08/05/2018\n')
 	    HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
