@@ -76,9 +76,9 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
         efs_security_groupid = [security_group.group_id
                                     for security_group in security_groups]
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-	mounttargets = response["MountTargets"]
-	if len(mounttargets) == 0:
-	    for subnet in subnets:
+        mounttargets = response["MountTargets"]
+        if len(mounttargets) == 0:
+            for subnet in subnets:
                 cmt = efs_client.create_mount_target
                 cmt(FileSystemId=FileSystemId,
                     SubnetId=subnet.id,
