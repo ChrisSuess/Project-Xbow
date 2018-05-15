@@ -49,7 +49,7 @@ def DelMT(name, image_id, instance_type, region=None,
 
     for Mounts in describe["MountTargets"]:
         motargets = Mounts['MountTargetId']
-        print(motargets)
+        #print(motargets)
         efs_client.delete_mount_target(MountTargetId = motargets)
 
 while True:
@@ -73,7 +73,7 @@ while True:
             user_data=user_data
         )
         print("Deleting filesystem")
-        time.sleep(5)
+        time.sleep(10)
         DelFS(
             cfg['scheduler_name'],
             image_id=cfg['image_id'],
