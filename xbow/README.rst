@@ -160,3 +160,11 @@ This brings back all the your data from the cloud.
 Unless you want to try one of the other examples, delete the cluster::
 
     xbow-delete_cluster
+
+The filesystem you created is not deleted so all your data remains safe. This allows you to resume working exactly where you left off however you will still be charged for data storage in the cloud.
+
+If you wish to delete your filesystem use the command::
+
+    xbow-delete_filesystem
+
+This further prompts you to help avoid any nasty data deletion accidents!
