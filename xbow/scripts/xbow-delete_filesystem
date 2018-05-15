@@ -73,7 +73,7 @@ while True:
             user_data=user_data
         )
         print("Deleting filesystem")
-        time.sleep(10)
+        time.sleep(15)
         DelFS(
             cfg['scheduler_name'],
             image_id=cfg['image_id'],
