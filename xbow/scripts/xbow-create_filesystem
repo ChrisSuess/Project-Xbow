@@ -34,6 +34,15 @@ def CreateFS(name, image_id, instance_type, region=None,
             response = cfs(CreationToken=shared_file_system, Encrypted=True)
             FileSystemId = response['FileSystemId']
             LifeState = response['LifeCycleState']
+            taggy = efs_client.create_tags(
+                FileSystemId = response['FileSystemId'],
+                    Tags=[
+                        {
+                            'Key': 'Name',
+                            'Value': cfg['creation_token']
+                        },
+                    ]
+            )
             #print(LifeState)
 
         time.sleep(5)
