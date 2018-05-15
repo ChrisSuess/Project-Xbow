@@ -23,13 +23,22 @@ def DelFS(name, image_id, instance_type, region=None,
 
     dfs = efs_client.describe_file_systems
     response = dfs(CreationToken=shared_file_system)['FileSystems']
-    print(response)
-    #deleteMT = efs_client.delete_mount_target(
-    #    MountTargetId =
-    #) 
-    #deleteFS = efs_client.delete_file_system(
-    #    FileSystemId = response[0]['FileSystemId']
-    #)
+    deleteFS = efs_client.delete_file_system(
+        FileSystemId = response[0]['FileSystemId']
+    )
+
+def DelMT(name, image_id, instance_type, region=None,
+           user_data=None, efs_security_groups=None, ec2_security_groups=None, username=None,
+           shared_file_system=None, mount_point=None):
+
+    efs_client = boto3.client('efs', region_name=region)
+    ec2_resource = boto3.resource('ec2', region_name=region)
+
+    dmt = efs_client.describe_file_systems
+    response = dmt(CreationToken=shared_file_system)['FileSystems']
+    mounttargets = response["MountTargets"]
+    ready2 = mounttargets[0]['LifeCycleState']
+    print(ready2)
 
 while True:
     get_input = input
@@ -41,7 +50,7 @@ while True:
     a = get_input("Enter yes/no to continue: ")
     if a=="yes":
         print("Deleting your filesystem")
-        DelFS(
+        DelMT(
             cfg['scheduler_name'],
             image_id=cfg['image_id'],
             instance_type=cfg['scheduler_instance_type'],
