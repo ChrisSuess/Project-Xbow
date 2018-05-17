@@ -5,8 +5,11 @@ setup.cfg
 setup.py
 scripts/xbow-configure
 scripts/xbow-create_cluster
+scripts/xbow-create_filesystem
 scripts/xbow-delete_cluster
-scripts/xbow-login_instance
+scripts/xbow-delete_workers
+scripts/xbow-login
+scripts/xbow-sync
 test/__init__.py
 test/test_xbow_spot_pool.py
 xbow/__init__.py

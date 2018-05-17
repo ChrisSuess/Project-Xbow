@@ -3,6 +3,10 @@ Project-Xbow
 
 **Xbow** allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
 
+Currently **Xbow** focusses on supporting the Biomolecular Simulation community, but is potentially useful in any field.
+
+.. image:: xbow_diagram_v2.png
+
 Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
 
 
@@ -13,23 +17,27 @@ The recommended method to install **Xbow** is using pip::
 
     pip install xbow
 
-but if you prefer you can use easy_install::
-
-    git clone https://github.com/ChrisSuess/Project-Xbow
-    easy_install setup.py
-
 
 Configuring **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~
 
 Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
 
+Once you have raeched the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
-Then you can configure **Xbow** itself, by running the command::
+First configure **Xbow** itself, by running the command::
 
     xbow-configure
 
 This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster.
+
+The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
+head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
+instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_. All
+instances use the same image; the default provides pre-installed versions of Gromacs2018 and AmberTools16 (i.e.,
+the MD engines ``gmx mdrun``, ``sander`` and ``sander.MPI``, but not ``pmemd`` as an Amber license is required to use this and 
+we can't assume you have one).
+
 
 Creating an Xbow Filesystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,10 +66,12 @@ Log in to the head node using the command::
 
 The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
-Transferring Data to your **Xbow** Cluster
+Transferring Data to and from your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Xbow** treats data as *buckets* and syncs the working directory with the cluster.
+To use **Xbow** you first create a folder on your local workstation in which you place all required input files
+for your simulation. You then copy the whole folder to the shared filesystem on the **Xbow** cluster, log in to the cluster
+and run the job, and when it has finished copy all the results files back to your local machine.
 
 To **Sync** data between your machine and your **Xbow** cluster use the command::
 
@@ -80,43 +90,81 @@ To delete the workers and keep the head node alive use the command::
 
     xbow-delete_workers
 
-Example **Xbow** Job
-~~~~~~~~~~~~~~~~~~~~
+Running an Example **Xbow** Job
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Download an example from the link below::
+1. Obtain the example files
+---------------------------
+Download the examples tarball::
 
-``curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz``
+    curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz
 
-2. Create a **Xbow** filesystem and cluster::
+Then uncompress this::
 
-``xbow-create_filesystem``
+    tar -zxvf examples.tgz
 
-``xbow-create_cluster``
+This should create a new folder called *examples*. For this example we are going to use the files in the folder
+*SimpleJobs/Gromacs* which will run a short MD simulation of BPTI::
 
-3. Navigate to the directory containing the example files. Sync the data with **Xbow** cluster::
+    cd examples/SimpleJobs/Gromacs
+    
+2. Launch your **Xbow** cluster
+-------------------------------
 
-``xbow-sync``
+If you have not already done so, create your **Xbow** environment: run ``xbow-configure`` and ``xbow-create_filesystem`` 
+(see above).
 
-4. Login to your **Xbow** cluster::
+Next launch your **Xbow** cluster.::
 
-``xbow-login``
+    xbow-create_cluster
 
-5. Navigate to the directory containing the example files::
+(Note this step may take five minutes or so to complete.)
 
-``cd shared/$Example_files``
+3. Transfer the input data to your **Xbow** cluster
+----------------------------------------------------
 
-6. Using **Xflow** run the example::
+Making sure you are in the examples/SimpleJobs/Gromacs folder, sync the data with your **Xbow** cluster::
 
-``xflow-exec csh run.dhfr`` 
+    xbow-sync
 
-7. Log off **Xbow** cluster::
+This will transfer your files to the folder ~/shared/Gromacs on your **Xbow** cluster.
 
-``ctrl + d``
+4. Login to your cluster and run the job
+----------------------------------------
+Login to your **Xbow** cluster::
 
-8. Sync the data back from the **Xbow** cluster::
+    xbow-login
 
-``xbow-sync``
+Navigate to the directory containing the example files::
 
-9. Delete the cluster::
+    cd shared/SimpleJobs/Gromacs
 
-``xbow-delete_cluster``
+Using **Xflow** run the example::
+
+    xflow-exec ./run.sh
+
+This job should take 60 seconds or less to run.
+
+5. Copy the results back to your local machine and delete the cluster
+---------------------------------------------------------------------
+Log off your **Xbow** cluster::
+
+    ctrl + d
+
+Now you should be back in the Gromacs folder on your local workstation. Sync the data back from the **Xbow** cluster::
+
+    xbow-sync
+
+This brings back all the your data from the cloud.
+
+Unless you want to try one of the other examples, delete the cluster::
+
+    xbow-delete_cluster
+
+The filesystem you created is not deleted so all your data remains safe. This allows you to resume working exactly where you left off however you will still be charged for data storage in the cloud.
+
+If you wish to delete your filesystem use the command::
+
+    xbow-delete_filesystem
+
+This further prompts you to help avoid any nasty data deletion accidents!

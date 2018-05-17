@@ -261,6 +261,13 @@ class InterfaceKernel(object):
                 that of the previous kernel in the pipeline that exited with
                 a non-zero returncode.
         """
+        if isinstance(inputs, list):
+            for i in inputs:
+                if not isinstance(i, dict):
+                    raise RuntimeError('Error: argument passed to run is a list of type {}. It must be a dict or list of dicts'.format(type(i)))
+        elif not isinstance(inputs, dict):
+            raise RuntimeError('Error: argument {} passed to run is of type {}. it must be a dict or list of dicts'.format(inputs, type(inputs)))
+
         if self.operation == 'link':
             outputs = inputs.copy()
             if 'returncode' in inputs:
@@ -392,9 +399,8 @@ class SubprocessKernel(object):
         try:
             outputs['cmd'] = cmd
             if not dryrun:
-                result = subprocess.check_output(cmd, 
-                                             stderr=subprocess.STDOUT,
-                                             shell=True)
+                result = subprocess.check_output(cmd, shell=True, 
+                                             stderr=subprocess.STDOUT)
                 outputs['output'] = result
         except subprocess.CalledProcessError as e:
             outputs['returncode'] = e.returncode
@@ -477,10 +483,15 @@ class Pipeline(object):
         intermediates = [inputs]
         for ki in self.klist:
             inp = intermediates[-1]
-            if isinstance(inp, list) and ki.operation != 'gather':
-                intermediates.append(self.client.map(ki.run, inp, pure=False))
-            else:
+            if isinstance(inp, list) and ki.operation == 'gather':
                 intermediates.append(self.client.submit(ki.run, inp, pure=False))
+            else:
+                if isinstance(inp, list):
+                    intermediates.append(self.client.map(ki.run, inp, 
+                                                         pure=False))
+                else:
+                    intermediates.append(self.client.submit(ki.run, inp, 
+                                                            pure=False))
         outputs = intermediates[-1]
         if isinstance(outputs, list):
             outputs = self.client.gather(outputs)

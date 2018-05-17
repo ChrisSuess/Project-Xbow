@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import xbow
+import boto3
+import yaml
+import os
+import sys
+import time
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+user_data = 'dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'])
+
+def DelFS(name, image_id, instance_type, region=None,
+           user_data=None, efs_security_groups=None, ec2_security_groups=None, username=None,
+           shared_file_system=None, mount_point=None):
+
+    efs_client = boto3.client('efs', region_name=region)
+    ec2_resource = boto3.resource('ec2', region_name=region)
+
+    dfs = efs_client.describe_file_systems
+    response = dfs(CreationToken=shared_file_system)['FileSystems']
+    deleteFS = efs_client.delete_file_system(
+        FileSystemId = response[0]['FileSystemId']
+    )
+
+def DelMT(name, image_id, instance_type, region=None,
+           user_data=None, efs_security_groups=None, ec2_security_groups=None, username=None,
+           shared_file_system=None, mount_point=None):
+
+    efs_client = boto3.client('efs', region_name=region)
+    ec2_resource = boto3.resource('ec2', region_name=region)
+
+    dmt = efs_client.describe_mount_targets
+    dfs = efs_client.describe_file_systems
+
+    response = dfs(CreationToken=shared_file_system)['FileSystems']
+    describe = dmt(FileSystemId = response[0]['FileSystemId'])
+
+    #mounttargets = describe["MountTargets"]
+    #print(mounttargets)
+
+    #targetid = mounttargets[0]['MountTargetId']
+    #print(targetid)
+
+    for Mounts in describe["MountTargets"]:
+        motargets = Mounts['MountTargetId']
+        #print(motargets)
+        efs_client.delete_mount_target(MountTargetId = motargets)
+
+while True:
+    get_input = input
+
+    if sys.version_info[:2] <= (2, 7):
+        get_input = raw_input
+
+    print("This will irrevisbly delete your filesystem")
+    a = get_input("Enter yes/no to continue: ")
+    if a=="yes":
+        print("Deleting Mount Targets")
+        DelMT(
+            cfg['scheduler_name'],
+            image_id=cfg['image_id'],
+            instance_type=cfg['scheduler_instance_type'],
+            shared_file_system=cfg['shared_file_system'],
+            mount_point=cfg['mount_point'],
+            ec2_security_groups = cfg['ec2_security_groups'],
+            efs_security_groups = cfg['efs_security_groups'],
+            user_data=user_data
+        )
+        print("Deleting filesystem")
+        time.sleep(15)
+        DelFS(
+            cfg['scheduler_name'],
+            image_id=cfg['image_id'],
+            instance_type=cfg['scheduler_instance_type'],
+            shared_file_system=cfg['shared_file_system'],
+            mount_point=cfg['mount_point'],
+            ec2_security_groups = cfg['ec2_security_groups'],
+            efs_security_groups = cfg['efs_security_groups'],
+            user_data=user_data
+        )
+        break
+    elif a=="no":
+        print("Your filesystem has not been deleted")
+        break
+    else:
+        print("Enter either yes/no")
+

@@ -72,7 +72,7 @@ class Extension(Ext, object):
 
 setup_args = {
     'name':             "xbow",
-    'version':          "0.3.5",
+    'version':          "0.3.9",
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",
     'author':          "Christian Suess, Charlie Laughton",
@@ -102,6 +102,7 @@ setup_args = {
     'scripts': ['scripts/xbow-create_cluster',
                 'scripts/xbow-delete_cluster',
 		'scripts/xbow-delete_workers',
+                'scripts/xbow-delete_filesystem',
 		'scripts/xbow-create_filesystem',
 		'scripts/xbow-sync',
                 'scripts/xbow-configure',

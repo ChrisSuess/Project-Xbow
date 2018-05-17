@@ -20,8 +20,8 @@ def create_settings():
     """
     try:
 	
-	if not os.path.exists(os.path.expanduser('~/.xbow')):
-	    os.makedirs(os.path.expanduser('~/.xbow'))
+        if not os.path.exists(os.path.expanduser('~/.xbow')):
+            os.makedirs(os.path.expanduser('~/.xbow'))
 
         # Test for the old directory presence (IE updating).
         if os.path.isdir(os.path.expanduser('~/.Xbow')):
@@ -42,23 +42,22 @@ def create_settings():
 
             HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
 
-	    HOSTFILE.write('region: eu-west-1\n')
-	    HOSTFILE.write("price: '0.5'\n")
-	    HOSTFILE.write('worker_instance_type: g2.2xlarge\n')
-	    HOSTFILE.write('scheduler_instance_type: t2.small\n')
-	    HOSTFILE.write('image_id: ami-812d04f8 # new image created 30/4/2018\n')
-	    HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
-	    #HOSTFILE.write("ec2_sg: Xbow-SG-ec2 # This should be the same as ec2_security_groups except without the brackets\n")
-	    HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
-	    #HOSTFILE.write("efs_sg: Xbow-SG-mt # This should be the same as efs_security_groups except without the brackets\n")
-	    HOSTFILE.write('shared_file_system: MyFileSystem\n')
-	    HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
-	    HOSTFILE.write('cluster_name: MyCluster\n')
-	    HOSTFILE.write('scheduler_name: MyScheduler\n')
-	    HOSTFILE.write('worker_pool_name: MyWorkers\n')
-	    HOSTFILE.write('pool_size: 2\n')
+            HOSTFILE.write('region: eu-west-1\n')
+            HOSTFILE.write("price: '0.05'\n")
+            HOSTFILE.write('worker_instance_type: c5.large\n')
+            HOSTFILE.write('scheduler_instance_type: t2.small\n')
+            HOSTFILE.write('image_id: ami-115f6a68 # new image created 08/05/2018\n')
+            HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
+            HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
+            HOSTFILE.write('shared_file_system: MyFileSystem\n')
+            HOSTFILE.write('creation_token: MyFileSystem\n')
+            HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
+            HOSTFILE.write('cluster_name: MyCluster\n')
+            HOSTFILE.write('scheduler_name: MyScheduler\n')
+            HOSTFILE.write('worker_pool_name: MyWorkers\n')
+            HOSTFILE.write('pool_size: 1\n')
 
-	    HOSTFILE.close()
+            HOSTFILE.close()
 
 
         else:
@@ -98,7 +97,7 @@ def configure_pem_keys(region=None, force=False):
         pem_file = os.path.join(xbow.XBOW_CONFIGDIR, keyname) + '.pem'
         with open(pem_file, 'w') as f:
             f.write(response['KeyMaterial'])
-        os.chmod(pem_file, 0600)
+        os.chmod(pem_file, 0o600)
 
 def configure_sg_groups(region=None, force=False):
     """
@@ -125,10 +124,8 @@ def configure_sg_groups(region=None, force=False):
                  'ToPort': 2049,
                  'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
             ])
-        #print('Ingress Successfully Set %s' % data)
     except ClientError as e:
-#        print(e)
-	print('The security key SG-Xbow already exists')
+        print('The security key SG-Xbow already exists')
 
     try:
         response = ec2.create_security_group(GroupName=cfg['ec2_security_groups'][0],

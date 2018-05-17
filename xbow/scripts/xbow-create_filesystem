@@ -27,16 +27,25 @@ def CreateFS(name, image_id, instance_type, region=None,
         response = dfs(CreationToken=shared_file_system)['FileSystems']
         if len(response) > 0:
             FileSystemId = response[0]['FileSystemId']
-	    LifeState = response[0]['LifeCycleState']
+            LifeState = response[0]['LifeCycleState']
 	    #print(LifeState)
         else:
             cfs = efs_client.create_file_system
             response = cfs(CreationToken=shared_file_system, Encrypted=True)
             FileSystemId = response['FileSystemId']
-	    LifeState = response['LifeCycleState']
+            LifeState = response['LifeCycleState']
+            taggy = efs_client.create_tags(
+                FileSystemId = response['FileSystemId'],
+                    Tags=[
+                        {
+                            'Key': 'Name',
+                            'Value': cfg['creation_token']
+                        },
+                    ]
+            )
             #print(LifeState)
 
-	time.sleep(5)
+        time.sleep(5)
 
         subnets = ec2_resource.subnets.all()
         sgf = ec2_resource.security_groups.filter
@@ -44,8 +53,8 @@ def CreateFS(name, image_id, instance_type, region=None,
         efs_security_groupid = [security_group.group_id
                                     for security_group in security_groups]
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-	
-	mounttargets = response["MountTargets"]
+
+        mounttargets = response["MountTargets"]
 	#ready = mounttargets[0]['LifeCycleState']
 	#print(mounttargets)
         if len(mounttargets) == 0:
@@ -62,22 +71,21 @@ def CreateFS(name, image_id, instance_type, region=None,
         mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
-	
+
         response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
         mounttargets = response["MountTargets"]
         #print(mounttargets)
-	ready = mounttargets[0]['LifeCycleState']
-	#print(ready)
+        ready = mounttargets[0]['LifeCycleState']
+        #print(ready)
         try:
             available = 0
-	    print("Checking targets for availability")
+            print("Checking targets for availability")
             while available == 0:
                 #time.sleep(5)
-		response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-		mounttargets = response["MountTargets"]
+                response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+                mounttargets = response["MountTargets"]
                 ready2 = mounttargets[0]['LifeCycleState']
-		#print(ready2)
-		time.sleep(5)
+                time.sleep(5)
                 if ready2 == 'available':
                     available = 1
             if available == 1:

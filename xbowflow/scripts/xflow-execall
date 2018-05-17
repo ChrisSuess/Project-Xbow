@@ -30,5 +30,5 @@ def myfunc(cmd):
 result = client.run(myfunc, full_cmd)
 for key in result.keys():
     print('Worker {}:'.format(key))
-    print(result[key])
+    print(result[key].decode('utf-8'))
 client.close()

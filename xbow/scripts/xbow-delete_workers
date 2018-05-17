@@ -17,19 +17,19 @@ def terminate_cluster(name=None, region=None):
     client = boto3.client('ec2')
     ec2 = boto3.resource('ec2', region_name=region)
     if name is not None:
-	response = ec2.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values': [name]}])
-	spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+        response = ec2.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values': [name]}])
+        spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
         instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
-	if len(instances) == 0:
+        if len(instances) == 0:
             raise ValueError('Error - no such cluster')
 
-	shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
-	if len(spot_instance_request_ids) > 1:
+        shansh = ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}])
+        if len(spot_instance_request_ids) >= 1:
             client.cancel_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids, DryRun=False)
-	    print('cancelling all spot requests')
+            print('cancelling all spot requests')
 
-	shansh.terminate(DryRun=False)
-	print('Terminating instances')
+        shansh.terminate(DryRun=False)
+        print('Terminating instances')
 
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 

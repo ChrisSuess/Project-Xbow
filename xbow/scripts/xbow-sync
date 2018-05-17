@@ -48,11 +48,11 @@ def exists_remote(name=None, instance_id=None, region=None):
     if check == 1:
         client2cloud = 'rsync -avz --progress -e "ssh -i {}" {}/ {}@{}:{}/{}/'.format(pem_file, cwd, username, instance.public_dns_name, mount_point, base)
         subprocess.call(client2cloud, shell=True)
-	return True
+        return True
     if check == 0:
         cloud2client = 'rsync -avz -e "ssh -i {}" {}@{}:{}/{}/ {}/'.format(pem_file, username, instance.public_dns_name, mount_point, base, cwd)
         subprocess.call(cloud2client, shell=True)
-	return False
+        return False
     raise Exception('SSH failed')
 
 try:
