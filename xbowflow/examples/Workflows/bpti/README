@@ -8,6 +8,8 @@ input parameters for this instance
 
 before running:
 
+0. Make sure your verion of xbowflow >= 0.0.26
+
 1. Edit bpti.yaml to set the correct path to the shared directory (the ones 
    these files are in)
 2. (Optional) If you want to change the length of the MD job, edit mdrun.mdp 

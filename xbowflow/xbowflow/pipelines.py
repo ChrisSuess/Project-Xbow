@@ -492,11 +492,11 @@ class Pipeline(object):
                                                          pure=False))
                 else:
                     inter = self.client.submit(ki.run, inp, pure=False)
-                    if ki.operation = 'scatter':
-                        intermedfiates.append(inter.result())
+                    if ki.operation == 'scatter':
+                        intermediates.append(inter.result())
                         evaluated = True
                     else:
-                        intermedfiates.append(inter)
+                        intermediates.append(inter)
         outputs = intermediates[-1]
         if not evaluated:
             if isinstance(outputs, list):
