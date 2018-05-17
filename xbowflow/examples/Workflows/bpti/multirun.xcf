@@ -1,5 +1,5 @@
 workflow:
-    dryrun: True
+    dryrun: False
     stages:
         - stage1
 

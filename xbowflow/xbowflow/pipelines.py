@@ -482,6 +482,7 @@ class Pipeline(object):
 
         intermediates = [inputs]
         for ki in self.klist:
+            evaluated = False
             inp = intermediates[-1]
             if isinstance(inp, list) and ki.operation == 'gather':
                 intermediates.append(self.client.submit(ki.run, inp, pure=False))
@@ -490,13 +491,18 @@ class Pipeline(object):
                     intermediates.append(self.client.map(ki.run, inp, 
                                                          pure=False))
                 else:
-                    intermediates.append(self.client.submit(ki.run, inp, 
-                                                            pure=False))
+                    inter = self.client.submit(ki.run, inp, pure=False)
+                    if ki.operation = 'scatter':
+                        intermedfiates.append(inter.result())
+                        evaluated = True
+                    else:
+                        intermedfiates.append(inter)
         outputs = intermediates[-1]
-        if isinstance(outputs, list):
-            outputs = self.client.gather(outputs)
-        else:
-            outputs = outputs.result()
+        if not evaluated:
+            if isinstance(outputs, list):
+                outputs = self.client.gather(outputs)
+            else:
+                outputs = outputs.result()
         return outputs
 
     def dryrun(self, inputs):
