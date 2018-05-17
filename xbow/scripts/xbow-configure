@@ -50,6 +50,7 @@ def create_settings():
             HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2']\n")
             HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
             HOSTFILE.write('shared_file_system: MyFileSystem\n')
+            HOSTFILE.write('creation_token: MyFileSystem\n')
             HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
             HOSTFILE.write('cluster_name: MyCluster\n')
             HOSTFILE.write('scheduler_name: MyScheduler\n')
