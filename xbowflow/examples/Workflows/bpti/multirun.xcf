@@ -1,0 +1,26 @@
+workflow:
+    dryrun: True
+    stages:
+        - stage1
+
+stage1:
+    steps:
+        - ix1
+        - gromacs
+
+ix1:
+    type: interfacekernel
+    configuration: 
+        - rep      ]= {reps}
+        - workdir  $= {shared}/{rep}
+        
+gromacs:
+    type: subprocesskernel
+    configuration: >
+        gmx mdrun -s {shared}/{tprfile} -deffnm {workdir}/{deffnm}
+
+inputs:
+    - shared # name of shared directory
+    - tprfile # Gromacs tpr file
+    - deffnm # Default name for output files
+    - reps # whitespace separated list of replicate subdirectory names
