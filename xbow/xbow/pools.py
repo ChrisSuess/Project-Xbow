@@ -5,8 +5,8 @@ import base64
 import time
 import xbow
 
-from metering import SpotMeter
-from instances import ConnectedInstance
+from .metering import SpotMeter
+from .instances import ConnectedInstance
 
 def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                      instance_type=None, user_data=None,
