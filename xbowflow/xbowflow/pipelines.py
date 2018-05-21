@@ -77,20 +77,29 @@ from all the words in the rest of the string: the *definition*. The available
           dictionaries produced by this kernel will set the *key* to one word
           from the list of words in the *definition*.
           Example:
-              input dict: {'reps': '1 2'}
+              input dict: {'reps': ['1', '2']}
               operation:  'rep ]= {reps}'
-              output dicts: [{'rep': '1', 'reps': '1 2'}, 
-                             {'rep': '2', 'reps': '1 2'}]
+              output dicts: [{'rep': '1', 'reps': ['1', '2']}, 
+                             {'rep': '2', 'reps': ['1', '2']}]
 
-    [=  : The gather operator. The *key* gets the space-separated list of 
+    [=  : The gather operator. The *key* gets the list of 
           values of the *definition* from each of the input dictionaries in the
           list of input dictionaries.
           Example:
               input dicts [{'rep': 1}, {'rep': 2}]
               operation:  'reps [= {rep}'
-              output dict: {'reps': '1 2', 'rep': 2}
+              output dict: {'reps': [1, 2], 'rep': 2}
               (note how the value of 'rep' in the output dict is set from the
               value in the last input dict)
+
+    +=  : The append operator. Similar to the gather operator, the *key* gets 
+          the list of values of the *definition* from each of the input 
+          dictionaries in the list of input dictionaries appended to it.
+          Example:
+              input dicts [{'reps': [1, 2], 'rep': 3}, 
+                           {'reps': [1, 2], 'rep': 4}]
+              operation:  'reps += {rep}'
+              output dict: {'reps': [1, 2, 3, 4], 'rep': 4}
 
 The list of operation strings are used to modify the input dict (or list of
 dicts) and produce the output dict (or list of dicts) as follows. First the 
@@ -130,7 +139,7 @@ will produce the outputs dictionary:
 
 Scatter example::
 inputs:
-    {'file': 'data', 'sections': 'section1 section2'}
+    {'file': 'data', 'sections': ['section1', 'section2']}
 desired outputs:
     [{'filename': 'data-section1'}, {'filename': 'data-section2'}]
 scatter definition:
@@ -141,7 +150,7 @@ Gather example:
 inputs:
     [{'filename': 'data-section1'}, {'filename': 'data-section2'}]
 desired outputs:
-    {'filenames': 'data-section1 data-section2'}
+    {'filenames': ['data-section1', 'data-section2']}
 gather definition:
     ['filenames [= {filename}']
 
@@ -163,6 +172,10 @@ passed to it, e.g.:
 
     append_kernel = SubprocessKernel('cat {input} >> {output}')
     result = append_kernel.run({'input': 'newdata.dat', 'output': 'all.dat'})
+
+If the placeholder refers to a key in the inputs dictionary that is a list, 
+it will be represented as a string formed from the space-separeted values of
+the list elements.
 
 FunctionKernels
 ---------------
@@ -241,6 +254,8 @@ class InterfaceKernel(object):
                 self.operation = 'scatter'
             if self.connections[i][1] == '[=':
                 self.operation = 'gather'
+            if self.connections[i][1] == '+=':
+                self.operation = 'gather'
             if len(self.connections[i]) != 3:
                 print('Error: {}'.format(self.connections[i]))
                 exit(1)
@@ -255,8 +270,7 @@ class InterfaceKernel(object):
 
         Returns:
             dict or list of dicts. These are guaranteed to contain at least
-            two keys:
-                'cmd' : the command that the next execution kernel will run
+            one key:
                 'returncode' : the returncode from running this kernel, or
                 that of the previous kernel in the pipeline that exited with
                 a non-zero returncode.
@@ -301,14 +315,23 @@ class InterfaceKernel(object):
                     if outputs['returncode'] != 0:
                         return outputs
                 for con in self.connections:
-                    if con[1] == '[=' or con[1] == '$=':
+                    if con[1] == '$=':
                         outputs[con[0]] = con[2].format(**outputs)
                     elif con[1] == '?=':
                         outputs[con[0]] = str(eval(con[2].format(**outputs)))
+                    elif con[1] == '[=':
+                        outputs[con[0]] = [(con[2].format(**outputs))]
+                    elif con[1] == '+=':
+                        if con[0] in outputs:
+                            if not isinstance(outputs[con[0]], list):
+                                outputs[con[0]] = [outputs[con[0]]] 
+                            outputs[con[0]].append(con[2].format(**outputs))
+                        else:
+                            outputs[con[0]] = [con[2].format(**outputs)]
                 for inp in inputs[1:]:
                     for con in self.connections:
-                        if con[1] == '[=':
-                            outputs[con[0]] = outputs[con[0]] + ' ' + con[2].format(**inp)
+                        if con[1] == '[=' or con[1] == '+=':
+                            outputs[con[0]].append(con[2].format(**inp))
                 
                 outputs['returncode'] = 0
                 return outputs
@@ -323,10 +346,10 @@ class InterfaceKernel(object):
                     return outputs
             for con in self.connections:
                 if con[1] == ']=':
-                    scatterwidth = len(con[2].format(**inputs).split())
+                    scatterwidth = len(inputs[con[2][1:-1]])
                     if self.scatterwidth is not None:
                         if self.scatterwidth != scatterwidth:
-                            raise ValueError('Error - inconsistent widths in scatter interface')
+                            raise ValueError('Error - inconsistent widths in scatter interface {} {}'.format(con[0], con[2]))
                     else:
                         self.scatterwidth = scatterwidth
             outputs = []
@@ -335,7 +358,7 @@ class InterfaceKernel(object):
                     output = inputs.copy()
                     for con in self.connections:
                         if con[1] == ']=':
-                            output[con[0]] = con[2].format(**output).split()[i]                         
+                            output[con[0]] = output[con[2][1:-1]][i]
                         elif con[1] == '?=':
                             output[con[0]] = str(eval(con[2].format(**output)))
                         elif con[1] == '$=':
@@ -388,7 +411,13 @@ class SubprocessKernel(object):
         else:
             outputs['returncode'] = 0
         try:
-            cmd = self.template.format(**inputs)
+            tmpinp = {}
+            for key in inputs:
+                if isinstance(inputs[key], list):
+                    tmpinp[key] = ' '.join(str(k) for k in inputs[key])
+                else:
+                    tmpinp[key] = inputs[key]
+            cmd = self.template.format(**tmpinp)
             tmpdir = tempfile.mkdtemp()
             preamble = 'mkdir -p {}; cd {}; '.format(tmpdir, tmpdir)
             cmd = preamble + cmd

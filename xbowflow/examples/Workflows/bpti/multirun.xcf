@@ -1,5 +1,5 @@
 workflow:
-    dryrun: False
+    dryrun: True
     stages:
         - stage1
 
@@ -23,4 +23,4 @@ inputs:
     - shared # name of shared directory
     - tprfile # Gromacs tpr file
     - deffnm # Default name for output files
-    - reps # whitespace separated list of replicate subdirectory names
+    - reps # list of replicate subdirectory names

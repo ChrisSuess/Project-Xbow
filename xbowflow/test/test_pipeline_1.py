@@ -22,7 +22,8 @@ foo_kernel = SubprocessKernel(foo_template)
 ix1 = InterfaceKernel(cx1)
 i12 = InterfaceKernel(c12)
 
-client = dask_client(local=True)
+# client = dask_client(local=True)
+client = None
 pipe = Pipeline(client, [ix1, foo_kernel, i12, foo_kernel])
 
 inputs = {'name': 'foo'}

@@ -28,6 +28,7 @@ c23 = [
 c34 = [
         'ref_coordinate_list [= {shared}/csaw_{cycle}_{rep}.rst7',
         'reps                [= {rep}',
+        'trajectories        += {trajectory}',
       ]
 
 c41 = [
@@ -52,7 +53,7 @@ coco_template = ' pyCoCo -v -n 2 --dims 4 --grid 13 '\
                 ' -t {shared}/csaw_amber.pdb'\
                 ' -s "(not water) and (mass > 2.0)" '\
                 ' -o {ref_coordinate_list}'\
-                ' -i {shared}/*.nc'\
+                ' -i {trajectories}'\
                 ' -l {shared}/coco{cycle}{rep}.log'
 
 amber_kernel = SubprocessKernel(amber_template)
@@ -67,6 +68,7 @@ i41 = InterfaceKernel(c41)
 #client = dask_client(local=True)
 client = None
 prepipe = Pipeline(client, [ix1])
+#mainpipe = Pipeline(client, [amber_kernel, i12, amber_kernel, i23, amber_kernel, i34, coco_kernel])
 mainpipe = Pipeline(client, [amber_kernel, i12, amber_kernel, i23, amber_kernel, i34, coco_kernel, i41])
 
 
