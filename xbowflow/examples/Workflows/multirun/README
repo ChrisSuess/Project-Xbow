@@ -1,0 +1,12 @@
+Skeleton for a simple multi-replicate MD workflow.
+Individual MD jobs share the same simulation protocol but write their outputs
+to unique subdirectories.
+
+The file multirun.xcf defines the workflow, while systems.yaml provides the
+input parameters for this instance
+
+to run:
+
+xflow-run multirun.xcf systems.yaml
+
+Note this a skeleton only and cannot be run for real.

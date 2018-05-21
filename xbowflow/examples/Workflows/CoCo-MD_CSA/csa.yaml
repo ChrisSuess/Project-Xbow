@@ -1,0 +1,24 @@
+# Input file for CoCo-MD run on cyclosporine A
+# A: General parameters
+system_name:       csa
+shared_dir:        /home/ubuntu/shared/CoCo-MD_CSA
+ncycles:           2
+# B: MD parameters
+md_exe:            mpirun -np 2 pmemd.MPI
+start_coordinates: /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
+target_coordinates_list:  
+                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
+                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
+
+repids:            [0, 1]
+topfile:           /home/ubuntu/shared/CoCo-MD_CSA/csa.top
+md_input_1:        /home/ubuntu/shared/CoCo-MD_CSA/tmd_1.in
+md_input_2:        /home/ubuntu/shared/CoCo-MD_CSA/tmd_2.in
+md_input_3:        /home/ubuntu/shared/CoCo-MD_CSA/production.in
+# C: CoCo parameters
+coco_exe:          pyCoCo -v
+refpdb:            /home/ubuntu/shared/CoCo-MD_CSA/csa_amber.pdb
+grid_size:         13
+ndims:             4
+nreps:             2
+selection:         '"(not water) and mass > 2.0"'

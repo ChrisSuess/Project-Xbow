@@ -1,3 +1,7 @@
+# Workflow that will run a set of MD simulations in as parallel a manner as
+# resources allow. Each simulation uses the same MD protocol, but reads and
+# writes data from a unique subdirectory.
+
 workflow:
     dryrun: True
     stages:
@@ -19,7 +23,7 @@ amber:
     type: subprocesskernel
     configuration: >
         mpirun -np 2 pmemd.MPI -O -c {workdir}/{inpcrd}
-        -p {shared}/{parmtop}
+        -p {workdir}/{parmtop}
         -i {shared}/{mdin}
         -x {workdir}/{trajfile}
 
@@ -28,4 +32,4 @@ inputs:
     - mdin # MD input file
     - inpcrd # starting coordinates
     - trajfile # name of output trajectory file
-    - reps # whitespace separated list of replicate subdirectory names
+    - reps # list of replicate subdirectory names

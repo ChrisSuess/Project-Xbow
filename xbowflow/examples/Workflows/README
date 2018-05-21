@@ -1,6 +1,0 @@
-The examples in this directory are taken from the Wiki documentation, and
-are to demonstrate basic workflow syntax. They should only be run in 'Dryrun'
-mode.
-
-The examples in the dhfr and bpti folders are fully-fledged applications and
-can be run for real on an xbow cluster.

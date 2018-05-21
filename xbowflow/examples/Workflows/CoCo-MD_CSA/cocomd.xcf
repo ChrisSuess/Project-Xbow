@@ -71,6 +71,7 @@ i34:
     configuration:
        - target_coordinates_list [= {shared_dir}/{system_name}_{cycle}_{repid}.rst7
        - repids                  [= {repid}
+       - trajectories            += {trajectory}
 
 # CoCo kernel
 coco:
@@ -80,7 +81,7 @@ coco:
         -t {refpdb}
         -s {selection}
         -o {target_coordinates_list}
-        -i {shared_dir}/*.nc
+        -i {trajectories}
         -l {shared_dir}/coco_{cycle}.log
 
 # Interface between CoCo step and 1st MD step of next cycle
@@ -100,8 +101,8 @@ inputs:
    - shared_dir # The shared directory visible to all workers
    - md_exe # The name of the md executable - can also include 'mpirun' etc.
    - start_coordinates # The 'good' coordinates used to start targetted MD steps
-   - target_coordinates_list # A whitespace separated list of coordinate files
-   - repids # A whitespace separated list of the IDs for each replicate
+   - target_coordinates_list # A list of coordinates used as targets first round
+   - repids # A list of the IDs for each replicate
    - topfile # The topology file
    - md_input_1 # Input file for MD step 1 (restrained/targetted MD)
    - md_input_2 # Input file for MD step 2 (restrained/targetted MD)
