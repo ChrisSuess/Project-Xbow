@@ -109,7 +109,7 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                                         'ImageId': image_id,
                                         'InstanceType': instance_type,
                                         'KeyName': key_name,
-                                        'UserData': base64.b64encode(user_data)
+                                        'UserData': base64.b64encode(bytes(user_data, 'utf-8')).decode()
                                        })
 
     n_up = 0
