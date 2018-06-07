@@ -8,8 +8,6 @@ import xbow
 import yaml
 import os
 
-# Configuration file should be in ~/.xbow/settings.yml
-
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
 with open(cfg_file, 'r') as ymlfile:
@@ -39,6 +37,7 @@ else:
     print("Scheduler ready, now starting workers. This may take some time...")
 
 user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
                         count=cfg['pool_size'],
                         price=cfg['price'],

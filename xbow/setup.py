@@ -72,7 +72,7 @@ class Extension(Ext, object):
 
 setup_args = {
     'name':             "xbow",
-    'version':          "0.3.9",
+    'version':          verstr,
     'description':      "Longbow in the cloud",
     'long_description': "A system to ease the use of cloud resources for MD simulations.",
     'author':          "Christian Suess, Charlie Laughton",
@@ -91,6 +91,7 @@ setup_args = {
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
