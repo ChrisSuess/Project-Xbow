@@ -39,8 +39,13 @@ def login_instance(name=None, instance_id=None, region=None):
         if username is None:
             print('Warning: cannot determine username, assuming it is ubuntu')
 
+
+        mount_point = cfg['mount_point']
+        cwd = os.getcwd()
+        base = os.path.basename(cwd)
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        launch_command = 'ssh -i {} {}@{} -oStrictHostKeyChecking=no'.format(pem_file, username, instance.public_dns_name)
+
+        launch_command = "ssh -i -t {} {}@{} -oStrictHostKeyChecking=no 'cd {}/{} && exec bash -l'".format(pem_file, username, instance.public_dns_name, mount_point, base)
         #return launch_command
 	#print(launch_command)
         subprocess.call(launch_command, shell=True)
