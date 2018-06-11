@@ -45,9 +45,8 @@ def login_instance(name=None, instance_id=None, region=None):
         base = os.path.basename(cwd)
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
 
-        launch_command = "ssh -i -t {} {}@{} -oStrictHostKeyChecking=no 'cd {}/{} && exec bash -l'".format(pem_file, username, instance.public_dns_name, mount_point, base)
-        #return launch_command
-	#print(launch_command)
+        launch_command = "ssh -t -i {} {}@{} -oStrictHostKeyChecking=no 'cd {}/{} && exec bash -l'".format(pem_file, username, instance.public_dns_name, mount_point, base)
+        #print(launch_command)
         subprocess.call(launch_command, shell=True)
      
 
