@@ -26,6 +26,7 @@ else:
     user_data = 'rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
     inst = instances.create(
                             cfg['scheduler_name'],
+                            username='ubuntu',
                             image_id=cfg['image_id'],
                             instance_type=cfg['scheduler_instance_type'],
                             shared_file_system=cfg['shared_file_system'],
@@ -39,6 +40,7 @@ else:
 user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
 
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
+                        username='ubuntu',
                         count=cfg['pool_size'],
                         price=cfg['price'],
                         image_id=cfg['image_id'],
