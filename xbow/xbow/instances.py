@@ -288,7 +288,7 @@ def create(name, image_id, instance_type, region=None,
     """
     Creates a single connected instance - not in the spot pool
     """
-
+    sshclient = paramiko.SSHClient()
     if region is None:
         region = boto3.session.Session().region_name
     if region is None:
@@ -304,25 +304,6 @@ def create(name, image_id, instance_type, region=None,
         raise ValueError('Error - an instance with this name already exists')
         
     image = ec2_resource.Image(image_id)
-    if username is None:   
-        if image.tags is None:
-            raise ValueError('Error - a username is required ')
-        tagdict = {}
-        for tag in image.tags:
-            tagdict[tag['Key']] = tag['Value']
-        username = tagdict.get('username')
-        if username is None:
-            raise ValueError('Error - a username is required ') 
-    else:
-        if image.tags is None:
-            image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
-        else:
-            tagdict = {}
-            for tag in image.tags:
-                tagdict[tag['Key']] = tag['Value']
-            username = tagdict.get('username')
-            if username is None:
-                image.create_tags(Tags=[{'Name': 'username', 'Values': [username]}])
 
     efs_client = boto3.client('efs', region_name=region)
 
@@ -372,6 +353,27 @@ def create(name, image_id, instance_type, region=None,
                                               UserData=user_data, SecurityGroups=ec2_security_groups,
                                               ClientToken=str(uuid.uuid4()), MaxCount=1, MinCount=1)[0]
     instance.wait_until_running()
+
+    if username is None:
+        username = 'ubuntu'
+        sshclient.connect(instance.public_ip_address, username=username,
+                          key_filename=pem_file, timeout=10)
+        #if image.tags is None:
+         #   for testusername in ['ubuntu', 'root', 'ec2_user']:
+         #       try:
+         #           sshclient.connect(instance.public_ip_address, username=testusername,
+         #                              key_filename=pem_file, timeout=10)
+         #           print("Hello")
+         #           username = testusername
+                    #username = tagdict['username']
+         #           break
+         #       except:
+         #           pass
+        #if username is None:
+            #raise ValueError('Error - a username is required ')
+
+    image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
+
     instance.create_tags(Tags=[{'Key': 'username', 'Value': username}, {'Key': 'name', 'Value': name}])
     return instance
 
