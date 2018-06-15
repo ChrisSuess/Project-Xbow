@@ -97,8 +97,15 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
         user_data = mount_command
     else:
         user_data = mount_command + user_data
-        
+
     rsi = ec2_resource.meta.client.request_spot_instances
+
+    if sys.version_info > (3, 0):
+        use_the_data = base64.b64encode(bytes(user_data, 'utf-8')).decode()
+
+    if sys.version_info[:2] <= (2, 7):
+        use_the_data = base64.b64encode(user_data)
+
     response = rsi(ClientToken=str(uuid.uuid4()),
                    InstanceCount=count,
                    SpotPrice=price,
@@ -109,9 +116,9 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                                         'ImageId': image_id,
                                         'InstanceType': instance_type,
                                         'KeyName': key_name,
-                                        'UserData': base64.b64encode(bytes(user_data, 'utf-8')).decode()
+                                        'UserData': use_the_data
                                        })
-
+        
     n_up = 0
     while n_up == 0:
         time.sleep(5)
