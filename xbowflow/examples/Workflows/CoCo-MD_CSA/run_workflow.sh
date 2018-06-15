@@ -1,3 +1,3 @@
 # Run the workflow
 #
-xflow-run cocomd.xcf csaw.yaml
+xflow-run cocomd.xcf csa.yaml
