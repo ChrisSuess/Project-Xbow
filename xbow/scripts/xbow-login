@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import xbow
+from xbow.instances import find_username
 import boto3
 import subprocess
 import os, yaml
@@ -31,22 +32,16 @@ def login_instance(name=None, instance_id=None, region=None):
     else:
         instance = instances[0]
         name = instance.key_name
-        username = None
-        if instance.tags is not None:
-            for tag in instance.tags:
-                if tag['Key'] == 'username':
-                    username = tag['Value']
+        username = find_username(instance)
         if username is None:
-            print('Warning: cannot determine username, assuming it is ubuntu')
+            raise RuntimeError('Error: cannot determine username of instance')
 
-
-        mount_point = cfg['mount_point']
         cwd = os.getcwd()
         base = os.path.basename(cwd)
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        cmd_change = 'export PS1="\[\e[34;1m\]\u\[\e[0m\]@\[\e[32;1m\]xbow\[\e[0m\]:\w> "'
+        #cmd_change = 'export PS1="\[\e[34;1m\]\u\[\e[0m\]@\[\e[32;1m\]xbow\[\e[0m\]:\w> "'
 
-        launch_command = "ssh -t -i {} {}@{} -oStrictHostKeyChecking=no 'cd {}/{} && exec bash -l'".format(pem_file, username, instance.public_dns_name, mount_point, base)
+        launch_command = "ssh -t -i {} {}@{} -oStrictHostKeyChecking=no 'exec bash -l'".format(pem_file, username, instance.public_dns_name)
         #print(launch_command)
         subprocess.call(launch_command, shell=True)
      

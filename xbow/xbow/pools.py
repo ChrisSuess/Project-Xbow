@@ -11,8 +11,7 @@ from .instances import ConnectedInstance
 
 def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                      instance_type=None, user_data=None,
-                     efs_security_groups=None, ec2_security_groups=None, username=None,
-                     shared_file_system=None, mount_point=None):
+                     ec2_security_groups=None):
     """
     Creates an instance of a SpotInstancePool.
 
@@ -25,13 +24,7 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
         region (str, optional): The EC2 region to create instances in. If not
             specified the value in tbe boto3 configuration file is used.
         security_groups (list): List of security groups for the instance.
-        username (str, optional): The username to connect to the instance. If
-            not supplied, an attempt will be name to find it from the tags
-            associated with the AMI.
         user_data (str, optional): Commands to be executed at start-up.
-        shared_file_system (str, optional): Name of an efs file system to
-            attach to each instance.
-        mount_point (str, optional): Mount directory for the shared file system.
 
     Returns:
         SpotInstancePool
@@ -52,52 +45,6 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
     if not os.path.exists(pem_file):
         raise RuntimeError('Error - cannot find key file {}'.format(pem_file))
-
-    if username is None:
-        image = ec2_resource.Image(image_id)
-        tagdict = {}
-        for tag in image.tags:
-            tagdict[tag['Key']] = tag['Value']
-        username = tagdict.get('username')
-
-    efs_client = boto3.client('efs', region_name=region)
-    if shared_file_system is not None:
-        dfs = efs_client.describe_file_systems
-        response = dfs(CreationToken=shared_file_system)['FileSystems']
-        if len(response) > 0:
-            FileSystemId = response[0]['FileSystemId']
-        else:
-            cfs = efs_client.create_file_system
-            response = cfs(CreationToken=shared_file_system)
-            FileSystemId = response['FileSystemId']
-
-        subnets = ec2_resource.subnets.all()
-        sgf = ec2_resource.security_groups.filter
-        security_groups = sgf(GroupNames=efs_security_groups)
-        efs_security_groupid = [security_group.group_id
-                                    for security_group in security_groups]
-        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
-        mounttargets = response["MountTargets"]
-        if len(mounttargets) == 0:
-            for subnet in subnets:
-                cmt = efs_client.create_mount_target
-                cmt(FileSystemId=FileSystemId,
-                    SubnetId=subnet.id,
-                    SecurityGroups=efs_security_groupid
-                   )
-
-        mount_command = '#!/bin/bash\n mkdir -p {}\n'.format(mount_point)
-        dnsname = '{}.efs.{}.amazonaws.com'.format(FileSystemId, region)
-        mount_command += 'mount -t nfs -o nfsvers=4.1,rsize=1048576,'
-        mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
-        mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
-        mount_command += ' chmod go+rw {}\n'.format(mount_point)
-    else:
-        mount_command = None
-    if user_data is None:
-        user_data = mount_command
-    else:
-        user_data = mount_command + user_data
 
     rsi = ec2_resource.meta.client.request_spot_instances
 
@@ -180,15 +127,6 @@ class SpotInstancePool(object):
 
         image_id = response['SpotInstanceRequests'][0]['LaunchSpecification']['ImageId']
         image = self.ec2_resource.Image(image_id)
-        tagdict = {}
-        if image.tags is None:
-            raise ValueError('Error - the chosen image does not define the username')
-        for tag in image.tags:
-            tagdict[tag['Key']] = tag['Value']
-        self.username = tagdict.get('username')
-
-        if self.username is None:
-            raise ValueError('Error - the chosen image does not define the username')
 
         self.outputs = None
         self.exit_statuses = None
@@ -257,9 +195,7 @@ class SpotInstancePool(object):
 
         my_waiter = self.ec2_resource.meta.client.get_waiter('instance_status_ok')
         my_waiter.wait(InstanceIds=self.instance_ids)
-        self.connected_instances = [ConnectedInstance(i,
-                                                      self.username,
-                                                      self.pem_file)
+        self.connected_instances = [ConnectedInstance(i, key_filename=self.pem_file)
                                     for i in self.instances]
         self.get_status()
 

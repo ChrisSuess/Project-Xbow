@@ -23,30 +23,24 @@ if len(schedulers) == 1:
 else:
     print("Starting the scheduler node - this may take some time...")
 
-    user_data = 'rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
+    user_data = '#!/bin/bash\n sudo -u ubuntu dask-scheduler > /home/ubuntu/scheduler.log 2>&1 &\n'
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
                             instance_type=cfg['scheduler_instance_type'],
-                            shared_file_system=cfg['shared_file_system'],
-                            mount_point=cfg['mount_point'],
                             ec2_security_groups = cfg['ec2_security_groups'],
-			    efs_security_groups = cfg['efs_security_groups'],
                             user_data=user_data
                       )
     print("Scheduler ready, now starting workers. This may take some time...")
 
-user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+user_data = '#!/bin/bash\n sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --worker-port 45792 {}:8786 &\n'.format(inst.private_ip_address)
 
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
                         count=cfg['pool_size'],
                         price=cfg['price'],
                         image_id=cfg['image_id'],
                         instance_type=cfg['worker_instance_type'],
-                        shared_file_system=cfg['shared_file_system'],
-                        mount_point=cfg['mount_point'],
                         ec2_security_groups=cfg['ec2_security_groups'],
-	                efs_security_groups=cfg['efs_security_groups'],
                         user_data=user_data
                       )
 print("Instance running, now waiting until xbow-cluster is accessible...")
