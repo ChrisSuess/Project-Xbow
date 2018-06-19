@@ -354,10 +354,8 @@ def create(name, image_id, instance_type, region=None,
                                               UserData=user_data, SecurityGroups=ec2_security_groups,
                                               ClientToken=str(uuid.uuid4()), MaxCount=1, MinCount=1)[0]
 
-    print(instance)
     instance.wait_until_running()
     instance.reload()
-    print(instance.public_ip_address)
 
     if username is None:
         for test_username in ['ubuntu', 'ec2_user']:
@@ -374,7 +372,7 @@ def create(name, image_id, instance_type, region=None,
 
     image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
 
-    instance.create_tags(Tags=[{'Key': 'username', 'Value': username}, {'Key': 'Name', 'Value': name}])
+    instance.create_tags(Tags=[{'Key': 'username', 'Value': username}, {'Key': 'name', 'Value': name}])
     return instance
 
 def terminate_cluster(name=None, region=None):
