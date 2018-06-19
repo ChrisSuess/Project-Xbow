@@ -44,7 +44,7 @@ def login_instance(name=None, instance_id=None, region=None):
         cwd = os.getcwd()
         base = os.path.basename(cwd)
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        cmd_change = 'export PS1="\[\e[34;1m\]\u\[\e[0m\]@\[\e[32;1m\]xbow\[\e[0m\]:\w> "'
+        #cmd_change = 'export PS1="\[\e[34;1m\]\u\[\e[0m\]@\[\e[32;1m\]xbow\[\e[0m\]:\w> "'
 
         launch_command = "ssh -t -i {} {}@{} -oStrictHostKeyChecking=no 'cd {}/{} && exec bash -l'".format(pem_file, username, instance.public_dns_name, mount_point, base)
         #print(launch_command)
