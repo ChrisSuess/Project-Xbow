@@ -359,12 +359,11 @@ def create(name, image_id, instance_type, region=None,
     instance.reload()
     print(instance.public_ip_address)
 
-    #username = None
     if username is None:
         for test_username in ['ubuntu', 'ec2_user']:
             try:
                 sshclient.connect(instance.public_ip_address, username=test_username,
-                                  key_filename=pem_file, timeout=300)
+                                  key_filename=pem_file)
                 username = test_username
                 sshclient.close()
                 break
