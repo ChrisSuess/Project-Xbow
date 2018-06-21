@@ -15,6 +15,8 @@ stage1:
 minimise:
     type: subprocesskernel
     configuration: minimise -i {inputfile} -o {outputfile}
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
 
 min2md:
     type: interfacekernel
@@ -27,6 +29,8 @@ min2md:
 md:
     type: subprocesskernel
     configuration: run_md -I {inputfile} -o {outputfile} --random_seed {seed}
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
 
 md2analysis:
     type: interfacekernel
@@ -37,3 +41,5 @@ md2analysis:
 analysis:
     type: subprocesskernel
     configuration: analyse -i {inputfiles} -o {outputfile}
+    inputfiles: [inputfiles]
+    outputfiles: [outputfile]

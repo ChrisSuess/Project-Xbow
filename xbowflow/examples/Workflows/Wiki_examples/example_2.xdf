@@ -14,16 +14,21 @@ stage1:
 foostep:
     type: subprocesskernel
     configuration: foo -i {inputfile} -o {outputfile}
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
 
 barstep:
     type: subprocesskernel
     configuration: bar -i {inputfile} -o {outputfile}
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
 
 prefoostep:
     type: interfacekernel
     configuration:
         - inputfile $= {foo_inputfile}
         - outputfile $= {foo_outputfile}
+
 foo2barstep:
     type: interfacekernel
     configuration:

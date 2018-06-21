@@ -1,5 +1,6 @@
 from __future__ import print_function
 import sys
+import os
 import tempfile
 import subprocess
 """
@@ -165,13 +166,37 @@ SubprocessKernels and FunctionKernels.
 
 SubprocessKernels
 -----------------
-These are initiated with a string argument, which is the template for the
-command the kernel will execute, as a Python subprocess. The template can
-contain placeholders for data from the input dictionary that will be 
-passed to it, e.g.:
+These are initiated as:
 
-    append_kernel = SubprocessKernel('cat {input} >> {output}')
-    result = append_kernel.run({'input': 'newdata.dat', 'output': 'all.dat'})
+    kernel = SubprocessKernel(template, inputfiles=None, outputfiles=None)
+
+'template' is a string that defines the command the kernel will executei as
+a Python subprocess.  The template will typically contain placeholders for 
+data from the input dictionary that will be passed to it. If the placeholders 
+refer to files, then they must be identified via the 'inputfiles' and/or
+'outputfiles' optional arguments, e.g.:
+
+    copy_kernel = SubprocessKernel('cat {input} > {output}',
+                                   inputfiles = ['input'],
+                                   outputfiles = ['output'])
+    result = copy_kernel.run({'input': 'newdata.dat', 'output': 'all.dat'})
+
+Note that only input and output FILES need to be specified - not, e.g. 
+placeholders to non-file things, e.g.:
+
+    head_kernel = SubprocessKernel('head -{num} {input} > {output}',
+                                   inputfiles = ['input'],
+                                   outputfiles = ['output'])
+    result = head_kernel.run({'input': 'newdata.dat', 'output': 'all.dat', 
+                              'num': 7})
+
+If one of the placeholders will feature in both the input and output, it will 
+appear in both lists, e.g.:
+
+    append_kernel = SubprocessKernel('cat {input} >> {all_data}',
+                                     inputfiles = ['input', 'all_data'],
+                                     outputfiles = ['all_data'])
+    result = append_kernel.run({'input': 'newdata.dat', 'all_data': 'all.dat'})
 
 If the placeholder refers to a key in the inputs dictionary that is a list, 
 it will be represented as a string formed from the space-separeted values of
@@ -180,17 +205,20 @@ the list elements.
 FunctionKernels
 ---------------
 These are initiated with a Python function that, when the run method is called,
-will be executed with the input dictionary as the sole argument, and produce
-the output dictionary, e.g.:
+will be executed with an input dictionary as the sole argument, and produce
+an output dictionary, e.g.:
 
     def myfunc(inputs):
         outputs = inputs
         outputs['count'] = len(inputs['filenames'].split())
         return outputs
 
+The kernel is instantiated in a similar manner to a SubprocessKernel, e.g.:
     count_kernel = FunctionKernel(myfunc)
     result = count_kernel.run({'filenames': 'file1 file2 file3'})
 
+Note that in this case there is no 'inputfiles=' argument, as we are only
+concerned with the number of file names, not their contents.
 
 Implementation details
 ======================
@@ -217,6 +245,27 @@ execute its command, but immediately output the input dictionary unchanged. In
 this way error messages rapidly 'fall through' the pipeline to the end.
 
 """
+class CompressedFileContents(object):
+    '''contains the contents of a file in compressed form'''
+    def __init__(self, filename):
+        self.name = filename
+        if os.path.exists(filename):
+            self.data = zlib.compress(open(filename, 'rb').read())
+        else:
+            self.data = None
+
+    def write(self, filename=None, suffix=None):
+        if suffix is not None:
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
+                f.write(zlib.decompress(self.data))
+            return f.name
+        else:
+            if filename is None:
+                filename = self.name
+            with open(filename, 'wb') as f:
+                f.write(zlib.decompress(self.data))
+            return filename
+
 class InterfaceKernel(object):
     def __init__(self, connections):
         """
@@ -372,18 +421,41 @@ class InterfaceKernel(object):
         
 
 class SubprocessKernel(object):
-    def __init__(self, template):
+    def __init__(self, template, inputfiles=None, outputfiles=None):
         """
         Builds a command from the template string and the input dict, then
         executes it  using the Python subprocess module
         
         Attributes:
             template (str): the template for the command to be executed
+            inputfiles (list): the placeholders in the template that are
+                input files.
+            outputfiles (list): the placeholders in the template that are
+                output files.
             operation (str): takes the value 'compute'
         """
         self.template = template
+        self.inputfiles = inputfiles
+        self.outputfiles = outputfiles
         self.operation = 'compute'
 
+    def pack(self, filenames):
+        result = []
+        if not isinstance(filenames, list):
+            filenames = [filenames]
+        for f in filenames:
+            result.append(CompressedFileContents(f))
+        if len(result) == 1:
+            return result[0]
+        else:
+            return result
+
+    def unpack(self, filenames):
+        if not isinstance(filenames, list):
+            filenames = [filenames]
+        for f in filenames:
+            if isinstance(f, CompressedFileContents):
+                f.write()
 
     def run(self, inputs, dryrun=False):
         """
@@ -418,9 +490,6 @@ class SubprocessKernel(object):
                 else:
                     tmpinp[key] = inputs[key]
             cmd = self.template.format(**tmpinp)
-            tmpdir = tempfile.mkdtemp()
-            preamble = 'mkdir -p {}; cd {}; '.format(tmpdir, tmpdir)
-            cmd = preamble + cmd
         except KeyError:
             print([key for key in inputs])
             print(self.template)
@@ -428,6 +497,11 @@ class SubprocessKernel(object):
         try:
             outputs['cmd'] = cmd
             if not dryrun:
+                tmpdir = tempfile.mkdtemp()
+                os.chdir(tmpdir)
+                if self.inputfiles is not None:
+                    for key in self.inputfiles:
+                        self.unpack(tmpinp[key])
                 result = subprocess.check_output(cmd, shell=True, 
                                              stderr=subprocess.STDOUT)
                 outputs['output'] = result
@@ -435,6 +509,9 @@ class SubprocessKernel(object):
             outputs['returncode'] = e.returncode
             outputs['cmd'] = e.cmd
             outputs['output'] = e.output
+        if self.outputfiles is not None and not dryrun:
+            for key in self.outputfiles:
+                outputs[key] = self.pack(outputs[key])
         return outputs
 
 

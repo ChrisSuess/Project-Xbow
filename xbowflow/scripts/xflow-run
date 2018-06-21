@@ -35,13 +35,18 @@ if 'inputs' in wconfig:
 if wconfig['workflow'].get('dryrun', False):
     client = None
 else:
-    client = dask_client()
+    client = dask_client(local=True)
 
 mykernels = {}
 for stage in wconfig['workflow']['stages']:
     for step in wconfig[stage]['steps']:
         ktype = wconfig[step]['type']
-        mykernels[step] = kernels[ktype](wconfig[step]['configuration'])
+        if ktype == 'interfacekernel':
+            mykernels[step] = kernels[ktype](wconfig[step]['configuration'])
+        elif ktype == 'subprocesskernel':
+            mykernels[step] = kernels[ktype](wconfig[step]['configuration'],
+                                             wconfig[step]['inputfiles'],
+                                             wconfig[step]['outputfiles'])
 
 output = inputs
 for stage in wconfig['workflow']['stages']:

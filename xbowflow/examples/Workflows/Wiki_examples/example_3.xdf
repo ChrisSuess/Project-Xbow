@@ -25,6 +25,8 @@ preloop_step:
 refine_step:
     type: subprocesskernel
     configuration: refine -i {inputfile} -o {outputfile}
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
 
 refine_interface:
     type: interfacekernel

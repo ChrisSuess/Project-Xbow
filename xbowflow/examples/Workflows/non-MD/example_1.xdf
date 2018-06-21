@@ -1,6 +1,6 @@
 # A very simple workflow with one stage and one step.
 workflow:
-    dryrun: True
+    #dryrun: True
     stages:
         - stage1
 
@@ -10,7 +10,7 @@ stage1:
 
 step1:
     type: subprocesskernel
-    configuration: foo -i {inputfile} -o {outputfile}
-    inputfiles: [inputfile]
-    outputfiles: [outputfile]
+    configuration: ./echo.sh {message} {outputfile}
+    inputfiles:
+    outputfiles:
 
