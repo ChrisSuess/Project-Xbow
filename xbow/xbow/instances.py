@@ -289,6 +289,7 @@ def create(name, image_id, instance_type, region=None,
     Creates a single connected instance - not in the spot pool
     """
     sshclient = paramiko.SSHClient()
+    sshclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     if region is None:
         region = boto3.session.Session().region_name
     if region is None:
@@ -352,25 +353,20 @@ def create(name, image_id, instance_type, region=None,
     instance = ec2_resource.create_instances(ImageId=image_id, InstanceType=instance_type, KeyName=key_name,
                                               UserData=user_data, SecurityGroups=ec2_security_groups,
                                               ClientToken=str(uuid.uuid4()), MaxCount=1, MinCount=1)[0]
+
     instance.wait_until_running()
+    instance.reload()
 
     if username is None:
-        username = 'ubuntu'
-        sshclient.connect(instance.public_ip_address, username=username,
-                          key_filename=pem_file, timeout=10)
-        #if image.tags is None:
-         #   for testusername in ['ubuntu', 'root', 'ec2_user']:
-         #       try:
-         #           sshclient.connect(instance.public_ip_address, username=testusername,
-         #                              key_filename=pem_file, timeout=10)
-         #           print("Hello")
-         #           username = testusername
-                    #username = tagdict['username']
-         #           break
-         #       except:
-         #           pass
-        #if username is None:
-            #raise ValueError('Error - a username is required ')
+        for test_username in ['ubuntu', 'ec2_user']:
+            try:
+                sshclient.connect(instance.public_ip_address, username=test_username,
+                                  key_filename=pem_file)
+                username = test_username
+                sshclient.close()
+                break
+            except:
+                pass
 
     image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
 
