@@ -4,67 +4,75 @@ import os
 import sys
 import yaml
 from xbowflow.pipelines import InterfaceKernel, SubprocessKernel, Pipeline
-from xbowflow.clients import dask_client
+#from xbowflow.clients import dask_client
+from distributed import Client, LocalCluster
 import argparse
+import time
 
-parser = argparse.ArgumentParser(description='Run an xbowflow workflow')
-parser.add_argument('configfile', help='Name of the workflow configuration file')
-parser.add_argument('inputsfile', help='Name of the workflow job inputs file')
+def runit(client, wconfig, inputs):
+    kernels = {
+               'interfacekernel': InterfaceKernel,
+               'subprocesskernel': SubprocessKernel,
+              }
 
-args = parser.parse_args()
+    # Set the reserved variable CWD to the current working directory:
+    if not 'CWD' in inputs:
+        inputs['CWD'] = os.getcwd()
 
-kernels = {
-           'interfacekernel': InterfaceKernel,
-           'subprocesskernel': SubprocessKernel,
-          }
+    if 'inputs' in wconfig:
+        for k in wconfig['inputs']:
+            if not k in inputs:
+                raise RuntimeError('Error - inputs is missing parameter {}'.format(k))
 
-with open(args.configfile) as f:
-    wconfig = yaml.load(f)
+    if wconfig['workflow'].get('dryrun', False):
+        client = None
 
-with open(args.inputsfile) as f:
-    inputs = yaml.load(f)
-# Set the reserved variable CWD to the current working directory:
-if not 'CWD' in inputs:
-    inputs['CWD'] = os.getcwd()
+    mykernels = {}
+    for stage in wconfig['workflow']['stages']:
+        for step in wconfig[stage]['steps']:
+            ktype = wconfig[step]['type']
+            mykernels[step] = kernels[ktype](wconfig[step]['configuration'])
 
-if 'inputs' in wconfig:
-    for k in wconfig['inputs']:
-        if not k in inputs:
-            raise RuntimeError('Error - inputs is missing parameter {}'.format(k))
+    output = inputs
+    for stage in wconfig['workflow']['stages']:
+        klist = [mykernels[k] for k in wconfig[stage]['steps']]
+        pipeline = Pipeline(client, klist)
+        if 'iterations' in wconfig[stage]:
+            n_its = inputs[wconfig[stage]['iterations']]
+        else:
+            n_its = 1
+        for i in range(n_its):
+            output = pipeline.run(output)
 
-if wconfig['workflow'].get('dryrun', False):
-    client = None
-else:
-    client = dask_client(local=True)
-
-print('All OK')
-exit(0)
-mykernels = {}
-for stage in wconfig['workflow']['stages']:
-    for step in wconfig[stage]['steps']:
-        ktype = wconfig[step]['type']
-        mykernels[step] = kernels[ktype](wconfig[step]['configuration'])
-
-output = inputs
-for stage in wconfig['workflow']['stages']:
-    klist = [mykernels[k] for k in wconfig[stage]['steps']]
-    pipeline = Pipeline(client, klist)
-    if 'iterations' in wconfig[stage]:
-        n_its = inputs[wconfig[stage]['iterations']]
+    ok = True
+    if isinstance(output, list):
+        for o in output:
+            if o['returncode'] != 0:
+                print(o['output'].decode('utf-8'))
+                ok = False
     else:
-        n_its = 1
-    for i in range(n_its):
-        output = pipeline.run(output)
-
-ok = True
-if isinstance(output, list):
-    for o in output:
-        if o['returncode'] != 0:
-            print(o['output'].decode('utf-8'))
+        if output['returncode'] != 0:
+            print(output['output'].decode('utf-8'))
             ok = False
-else:
-    if output['returncode'] != 0:
-        print(output['output'].decode('utf-8'))
-        ok = False
-if ok:
-    print('Workflow completed without errors')
+    return ok
+
+if __name__ ==  '__main__':
+    parser = argparse.ArgumentParser(description='Run an xbowflow workflow')
+    parser.add_argument('configfile', help='Name of the workflow configuration file')
+    parser.add_argument('inputsfile', help='Name of the workflow job inputs file')
+
+    args = parser.parse_args()
+
+    with open(args.configfile) as f:
+        wconfig = yaml.load(f)
+
+    with open(args.inputsfile) as f:
+        inputs = yaml.load(f)
+
+    print('going local')
+    cluster = LocalCluster()
+    client = Client(cluster)
+    ok = runit(client, wconfig, inputs)
+    client.close()
+    if ok:
+        print('Workflow completed without errors')
