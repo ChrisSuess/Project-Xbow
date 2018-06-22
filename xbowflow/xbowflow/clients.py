@@ -7,7 +7,8 @@ def dask_client(local=False, port=8786):
     returns an instance of a dask.distributed client
     """
     if local:
-        return Client()
+        client = Client()
+        return client
     ip = socket.gethostbyname(socket.gethostname())
     dask_scheduler = '{}:{}'.format(ip, port)
     try:
