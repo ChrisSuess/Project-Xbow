@@ -342,6 +342,7 @@ def create(name, image_id, instance_type, region=None,
         mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
+        mount_command += "sudo bash -c '{} {} nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev,noresvport 0 0 >> /etc/fstab'".format(dnsname, mount_point)
 
         print(mount_command)
 	
@@ -369,6 +370,8 @@ def create(name, image_id, instance_type, region=None,
                 break
             except:
                 pass
+
+    print(username)
 
     image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
 
