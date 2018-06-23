@@ -3,6 +3,8 @@ workflow:
     #dryrun: True
     stages:
         - stage1
+    inputfiles: 
+    outputfiles: [outputfile]
 
 stage1:
     steps:
@@ -10,7 +12,7 @@ stage1:
 
 step1:
     type: subprocesskernel
-    configuration: ./echo.sh {message} {outputfile}
+    configuration: echo {message} > {outputfile}
     inputfiles:
-    outputfiles:
+    outputfiles: [outputfile]
 

@@ -3,6 +3,7 @@ import sys
 import os
 import tempfile
 import subprocess
+import zlib
 """
 Introduction
 ============
@@ -245,6 +246,42 @@ execute its command, but immediately output the input dictionary unchanged. In
 this way error messages rapidly 'fall through' the pipeline to the end.
 
 """
+def pack(filenames):
+    result = []
+    if not isinstance(filenames, list):
+        filenames = [filenames]
+    for f in filenames:
+        result.append(CompressedFileContents(f))
+    if len(result) == 1:
+        return result[0]
+    else:
+        return result
+
+def unpack(data, create_files=True):
+    if not isinstance(data, list):
+        if not isinstance(data, CompressedFileContents):
+            result = data
+            #raise TypeError('Error - not a CompressedFileContents')
+        else:
+            if create_files:
+                data.write()
+            result =  data.name
+    else:
+        if not isinstance(data[0], CompressedFileContents):
+            result = data
+            #raise TypeError('Error - not a CompressedFileContents')
+        else:
+            body, ext = os.path.splitext(data[0].name)  
+            result = []
+            for i in range(len(data)):
+                filename = data[i].name
+                if os.path.exists(filename):
+                    filename = '{}{}{}'.format(body, i, ext)
+                if create_files:
+                    f.write(filename=filename)
+                result.append(filename)
+    return result
+
 class CompressedFileContents(object):
     '''contains the contents of a file in compressed form'''
     def __init__(self, filename):
@@ -439,30 +476,11 @@ class SubprocessKernel(object):
         self.outputfiles = outputfiles
         self.operation = 'compute'
 
-    def pack(self, filenames):
-        result = []
-        if not isinstance(filenames, list):
-            filenames = [filenames]
-        for f in filenames:
-            result.append(CompressedFileContents(f))
-        if len(result) == 1:
-            return result[0]
-        else:
-            return result
-
-    def unpack(self, filenames):
-        if not isinstance(filenames, list):
-            filenames = [filenames]
-        for f in filenames:
-            if isinstance(f, CompressedFileContents):
-                f.write()
-
     def run(self, inputs, dryrun=False):
         """
         Run the kernel with the given inputs.
         Args:
-            inputs (dict): the inputs. Must contain a key 'cmd' which
-                contains a string that defines the command to be run.
+            inputs (dict): the inputs.
             dryrun (Bool, optional): if True, the command is not actually
                 executed
 
@@ -485,33 +503,33 @@ class SubprocessKernel(object):
         try:
             tmpinp = {}
             for key in inputs:
-                if isinstance(inputs[key], list):
+                tmpinp[key] = unpack(inputs[key], create_files=False)
+                if isinstance(tmpinp[key], list):
                     tmpinp[key] = ' '.join(str(k) for k in inputs[key])
-                else:
-                    tmpinp[key] = inputs[key]
-            cmd = self.template.format(**tmpinp)
         except KeyError:
             print([key for key in inputs])
             print(self.template)
             raise
-        try:
-            outputs['cmd'] = cmd
-            if not dryrun:
+        cmd = self.template.format(**tmpinp)
+        outputs['cmd'] = cmd
+        if not dryrun:
+            try:
                 tmpdir = tempfile.mkdtemp()
                 os.chdir(tmpdir)
                 if self.inputfiles is not None:
                     for key in self.inputfiles:
-                        self.unpack(tmpinp[key])
+                        dummyname = unpack(inputs[key])
                 result = subprocess.check_output(cmd, shell=True, 
                                              stderr=subprocess.STDOUT)
                 outputs['output'] = result
-        except subprocess.CalledProcessError as e:
-            outputs['returncode'] = e.returncode
-            outputs['cmd'] = e.cmd
-            outputs['output'] = e.output
-        if self.outputfiles is not None and not dryrun:
-            for key in self.outputfiles:
-                outputs[key] = self.pack(outputs[key])
+                if self.outputfiles is not None:
+                    for key in self.outputfiles:
+                        outputs[key] = unpack(outputs[key], create_files=False)
+                        outputs[key] = pack(outputs[key])
+            except subprocess.CalledProcessError as e:
+                outputs['returncode'] = e.returncode
+                outputs['cmd'] = e.cmd
+                outputs['output'] = e.output
         return outputs
 
 
