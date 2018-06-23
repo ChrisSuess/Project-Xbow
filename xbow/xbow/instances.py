@@ -342,6 +342,8 @@ def create(name, image_id, instance_type, region=None,
         mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
+
+        print(mount_command)
 	
     else:
         mount_command = None
