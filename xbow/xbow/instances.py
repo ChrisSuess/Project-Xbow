@@ -12,7 +12,7 @@ def find_username(instance, suggestions=['ubuntu', 'ec2_user']):
     key_filename = os.path.join(xbow.XBOW_CONFIGDIR, instance.key_name) + '.pem'
     username = None
     for test_username in suggestions:
-        print('Trying {}...'.format(test_username))
+        #print('Trying {}...'.format(test_username))
         try:
             sshclient.connect(instance.public_ip_address, 
                               key_filename=key_filename,
@@ -125,7 +125,7 @@ class ConnectedInstance(object):
             
         if self.status == 'busy':
             while self.channel.recv_ready():
-                self.output += self.channel.recv(1024)
+                self.output += self.channel.recv(1024).decode('utf-8')
             if self.channel.exit_status_ready():
                 self.exit_status = self.channel.recv_exit_status()
                 self.channel.close()

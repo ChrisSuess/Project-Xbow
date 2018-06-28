@@ -43,7 +43,7 @@ class SpotMeter(object):
         """
 
         dph = self.ec2_resource.meta.client.describe_spot_price_history
-        data = dph(InstanceTypes=[instance_type],
+        data = dph(InstanceTypes=[self.instance_type],
                    StartTime=datetime.datetime.now(),
                    Filters=[{'Name': 'product-description',
                              'Values':['Linux/UNIX']},
@@ -63,7 +63,7 @@ class SpotMeter(object):
             cost (float): The total cost in US dollars.
         """
         dph = self.ec2_resource.meta.client.describe_spot_price_history
-        data = dph(InstanceTypes=[instance_type],
+        data = dph(InstanceTypes=[self.instance_type],
                    EndTime=datetime.datetime.now(self.tz),
                    StartTime=self.start_time,
                    Filters=[{'Name': 'product-description',

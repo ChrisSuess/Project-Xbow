@@ -1,6 +1,7 @@
 from __future__ import print_function
 import sys
 import os
+import contextlib
 import tempfile
 import subprocess
 import zlib
@@ -276,11 +277,27 @@ def unpack(data, create_files=True):
             for i in range(len(data)):
                 filename = data[i].name
                 if os.path.exists(filename):
+                    print('Warning: file {} already exists, renaming it')
                     filename = '{}{}{}'.format(body, i, ext)
                 if create_files:
-                    f.write(filename=filename)
+                    data[i].write(filename=filename)
                 result.append(filename)
     return result
+
+@contextlib.contextmanager
+def working_directory(path):
+    """A context manager which changes the working directory to the given
+    path, and then changes it back to its previous value on exit.
+    Taken from: 
+    http://code.activestate.com/recipes/576620-changedirectory-context-manager/
+
+    """
+    prev_cwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev_cwd)
 
 class CompressedFileContents(object):
     '''contains the contents of a file in compressed form'''
@@ -290,17 +307,28 @@ class CompressedFileContents(object):
             self.data = zlib.compress(open(filename, 'rb').read())
         else:
             self.data = None
+        print('Packing {}'.format(filename))
 
     def write(self, filename=None, suffix=None):
         if suffix is not None:
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
-                f.write(zlib.decompress(self.data))
+                try:
+                    f.write(zlib.decompress(self.data))
+                except TypeError:
+                    print('Warning: file {} contains no data.'.format(f.name))
+                    pass
+            print('Unpacking {}'.format(f.name))
             return f.name
         else:
             if filename is None:
                 filename = self.name
             with open(filename, 'wb') as f:
-                f.write(zlib.decompress(self.data))
+                try:
+                    f.write(zlib.decompress(self.data))
+                except TypeError:
+                    print('Warning: file {} contains no data.'.format(filename))
+                    pass
+            print('Unpacking {}'.format(filename))
             return filename
 
 class InterfaceKernel(object):
@@ -382,6 +410,8 @@ class InterfaceKernel(object):
                             outputs[con[0]] = con[2]
                     elif con[1] == '?=':
                         outputs[con[0]] = str(eval(con[2].format(**outputs)))
+                    elif con[1] == '==':
+                        outputs[con[0]] = outputs[con[2]]
                     else:
                         raise ValueError('Error - unknown interface operation {}'.format(con))
                 outputs['returncode'] = 0
@@ -403,21 +433,23 @@ class InterfaceKernel(object):
                 for con in self.connections:
                     if con[1] == '$=':
                         outputs[con[0]] = con[2].format(**outputs)
+                    elif con[1] == '==':
+                        outputs[con[0]] = outputs[con[2]]
                     elif con[1] == '?=':
                         outputs[con[0]] = str(eval(con[2].format(**outputs)))
                     elif con[1] == '[=':
-                        outputs[con[0]] = [(con[2].format(**outputs))]
+                        outputs[con[0]] = [outputs[con[2]]]
                     elif con[1] == '+=':
                         if con[0] in outputs:
                             if not isinstance(outputs[con[0]], list):
                                 outputs[con[0]] = [outputs[con[0]]] 
-                            outputs[con[0]].append(con[2].format(**outputs))
+                            outputs[con[0]].append(outputs[con[2]])
                         else:
-                            outputs[con[0]] = [con[2].format(**outputs)]
+                            outputs[con[0]] = [outputs[con[2]]]
                 for inp in inputs[1:]:
                     for con in self.connections:
                         if con[1] == '[=' or con[1] == '+=':
-                            outputs[con[0]].append(con[2].format(**inp))
+                            outputs[con[0]].append(outputs[con[2]])
                 
                 outputs['returncode'] = 0
                 return outputs
@@ -432,7 +464,7 @@ class InterfaceKernel(object):
                     return outputs
             for con in self.connections:
                 if con[1] == ']=':
-                    scatterwidth = len(inputs[con[2][1:-1]])
+                    scatterwidth = len(inputs[con[2]])
                     if self.scatterwidth is not None:
                         if self.scatterwidth != scatterwidth:
                             raise ValueError('Error - inconsistent widths in scatter interface {} {}'.format(con[0], con[2]))
@@ -444,11 +476,13 @@ class InterfaceKernel(object):
                     output = inputs.copy()
                     for con in self.connections:
                         if con[1] == ']=':
-                            output[con[0]] = output[con[2][1:-1]][i]
+                            output[con[0]] = output[con[2]][i]
                         elif con[1] == '?=':
                             output[con[0]] = str(eval(con[2].format(**output)))
                         elif con[1] == '$=':
                             output[con[0]] = con[2].format(**output)
+                        elif con[1] == '==':
+                            output[con[0]] = output[con[2]]
                     output['returncode'] = 0
                 except:
                     output['returncode'] = 1
@@ -476,6 +510,20 @@ class SubprocessKernel(object):
         self.outputfiles = outputfiles
         self.operation = 'compute'
 
+    def _get_keys(self, template):
+        """
+        Identify the keys in a template string
+        """
+        result = []
+        start = 0
+        while '{' in template[start:]:
+            i = template[start:].index('{') + start
+            if '}' in template[i:]:
+                j = template[i:].index('}') + i
+                result.append(template[i+1:j])
+            start = i + 1
+        return result
+
     def run(self, inputs, dryrun=False):
         """
         Run the kernel with the given inputs.
@@ -500,38 +548,36 @@ class SubprocessKernel(object):
                 return outputs
         else:
             outputs['returncode'] = 0
-        try:
-            tmpinp = {}
-            for key in inputs:
-                tmpinp[key] = unpack(inputs[key], create_files=False)
-                if isinstance(tmpinp[key], list):
-                    tmpinp[key] = ' '.join(str(k) for k in inputs[key])
-        except KeyError:
-            print([key for key in inputs])
-            print(self.template)
-            raise
-        cmd = self.template.format(**tmpinp)
-        outputs['cmd'] = cmd
-        if not dryrun:
+        tmpdir = tempfile.mkdtemp()
+        with working_directory(tmpdir) as d:
             try:
-                tmpdir = tempfile.mkdtemp()
-                os.chdir(tmpdir)
-                if self.inputfiles is not None:
-                    for key in self.inputfiles:
-                        dummyname = unpack(inputs[key])
-                result = subprocess.check_output(cmd, shell=True, 
-                                             stderr=subprocess.STDOUT)
-                outputs['output'] = result
-                if self.outputfiles is not None:
-                    for key in self.outputfiles:
-                        outputs[key] = unpack(outputs[key], create_files=False)
-                        outputs[key] = pack(outputs[key])
-            except subprocess.CalledProcessError as e:
-                outputs['returncode'] = e.returncode
-                outputs['cmd'] = e.cmd
-                outputs['output'] = e.output
+                tmpinp = {}
+                for key in self._get_keys(self.template):
+                    tmpinp[key] = unpack(inputs[key])
+                    if isinstance(tmpinp[key], list):
+                        tmpinp[key] = ' '.join(str(k) for k in tmpinp[key])
+            except KeyError:
+                print([key for key in inputs])
+                print(self.template)
+                raise
+            cmd = self.template.format(**tmpinp)
+            outputs['cmd'] = cmd
+            if dryrun:
+                print(cmd)
+            else:
+                try:
+                    result = subprocess.check_output(cmd, shell=True, 
+                                                 stderr=subprocess.STDOUT)
+                    outputs['output'] = result
+                except subprocess.CalledProcessError as e:
+                    outputs['returncode'] = e.returncode
+                    outputs['cmd'] = e.cmd
+                    outputs['output'] = e.output
+            if self.outputfiles is not None:
+                for key in self.outputfiles:
+                    outputs[key] = unpack(outputs[key], create_files=False)
+                    outputs[key] = pack(outputs[key])
         return outputs
-
 
 class FunctionKernel(object):
     def __init__(self, func):
@@ -660,9 +706,10 @@ class Pipeline(object):
                         print('--------------')
                 else:
                     out = k.run(inp, dryrun=True)
-                    print(out['cmd'])
                     if out['returncode'] != 0:
                         print('Error: {}'.format(out['output']))
+                    else:
+                        print(out['cmd'])
                 ik += 1
             inp = out
         print('======================')
