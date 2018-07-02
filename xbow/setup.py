@@ -107,6 +107,7 @@ setup_args = {
 		'scripts/xbow-create_filesystem',
 		'scripts/xbow-sync',
                 'scripts/xbow-configure',
+                'scripts/xbow-run',
                 'scripts/xbow-login'],
 
     'install_requires': ['boto3',
