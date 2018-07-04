@@ -32,7 +32,7 @@ def pack_and_run_remote(command):
     jobid = uuid.uuid4()
     mount_point=cfg['mount_point']
     print('remote directory will be {}/{}'.format(mount_point, jobid))
-    ci.exec_command('mkdir {}'.format(jobid))
+    ci.exec_command('mkdir {}/{}'.format(mount_point, jobid))
     infiles = glob.glob('*')
     print('uploading files:')
     for filename in infiles:
@@ -56,7 +56,7 @@ def pack_and_run_remote(command):
     if len(filelist) > 0:
         print('downloading output files:')
     for filename in outfiles:
-        ci.download('{}/{}'.format(jobid, filename), filename)
+        ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
         print('    {}'.format(filename))
     print('\nOutput from remote command:')
     ci.exec_command('tsp -c {}'.format(tsp_id))
