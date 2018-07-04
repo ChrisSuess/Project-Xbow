@@ -64,7 +64,7 @@ def pack_and_run_remote(command):
     print('Output from task spooler:')
     ci.exec_command('tsp -i {}'.format(tsp_id))
     print(ci.output)
-    #ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
+    ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
     print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
 
 if __name__ == '__main__':
