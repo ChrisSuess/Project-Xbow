@@ -30,15 +30,16 @@ def pack_and_run_remote(command):
     az = instance.placement['AvailabilityZone']
     meter = SpotMeter(cfg['worker_instance_type'], az, count = cfg['pool_size'])
     jobid = uuid.uuid4()
-    print('romote directory will be {}'.format(jobid))
+    mount_point=cfg['mount_point']
+    print('remote directory will be {}/{}'.format(mount_point, jobid))
     ci.exec_command('mkdir {}'.format(jobid))
     infiles = glob.glob('*')
     print('uploading files:')
     for filename in infiles:
         if os.path.isfile(filename):
             print('    {}'.format(filename))
-            ci.upload(filename, '{}/{}'.format(jobid, filename))
-    ci.exec_command('cd {} && tsp {}'.format(jobid, command)) 
+            ci.upload(filename, '{}/{}/{}'.format(mount_point, jobid, filename))
+    ci.exec_command('cd {}/{} && tsp {}'.format(mount_point, jobid, command)) 
     tsp_id = ci.output[:-1]
     print('tsp job {} submitted:'.format(tsp_id))
     ci.exec_command('tsp -s {}'.format(tsp_id))
@@ -49,7 +50,7 @@ def pack_and_run_remote(command):
         ci.exec_command('tsp -s {}'.format(tsp_id))
         status = ci.output[:-1]
     print(status)
-    ci.exec_command('ls -1 {}'.format(jobid))
+    ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
     filelist = ci.output.split()
     outfiles = [f for f in filelist if not f in infiles]
     if len(filelist) > 0:
@@ -63,7 +64,7 @@ def pack_and_run_remote(command):
     print('Output from task spooler:')
     ci.exec_command('tsp -i {}'.format(tsp_id))
     print(ci.output)
-    ci.exec_command('rm -rf {}'.format(jobid))
+    ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
     print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
 
 if __name__ == '__main__':
