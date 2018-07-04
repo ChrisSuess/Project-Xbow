@@ -38,8 +38,7 @@ def pack_and_run_remote(command):
         if os.path.isfile(filename):
             print('    {}'.format(filename))
             ci.upload(filename, '{}/{}'.format(jobid, filename))
-    #ci.exec_command('cd {} && tsp {}'.format(jobid, command)) 
-    ci.exec_command('cd {} && sudo tsp {}'.format(jobid, command))
+    ci.exec_command('cd {} && tsp {}'.format(jobid, command)) 
     tsp_id = ci.output[:-1]
     print('tsp job {} submitted:'.format(tsp_id))
     ci.exec_command('tsp -s {}'.format(tsp_id))
