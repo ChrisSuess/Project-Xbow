@@ -42,6 +42,7 @@ def pack_and_run_remote(command):
     ci.exec_command("cd {}/{} && tsp xflow-exec '{}'".format(mount_point, jobid, command)) 
     tsp_id = ci.output[:-1]
     print('tsp job {} submitted.'.format(tsp_id))
+
     HOSTFILE = open(os.path.expanduser('.xbow_ids.yml'), 'w+')
     HOSTFILE.write('jobid: {}\n'.format(jobid))
     HOSTFILE.write('tsp_id: {}\n'.format(tsp_id))
