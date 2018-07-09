@@ -21,6 +21,9 @@ def check_the_job():
     with open(cfg_file, 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
+    with open('.xbow_ids.yml', 'r') as job_ids:
+        xbow_ids = yaml.load(job_ids)
+
     mount_point=cfg['mount_point']
     infiles = glob.glob('*')
     instances = get_by_name(cfg['scheduler_name'])
@@ -30,10 +33,10 @@ def check_the_job():
         raise ValueError('Error - more than one instance has that name')
     instance = instances[0]
 
-    jobid = '7dc55597-5bd4-472c-8f50-ffdb9f1426ac'
+    jobid = xbow_ids['jobid']
 
     ci = ConnectedInstance(instance)
-    tsp_id = '2'
+    tsp_id = xbow_ids['tsp_id']
     ci.exec_command('tsp -s {}'.format(tsp_id))
     status = ci.output[:-1]
 
