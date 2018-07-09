@@ -39,13 +39,14 @@ def check_the_job():
     tsp_id = xbow_ids['tsp_id']
     ci.exec_command('tsp -s {}'.format(tsp_id))
     status = ci.output[:-1]
-
+    
+    print('Job Status:')
     while status != 'finished':
         print('    {}...'.format(status))
         time.sleep(10)
         ci.exec_command('tsp -s {}'.format(tsp_id))
         status = ci.output[:-1]
-    print('Job Status:')
+    #print('Job Status:')
     print('    {}'.format(status))
     ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
     filelist = ci.output.split()
