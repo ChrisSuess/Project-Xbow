@@ -41,31 +41,11 @@ def pack_and_run_remote(command):
             ci.upload(filename, '{}/{}/{}'.format(mount_point, jobid, filename))
     ci.exec_command("cd {}/{} && tsp xflow-exec '{}'".format(mount_point, jobid, command)) 
     tsp_id = ci.output[:-1]
-    print('tsp job {} submitted:'.format(tsp_id))
-    ci.exec_command('tsp -s {}'.format(tsp_id))
-    status = ci.output[:-1]
-    while status != 'finished':
-        print('    {}...'.format(status))
-        time.sleep(10)
-        ci.exec_command('tsp -s {}'.format(tsp_id))
-        status = ci.output[:-1]
-    print(status)
-    ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
-    filelist = ci.output.split()
-    outfiles = [f for f in filelist if not f in infiles]
-    if len(filelist) > 0:
-        print('downloading output files:')
-    for filename in outfiles:
-        ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
-        print('    {}'.format(filename))
-    print('\nOutput from remote command:')
-    ci.exec_command('tsp -c {}'.format(tsp_id))
-    print(ci.output)
-    print('Output from task spooler:')
-    ci.exec_command('tsp -i {}'.format(tsp_id))
-    print(ci.output)
-    ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
-    #print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
+    print('tsp job {} submitted.'.format(tsp_id))
+    HOSTFILE = open(os.path.expanduser('.xbow_ids.yml'), 'w+')
+    HOSTFILE.write('jobid: {}\n'.format(jobid))
+    HOSTFILE.write('tsp_id: {}\n'.format(tsp_id))
+    HOSTFILE.close()
 
 if __name__ == '__main__':
     command = ' '.join(sys.argv[1:])
