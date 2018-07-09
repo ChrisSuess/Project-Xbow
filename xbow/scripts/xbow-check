@@ -50,6 +50,7 @@ def check_the_job():
         time.sleep(10)
         ci.exec_command('tsp -s {}'.format(tsp_id))
         status = ci.output[:-1]
+        sys.exit()
     #print('Job Status:')
     print('    {}'.format(status))
     ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
