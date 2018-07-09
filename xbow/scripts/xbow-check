@@ -24,7 +24,7 @@ def check_the_job():
     try:
         with open('.xbow_ids.yml', 'r') as job_ids:
             xbow_ids = yaml.load(job_ids)
-    except IOError
+    except IOError:
         raise MyError('No Xbow job running in this directory.') 
 
     mount_point=cfg['mount_point']
