@@ -113,7 +113,7 @@ class ConnectedInstance(object):
             
         if self.status == 'busy':
             while self.channel.recv_ready():
-                self.output += self.channel.recv(1024)
+                self.output += self.channel.recv(1024).decode('utf-8')
             if self.channel.exit_status_ready():
                 self.exit_status = self.channel.recv_exit_status()
                 self.channel.close()
