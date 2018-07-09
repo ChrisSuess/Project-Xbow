@@ -21,36 +21,8 @@ def check_the_job():
     with open(cfg_file, 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
-    """
-
-    instances = get_by_name(cfg['scheduler_name'])
-    if len(instances) == 0:
-        raise ValueError('Error - no such instance')
-    elif len(instances) > 1:
-        raise ValueError('Error - more than one instance has that name')
-    instance = instances[0]
-    ci = ConnectedInstance(instance)
-    az = instance.placement['AvailabilityZone']
-    meter = SpotMeter(cfg['worker_instance_type'], az, count = cfg['pool_size'])
-    jobid = uuid.uuid4()
     mount_point=cfg['mount_point']
-    print('remote directory will be {}/{}'.format(mount_point, jobid))
-    ci.exec_command('mkdir {}/{}'.format(mount_point, jobid))
     infiles = glob.glob('*')
-    print('uploading files:')
-    for filename in infiles:
-        if os.path.isfile(filename):
-            print('    {}'.format(filename))
-            ci.upload(filename, '{}/{}/{}'.format(mount_point, jobid, filename))
-    ci.exec_command("cd {}/{} && tsp xflow-exec '{}'".format(mount_point, jobid, command)) 
-    tsp_id = ci.output[:-1]
-    print('tsp job {} submitted:'.format(tsp_id))
-    """
-
-    mount_point=cfg['mount_point']
-
-    infiles = glob.glob('*')
-
     instances = get_by_name(cfg['scheduler_name'])
     if len(instances) == 0:
         raise ValueError('Error - no such instance')
@@ -58,25 +30,22 @@ def check_the_job():
         raise ValueError('Error - more than one instance has that name')
     instance = instances[0]
 
-    jobid = '85428f5d-7293-40af-b1f9-985e6106c63f'
+    jobid = '7dc55597-5bd4-472c-8f50-ffdb9f1426ac'
 
     ci = ConnectedInstance(instance)
-    #tsp_id = ci.output[:-1]
-    #print(tsp_id)
-    tsp_id = '0'
+    tsp_id = '2'
     ci.exec_command('tsp -s {}'.format(tsp_id))
     status = ci.output[:-1]
-
 
     while status != 'finished':
         print('    {}...'.format(status))
         time.sleep(10)
         ci.exec_command('tsp -s {}'.format(tsp_id))
         status = ci.output[:-1]
-    print(status)
+    print('Job Status:')
+    print('    {}'.format(status))
     ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
     filelist = ci.output.split()
-    #print(filelist)
     outfiles = [f for f in filelist if not f in infiles]
     if len(filelist) > 0:
         print('downloading output files:')
@@ -93,5 +62,4 @@ def check_the_job():
     #print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
 
 if __name__ == '__main__':
-    #command = ' '.join(sys.argv[1:])
     check_the_job()
