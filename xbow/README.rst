@@ -60,7 +60,30 @@ This command will create the head node, worker nodes, and shared file system acc
 Using Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Log in to the head node using the command::
+**Xbow** has been designed to have an extra argument at the beginning of your usual arguments. Running jobs using **Xbow** can be as simple as the following example::
+
+If your local job runs like this::
+
+    executable -a arg1 -b arg2 -c arg3
+
+Simply add::
+
+    **xbow-run** executable -a arg1 -b arg2 -c arg3
+
+to the beginning.
+
+This will transfer all your data to **xbow** cluster and begin running your job.
+
+To check on the status of your job one can simply use the command::
+
+    xbow-check
+
+This will tell you if your job is still running or if it is finished. If it has finished it will copy all your data back to your local machine and delete it from the cloud. 
+
+Logging in to the head node
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to log in to the head node you can using the command::
 
     xbow-login_instance
 
@@ -118,44 +141,23 @@ Next launch your **Xbow** cluster.::
 
     xbow-create_cluster
 
-(Note this step may take five minutes or so to complete.)
+(Note: this step may take five minutes or so to complete.)
 
-3. Transfer the input data to your **Xbow** cluster
-----------------------------------------------------
+3. Running your job on **Xbow**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Making sure you are in the examples/SimpleJobs/Gromacs folder, sync the data with your **Xbow** cluster::
+Running a job on a xbow cluster is easy. Simply add the command **xbow-run** to the start of your usual job command.::
 
-    xbow-sync
+    xbow-run gmx mdrun -deffnm bpti-md
 
-This will transfer your files to the folder ~/shared/Gromacs on your **Xbow** cluster.
+To check on the status of the job use the command::
 
-4. Login to your cluster and run the job
-----------------------------------------
-Login to your **Xbow** cluster::
+    xbow-check
 
-    xbow-login
+When finished **xbow-check** will bring all your data back to your local machine and delete it from the cloud.
 
-Navigate to the directory containing the example files::
-
-    cd shared/SimpleJobs/Gromacs
-
-Using **Xflow** run the example::
-
-    xflow-exec ./run.sh
-
-This job should take 60 seconds or less to run.
-
-5. Copy the results back to your local machine and delete the cluster
----------------------------------------------------------------------
-Log off your **Xbow** cluster::
-
-    ctrl + d
-
-Now you should be back in the Gromacs folder on your local workstation. Sync the data back from the **Xbow** cluster::
-
-    xbow-sync
-
-This brings back all the your data from the cloud.
+4. Deleting your **Xbow** cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Unless you want to try one of the other examples, delete the cluster::
 
