@@ -53,12 +53,18 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
     if not os.path.exists(pem_file):
         raise RuntimeError('Error - cannot find key file {}'.format(pem_file))
 
+    image = ec2_resource.Image(image_id)
+    print(image)
+
     if username is None:
-        image = ec2_resource.Image(image_id)
+        #image = ec2_resource.Image(image_id)
         tagdict = {}
         for tag in image.tags:
             tagdict[tag['Key']] = tag['Value']
         username = tagdict.get('username')
+
+    for tag_instance in image.tags:
+        image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
 
     efs_client = boto3.client('efs', region_name=region)
     if shared_file_system is not None:
