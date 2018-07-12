@@ -39,7 +39,7 @@ def pack_and_run_remote(command):
         if os.path.isfile(filename):
             print('    {}'.format(filename))
             ci.upload(filename, '{}/{}/{}'.format(mount_point, jobid, filename))
-    ci.exec_command("cd {}/{} && tsp xflow-exec'{}'".format(mount_point, jobid, command)) 
+    ci.exec_command("cd {}/{} && tsp xflow-exec '{}'".format(mount_point, jobid, command)) 
     tsp_id = ci.output[:-1]
     print('tsp job {} submitted.'.format(tsp_id))
 
