@@ -109,6 +109,7 @@ setup_args = {
                 'scripts/xbow-configure',
                 'scripts/xbow-run',
                 'scripts/xbow-check',
+                'scripts/xbow-fetch',
                 'scripts/xbow-login'],
 
     'install_requires': ['boto3',
