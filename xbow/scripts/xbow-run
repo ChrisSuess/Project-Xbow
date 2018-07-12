@@ -31,6 +31,8 @@ def pack_and_run_remote(command):
     meter = SpotMeter(cfg['worker_instance_type'], az, count = cfg['pool_size'])
     jobid = uuid.uuid4()
     mount_point=cfg['mount_point']
+
+    ci.exec_command('sudo apt install task-spooler && tsp -S 20')
     print('remote directory will be {}/{}'.format(mount_point, jobid))
     ci.exec_command('mkdir {}/{}'.format(mount_point, jobid))
     infiles = glob.glob('*')
