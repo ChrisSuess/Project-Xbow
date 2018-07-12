@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import uuid
+import glob
+import os, yaml
+import sys
+import time
+import xbow
+from xbow.metering import SpotMeter
+from xbow.instances import get_by_name, ConnectedInstance
+
+def check_the_job():
+    """
+    Stage the contents of the current directory to the xbow cluster, then
+    run the given command, then stage output files back, then clean up.
+    """
+
+    cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+    with open(cfg_file, 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)
+
+    try:
+        with open('.xbow_ids.yml', 'r') as job_ids:
+            xbow_ids = yaml.load(job_ids)
+    except IOError:
+        print('No Xbow job running in this directory.')
+        sys.exit()
+
+    mount_point=cfg['mount_point']
+    infiles = glob.glob('*')
+    instances = get_by_name(cfg['scheduler_name'])
+    if len(instances) == 0:
+        raise ValueError('Error - no such instance')
+    elif len(instances) > 1:
+        raise ValueError('Error - more than one instance has that name')
+    instance = instances[0]
+
+    jobid = xbow_ids['jobid']
+
+    ci = ConnectedInstance(instance)
+    tsp_id = xbow_ids['tsp_id']
+    ci.exec_command('tsp -s {}'.format(tsp_id))
+    status = ci.output[:-1]
+    
+    print('Job Status:')
+    #while status != 'finished':
+    #    print('    {}...'.format(status))
+        #time.sleep(10)
+    #    ci.exec_command('tsp -s {}'.format(tsp_id))
+    #    status = ci.output[:-1]
+    #    sys.exit()
+    #print('Job Status:')
+    print('    {}'.format(status))
+    ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
+    filelist = ci.output.split()
+    outfiles = [f for f in filelist if not f in infiles]
+    if len(filelist) > 0:
+        print('downloading output files:')
+    for filename in outfiles:
+        ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
+        print('    {}'.format(filename))
+    print('\nOutput from remote command:')
+    ci.exec_command('tsp -c {}'.format(tsp_id))
+    print(ci.output)
+    print('Output from task spooler:')
+    ci.exec_command('tsp -i {}'.format(tsp_id))
+    print(ci.output)
+    ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
+    #print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
+
+if __name__ == '__main__':
+    check_the_job()
