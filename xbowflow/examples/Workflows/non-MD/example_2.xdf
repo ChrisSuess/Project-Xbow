@@ -1,0 +1,18 @@
+# A very simple workflow with one stage and one step.
+workflow:
+    #dryrun: True
+    stages:
+        - stage1
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
+
+stage1:
+    steps:
+        - step1
+
+step1:
+    type: subprocesskernel
+    configuration: cat {inputfile} > {outputfile}
+    inputfiles: [inputfile]
+    outputfiles: [outputfile]
+

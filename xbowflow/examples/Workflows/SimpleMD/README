@@ -1,0 +1,10 @@
+This folder illustrates a very basic workflow that runs a single MD
+simulation using AMBER pmemd (which you need to have installed).
+
+The workflow is defined in the file simplemd.xcf
+The input data for this run (on cyclosporine A) are defined in csa.yaml
+The other files are input files required to run the simulation
+
+To run the job interactively, type:
+
+xflow-run simplemd.xcf csa.yaml

@@ -1,0 +1,7 @@
+# Input file simple MD run on cyclosporine A
+# MD parameters
+md_exe: pmemd.cuda # you may need to change this
+system: csa_simplemd
+inpcrd: csa.inpcrd
+prmtop: csa.prmtop
+mdin:   simplemd.in

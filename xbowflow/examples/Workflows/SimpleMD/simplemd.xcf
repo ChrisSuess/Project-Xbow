@@ -1,0 +1,51 @@
+# CoCo-MD workflow definition file
+workflow:
+    stages:
+        - stage1
+
+    inputfiles:
+       - inpcrd
+       - prmtop
+       - mdin
+
+    outputfiles:
+       - mdout
+       - restrt
+       - mdcrd
+
+# Stage 1: 
+stage1:
+    steps:
+        - ix1
+        - ambermd
+
+# Interface kernel before MD is run to set up names of output files
+ix1:
+    type: interfacekernel
+    configuration:
+        - mdout          $= {system}.mdout
+        - mdcrd          $= {system}.nc
+        - restrt         $= {system}.rst7
+
+# Generic amber MD kernel
+ambermd:
+    type: subprocesskernel
+    configuration: >
+        {md_exe} -O -c {inpcrd} -p {prmtop} -i {mdin} -r {restrt} 
+        -x {mdcrd} -o {mdout}
+    inputfiles:
+        - inpcrd
+        - prmtop
+        - mdin
+    outputfiles:
+        - mdout
+        - mdcrd
+        - restrt
+
+# Checklist of required inputs: this section is optional but aids debugging
+inputs:
+   - md_exe # The name of the md executable - can also include 'mpirun' etc.
+   - system # Name for the system - used to tag output files
+   - inpcrd # The start coordinates 
+   - prmtop # The topology file
+   - mdin # Input file for MD 
