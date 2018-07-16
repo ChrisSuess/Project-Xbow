@@ -53,22 +53,42 @@ def check_the_job():
         sys.exit()
     #print('Job Status:')
     print('    {}'.format(status))
-    ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
-    filelist = ci.output.split()
-    outfiles = [f for f in filelist if not f in infiles]
-    if len(filelist) > 0:
-        print('downloading output files:')
-    for filename in outfiles:
-        ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
-        print('    {}'.format(filename))
-    print('\nOutput from remote command:')
-    ci.exec_command('tsp -c {}'.format(tsp_id))
-    print(ci.output)
-    print('Output from task spooler:')
-    ci.exec_command('tsp -i {}'.format(tsp_id))
-    print(ci.output)
-    ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
-    #print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
+    
+    while True:
+        get_input = input
+
+        if sys.version_info[:2] <= (2, 7):
+            get_input = raw_input
+
+        print("The job has finished, do you want to retrieve all the data?")
+
+        a = get_input("Enter yes/no to continue: ")
+
+        if a == "yes":
+            ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
+            filelist = ci.output.split()
+            outfiles = [f for f in filelist if not f in infiles]
+            if len(filelist) > 0:
+                print('downloading output files:')
+            for filename in outfiles:
+                ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
+                print('    {}'.format(filename))
+            print('\nOutput from remote command:')
+            ci.exec_command('tsp -c {}'.format(tsp_id))
+            print(ci.output)
+            print('Output from task spooler:')
+            ci.exec_command('tsp -i {}'.format(tsp_id))
+            print(ci.output)
+            ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
+            break
+        #print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
+
+        elif a == "no":
+            print("Your data has not been downloaded")
+            break
+
+        else:
+            print("Enter either yes/no")
 
 if __name__ == '__main__':
     check_the_job()
