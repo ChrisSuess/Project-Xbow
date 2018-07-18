@@ -68,7 +68,7 @@ If your local job runs like this::
 
 Simply add::
 
-    **xbow-run** executable -a arg1 -b arg2 -c arg3
+    **xbow-submit** executable -a arg1 -b arg2 -c arg3
 
 to the beginning.
 
@@ -146,9 +146,9 @@ Next launch your **Xbow** cluster.::
 3. Running your job on **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running a job on a xbow cluster is easy. Simply add the command **xbow-run** to the start of your usual job command.::
+Running a job on a xbow cluster is easy. Simply add the command **xbow-submit** to the start of your usual job command.::
 
-    xbow-run gmx mdrun -deffnm bpti-md
+    xbow-submit gmx mdrun -deffnm bpti-md
 
 To check on the status of the job use the command::
 
