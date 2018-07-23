@@ -60,21 +60,19 @@ This command will create the head node, worker nodes, and shared file system acc
 Using Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Xbow** has been designed to have an extra argument at the beginning of your usual arguments. Running jobs using **Xbow** can be as simple as the following example::
+**Xbow** has been designed to require you to make minimal changes to the way you are used to running jobs on your local machine. Running jobs using **Xbow** can be as simple as the following example::
 
 If your local job runs like this::
 
     executable -a arg1 -b arg2 -c arg3
 
-Simply add::
+Simply change it to::
 
     **xbow-submit** executable -a arg1 -b arg2 -c arg3
 
-to the beginning.
+This will transfer all your data to the **xbow** cluster and begin running your job there.
 
-This will transfer all your data to **xbow** cluster and begin running your job.
-
-To check on the status of your job one can simply use the command::
+To check on the status of your job use the command::
 
     xbow-check
 
@@ -83,18 +81,19 @@ This will tell you if your job is still running or if it is finished. If it has 
 Logging in to the head node
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you want to log in to the head node you can using the command::
+For simple jobs you may never need to log into the **xbow** cluster at all. But if you want to log in to the head node you can using the command::
 
     xbow-login_instance
 
-The simplest way to run jobs on your **Xbow** cluster is to use the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
+From here you can run more complex jobs and workflows using the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
 Transferring Data to and from your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To use **Xbow** you first create a folder on your local workstation in which you place all required input files
-for your simulation. You then copy the whole folder to the shared filesystem on the **Xbow** cluster, log in to the cluster
-and run the job, and when it has finished copy all the results files back to your local machine.
+If you choose to use **Xbow** outside the **xbow-sync** command, you take responsibility for transferring ("staging") data
+between your local machine and the cluster. Typically, you first create a folder on your local workstation in which you place 
+all required input files for your simulation. You then copy the whole folder to the shared filesystem on the **Xbow** cluster,
+log in to the cluster and run the job, and when it has finished copy all the results files back to your local machine.
 
 To **Sync** data between your machine and your **Xbow** cluster use the command::
 
@@ -103,7 +102,7 @@ To **Sync** data between your machine and your **Xbow** cluster use the command:
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there. 
+Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there (unless it has alreday been copied back by an **xbow-check** command). 
 
 To delete the entire cluster::
 
