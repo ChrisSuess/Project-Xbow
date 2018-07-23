@@ -6,10 +6,13 @@ Xbowflow
 A Quick Overview of Xbowflow
 ----------------------------
 
+While you can use *xbow-submit* to run simple jobs on an **Xbow** cluster without ever needing to log in to it, to use **Xbowflow** tools you first need to log into the cluster head node using *xbow-login*.
+
+
 A. Simple jobs
 ______________
 
-To run a single command on a single worker node in your xbow cluster, use *xflow-exec*::
+To run a single command on a single worker node in your **Xbow** cluster, use *xflow-exec*::
 
 
   % xflow-exec tar -cvf datfiles.tar *.dat
@@ -29,7 +32,7 @@ For non-interactive jobs, use *xflow-submit*::
 B. Workflow jobs
 ________________
 
-To run a workflow on your xbow cluster, use *xflow-run*::
+To run a workflow on your **Xbow** cluster, use *xflow-run*::
 
   % xflow-run workflow.xcf input.yml
 
@@ -44,9 +47,9 @@ Typically you will use *xflow-submit* to run your workflow in the background::
 Installing  Xbowflow
 --------------------
 
-Xbowflow is designed to work on Xbow clusters, and assumes they have dask.distributed installed on them and configured.
+**Xbowflow** is designed to work on **Xbow clusters**, and assumes they have *dask.distributed* installed on them and configured.
 
-Other than dask.distributed, xbowflow itself has no dependencies outside the Python standard library.
+Other than *dask.distributed*, **Xbowflow** itself has no dependencies outside the Python standard library.
 
 It is available via pip:
 ``pip install xbowflow``
