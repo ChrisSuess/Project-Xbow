@@ -68,7 +68,7 @@ If your local job runs like this::
 
 Simply change it to::
 
-    **xbow-submit** executable -a arg1 -b arg2 -c arg3
+    xbow-submit executable -a arg1 -b arg2 -c arg3
 
 This will transfer all your data to the **xbow** cluster and begin running your job there.
 
