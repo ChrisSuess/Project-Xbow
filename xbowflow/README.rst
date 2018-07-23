@@ -1,7 +1,7 @@
 Xbowflow
 ========
 
-Xbowflow provides a workflow system for use with Xbow clusters.
+**Xbowflow** provides a workflow system for use with **Xbow** clusters. Built on top of **Dask Distributed** (https://distributed.readthedocs.io/en/latest/), **Xbowflow** distributed the different tasks in your workflow across your **Xbow** cluster in as efficient manner as possible, running jobs in parallel where appropriate, and keeping data close to compute. In addition it provides resilience (e.g., if a worker node fails, the task is re-run elsewhere).
 
 A Quick Overview of Xbowflow
 ----------------------------
