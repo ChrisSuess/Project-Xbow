@@ -1,3 +1,3 @@
 #!/bin/sh
-# Run a short MD simulation on BPTI
-xflow-run multirun.xcf bpti.yaml
+# Run four independent short MD simulations on BPTI
+python multirun.py bpti.yaml

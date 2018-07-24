@@ -3,6 +3,8 @@ import subprocess
 import os
 import tempfile
 import copy
+import hashlib
+import glob
 from .clients import dask_client
 
 class CompressedFileContents(object):
@@ -22,6 +24,20 @@ class CompressedFileContents(object):
             with open(filename, 'wb') as f:
                 f.write(zlib.decompress(self.data))
             return filename
+
+class Filepack(object):
+    """
+    A collection of files
+    """
+    def __init__(self, filelist):
+        self.filepack = {}
+        for filename in filelist:
+            self.filepack[filename] = CompressedFileContents(filename)
+
+    def unpack(self, outputdir='.'):
+        for filename in self.filepack:
+            outname = os.path.join(outputdir, filename)
+            self.filepack[filename].write(outname)
 
 class SubprocessKernel(object):
     def __init__(self, cmd):
@@ -165,6 +181,13 @@ class FunctionKernel(object):
         for i, v in enumerate(args):
             if isinstance(v, CompressedFileContents):
                 indict[self.inputs[i]] = v.write()
+            elif isinstance(v, dict):
+                for k in v:
+                    if k in self.inputs:
+                        if isinstance(v[k], CompressedFileContents):
+                            indict[k] = v[k].write()
+                        else:
+                            indict[k] = v[k]
             else:
                 indict[self.inputs[i]] = v
         for k in self.constants:
@@ -186,8 +209,8 @@ class XflowClient(object):
     '''Thin wrapper around Dask client so functions return dictionaries
        of futures rather than single futures.
     '''
-    def __init__(self):
-        self.client = dask_client()
+    def __init__(self, **kwargs):
+        self.client = dask_client(**kwargs)
 
     def upload(self, f):
         c = f
@@ -248,3 +271,43 @@ class XflowClient(object):
         if isinstance(result[0], dict):
             result = self._ld2dl(result)
         return result
+
+def md5checksum(filename):
+    return hashlib.md5(open(filename, 'rb').read()).hexdigest()
+
+def unpack_run_and_pack(cmd, filepack):
+    '''
+    Unpack some data files, runa commoand, return the results.
+    '''
+    tmpdir = tempfile.mkdtemp()
+    os.chdir(tmpdir)
+    filepack.unpack()
+    m5s = {}
+    for filename in filepack.filepack:
+        m5s[filename] = md5checksum(filename)
+
+    try:
+        result = subprocess.check_output(cmd, shell=True,
+                                         stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        result = e.output
+    with open('STDOUT', 'wb') as f:
+        f.write(result)
+    filelist = glob.glob('*')
+    outfiles = []
+    for filename in filelist:
+        if not filename in filepack.filepack:
+            outfiles.append(filename)
+        elif md5checksum(filename) != m5s[filename]:
+            outfiles.append(filename)
+    outfilepack = Filepack(outfiles)
+    return outfilepack
+
+def remote_run(client, cmd):
+    '''
+    Run a command on a client, including file staging
+    '''
+    files = [f for f in glob.glob('*') if os.path.isfile(f)]
+    filepack = client.scatter(Filepack(files))
+    result = client.submit(unpack_run_and_pack, cmd, filepack)
+    result.result().unpack()

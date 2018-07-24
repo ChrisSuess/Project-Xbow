@@ -3,23 +3,15 @@ from __future__ import print_function
 import sys
 import os
 import argparse
-import subprocess
-import tempfile
 from xbowflow._version import __version__
-
+from xbowflow.xflowlib import remote_run
+from xbowflow.clients import dask_client
 parser = argparse.ArgumentParser()
 
 parser.add_argument('cmd', type=str, help='the command to submit')
 parser.add_argument('-V', '--version', action='version', version=__version__)
-parser.add_argument('-o', '--output', type=str, help='file to receive standard output and standard error streams', default='xflow.out')
 
 args = parser.parse_args()
-
-output = os.path.join(os.getcwd(), args.output)
-cmd = '{} > {} 2>&1'.format(args.cmd, output)
-fname = tempfile.NamedTemporaryFile().name
-with open(fname, 'w') as f:
-    f.write(cmd)
-
-result = subprocess.check_output(['at', '-f', fname, 'now'], stderr=subprocess.STDOUT)
-print(result.decode('utf-8'))
+if __name__ == '__main__':
+    client = dask_client()
+    remote_run(client, args.cmd)
