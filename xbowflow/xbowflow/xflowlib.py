@@ -72,7 +72,7 @@ class SubprocessKernel(object):
                 self.constants[key] = CompressedFileContents(value)
 
     def copy(self):
-        return copy.copy(self)
+        return copy.deepcopy(self)
 
     def run(self, *args, **kwargs):
         """
@@ -175,6 +175,7 @@ class FunctionKernel(object):
         """
         outputs = {}
         outputs['returncode'] = 0
+        outputs['STDOUT'] = ''
         tmpdir = tempfile.mkdtemp()
         os.chdir(tmpdir)
         indict = {}

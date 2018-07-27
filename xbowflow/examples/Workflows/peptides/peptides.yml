@@ -1,0 +1,15 @@
+mdexe: pmemd # Name of the Amber MD command
+tleapexe: amber-shell /root/amber16/bin/tleap # Name for the tleap command
+mdin1: pep.step1.in # Name of the MD input file for equilibration step 1
+mdin2: pep.step2.in # etc.
+mdin3: pep.step3.in # etc.
+aa1:  # The list of alternative amino acids for position 1 in the tripepetide
+  - ALA
+  - VAL
+
+aa2:  # The list of alternative amino acids for position 2 in the tripepetide
+  - SER
+
+aa3:  # The list of alternative amino acids for position 3 in the tripepetide
+  - PRO
+  - LEU
