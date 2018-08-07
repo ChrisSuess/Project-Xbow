@@ -4,8 +4,3 @@ tprfiles:
   - rep2/bpti-md.tpr
   - rep3/bpti-md.tpr
 mdexe: gmx mdrun
-reps: 
-  - rep0 
-  - rep1 
-  - rep2 
-  - rep3

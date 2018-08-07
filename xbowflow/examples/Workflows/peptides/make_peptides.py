@@ -2,6 +2,7 @@ import os
 import yaml
 import sys
 from xbowflow import xflowlib
+from distributed.client import as_completed
 
 def pep_generate(client, args):
     """
@@ -74,36 +75,36 @@ def pep_generate(client, args):
 
     # Workflow step 2:
     # Create the tleap input files:
-    r1 = client.map(mkleapin, peptides)
+    leapins = client.map(mkleapin, peptides)
 
     # Workflow step 3:
     # Run tleap on each peptide:
-    r2 = client.map(doleap, r1['leapin'])
+    prmtops, inpcrds = client.map(doleap, leapins)
+    refcs = inpcrds
 
     # Workflow step 4:
     # Run the three-stage equilibration process:
-    inpcrd = r2['inpcrd']
-    refc = inpcrd
-    prmtop = r2['prmtop']
     # 1: restrained energy minimistion
-    r3 = client.map(mdrun1, inpcrd, refc, prmtop)
+    restarts, mdcrds, mdouts = client.map(mdrun1, inpcrds, refcs, prmtops)
     # 2: Unrestrained energy minimisation
-    r4 = client.map(mdrun2, r3['restrt'], refc, prmtop)
+    restarts, mdcrds, mdouts = client.map(mdrun2, restarts, refcs, prmtops)
     # 3: a short md run
-    r5 = client.map(mdrun3, r4['restrt'], refc, prmtop)
+    restarts, mdcrds, mdouts = client.map(mdrun3, restarts, refcs, prmtops)
 
     # Workflow step 5:
     # Create subdirectories for each peptide, and write out the required files
-    for i, peptide in enumerate(peptides):
-        pepname = '_'.join(peptide)
+    for trajfile in as_completed(mdcrds):
+        i = mdcrds.index(trajfile)
+        pepname = '_'.join(peptides[i])
+        print('Peptide {} completed'.format(pepname))
         if not os.path.exists(pepname):
             os.mkdir(pepname)
             peppath = os.path.join(pepname, pepname)
-        inpcrd[i].result().write(peppath + '.crd')
-        prmtop[i].result().write(peppath + '.prmtop')
-        r5['mdout'][i].result().write(peppath + '.mdout')
-        r5['restrt'][i].result().write(peppath + '.rst')
-        r5['mdcrd'][i].result().write(peppath + '.nc')
+        inpcrds[i].result().write(peppath + '.crd')
+        prmtops[i].result().write(peppath + '.prmtop')
+        mdouts[i].result().write(peppath + '.mdout')
+        restarts[i].result().write(peppath + '.rst')
+        trajfile.result().write(peppath + '.nc')
         
 if __name__ == '__main__':
     # Get an Xflow client:

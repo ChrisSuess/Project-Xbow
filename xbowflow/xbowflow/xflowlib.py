@@ -49,6 +49,7 @@ class SubprocessKernel(object):
         self.inputs = []
         self.outputs = []
         self.constants = {}
+        self.tmpdir = None
 
     def set_inputs(self, inputs):
         """
@@ -74,59 +75,41 @@ class SubprocessKernel(object):
     def copy(self):
         return copy.deepcopy(self)
 
-    def run(self, *args, **kwargs):
+    def run(self, *args):
         """
         Run the kernel with the given inputs.
         Args:
             args: positional arguments whose order should match self.inputs
-            kwargs: keyword arguments 
 
         Returns:
-            dict : the output dictionary, with at least
-                two keys:
-                    'STDOUT' : the standard output and error from the command
-                    'returncode' : the exit code for the command
-                 in addition there will be one value for each of the keys
-                 in self.outputs
+            tuple : CompressedFileContents in the order they appear in 
+                self.outputs
         """
-        outputs = {}
-        outputs['returncode'] = 0
-        tmpdir = tempfile.mkdtemp()
-        os.chdir(tmpdir)
-        indict = {}
-        for i in range(len(args)):
-            if isinstance(args[i], dict):
-                for key in args[i]:
-                    indict[key] = args[i][key]
-            else:
-                indict[self.inputs[i]] = args[i]
-        for key in kwargs:
-            indict[key] = kwargs[key]
-        for key in self.inputs:
-            if not key in indict:
-                raise KeyError('Error - missing argument {}'.format(key))
-            else:
-                if indict[key] is None:
-                    print('Error: indict key {} is None'.format(key))
-                indict[key].write(key)
-        for key in self.constants:
-            self.constants[key].write(key)
-        try:
-            result = subprocess.check_output(self.cmd, shell=True,
+        outputs = []
+        with tempfile.TemporaryDirectory(dir=self.tmpdir) as tmpdir:
+            os.chdir(tmpdir)
+            indict = {}
+            for i in range(len(args)):
+                if not isinstance(args[i], CompressedFileContents):
+                    raise TypeError('Error - argument {} is of type {} but must be of type CompressedFileContents'.format(self.inputs[i], type(args[i])))
+                args[i].write(self.inputs[i])
+            for key in self.constants:
+                self.constants[key].write(key)
+            try:
+                result = subprocess.check_output(self.cmd, shell=True,
                                              stderr=subprocess.STDOUT)
-            outputs['STDOUT'] = result
-            for key in self.outputs:
-                if os.path.exists(key):
-                    outputs[key] = CompressedFileContents(key)
+            except subprocess.CalledProcessError as e:
+                print(e.output)
+                raise
+            for outfile in self.outputs:
+                if os.path.exists(outfile):
+                    outputs.append(CompressedFileContents(outfile))
                 else:
-                    outputs[key] = None
-        except subprocess.CalledProcessError as e:
-            outputs['returncode'] = e.returncode
-            outputs['STDOUT'] = e.output
-            for key in self.outputs:
-                outputs[key] = None
-        for key in indict:
-            outputs[key] = indict[key]
+                    outputs.append(None)
+        if len(outputs) == 1:
+            outputs = outputs[0]
+        else:
+            outputs = tuple(outputs)
         return outputs
             
 class FunctionKernel(object):
@@ -139,6 +122,7 @@ class FunctionKernel(object):
         self.inputs = []
         self.outputs = []
         self.constants = {}
+        self.tmpdir=None
 
     def set_inputs(self, inputs):
         """
@@ -169,48 +153,53 @@ class FunctionKernel(object):
         Run the kernel/function with the given arguments.
 
         Returns:
-            a dictionary with one key for each of the items in outputs,
-            plus keys 'returncode', and 'STDOUT' (for compatability with
-            SubprocessKernel)
+            Whatever the function returns, with output files converted
+                to CompressedFileContents
         """
-        outputs = {}
-        outputs['returncode'] = 0
-        outputs['STDOUT'] = ''
-        tmpdir = tempfile.mkdtemp()
-        os.chdir(tmpdir)
-        indict = {}
-        for i, v in enumerate(args):
-            if isinstance(v, CompressedFileContents):
-                indict[self.inputs[i]] = v.write()
-            elif isinstance(v, dict):
-                for k in v:
-                    if k in self.inputs:
-                        if isinstance(v[k], CompressedFileContents):
-                            indict[k] = v[k].write()
-                        else:
-                            indict[k] = v[k]
-            else:
-                indict[self.inputs[i]] = v
-        for k in self.constants:
-            if isinstance(self.constants[k], CompressedFileContents):
-                indict[k] = self.constants[k].write()
-            else:
-                indict[k] = self.constants[k]
-        result = self.func(**indict)
-        if not isinstance(result, list):
-            result = [result]
-        for i, v in enumerate(result):
-            outputs[self.outputs[i]] = v
-            if isinstance(v, str):
-                if os.path.exists(v):
-                    outputs[self.outputs[i]] = CompressedFileContents(v)
+        with tempfile.TemporaryDirectory(dir=self.tmpdir) as tmpdir:
+            os.chdir(tmpdir)
+            indict = {}
+            for i, v in enumerate(args):
+                if isinstance(v, CompressedFileContents):
+                    indict[self.inputs[i]] = v.write()
+                elif isinstance(v, dict):
+                    for k in v:
+                        if k in self.inputs:
+                            if isinstance(v[k], CompressedFileContents):
+                                indict[k] = v[k].write()
+                            else:
+                                indict[k] = v[k]
+                else:
+                    indict[self.inputs[i]] = v
+            for k in self.constants:
+                if isinstance(self.constants[k], CompressedFileContents):
+                    indict[k] = self.constants[k].write()
+                else:
+                    indict[k] = self.constants[k]
+            result = self.func(**indict)
+            if not isinstance(result, list):
+                result = [result]
+            outputs = []
+            for i, v in enumerate(result):
+                if isinstance(v, str):
+                    if os.path.exists(v):
+                        outputs.append(CompressedFileContents(v))
+                    else:
+                        outputs.append(v)
+                else:
+                    outputs.append(v)
+        if len(outputs) == 1:
+            outputs = outputs[0]
+        else:
+            outputs = tuple(outputs)
         return outputs
 
 class XflowClient(object):
-    '''Thin wrapper around Dask client so functions return dictionaries
-       of futures rather than single futures.
+    '''Thin wrapper around Dask client so functions that return multiple
+       values (tuples) generate tuples of futures rather than single futures.
     '''
     def __init__(self, **kwargs):
+        self.tmpdir = kwargs.pop('tmpdir', None)
         self.client = dask_client(**kwargs)
 
     def upload(self, f):
@@ -220,30 +209,32 @@ class XflowClient(object):
                 c = CompressedFileContents(f)
         return self.client.scatter(c, broadcast=True)
 
-    def unpack(self, f, d):
-        outdict = {}
-        for key in ['returncode', 'STDOUT']:
-            outdict[key] = self.client.submit(lambda d, key: d[key], d, key)
-        for key in f.outputs:
-            outdict[key] = self.client.submit(lambda d, key: d[key], d, key)
-        return outdict
+    def unpack(self, f, t):
+        if len(f.outputs) == 1:
+            return t
+        outputs = []
+        for i in range(len(f.outputs)):
+            outputs.append(self.client.submit(lambda tup, j: tup[j], t, i))
+        return tuple(outputs)
 
     def submit(self, func, *args):
         if isinstance(func, SubprocessKernel):
-            d = self.client.submit(func.run, *args, pure=False)
-            return self.unpack(func, d)
+            func.tmpdir = self.tmpdir
+            t = self.client.submit(func.run, *args, pure=False)
+            return self.unpack(func, t)
         elif isinstance(func, FunctionKernel):
-            d = self.client.submit(func.run, *args, pure=False)
-            return self.unpack(func, d)
+            func.tmpdir = self.tmpdir
+            t = self.client.submit(func.run, *args, pure=False)
+            return self.unpack(func, t)
         else:
             return self.client.submit(func, *args)
 
-    def _ld2dl(self, l):
-        '''converts a list of dicts to a dict of lists'''
-        result = {}
-        for k in l[0]:
-            result[k] = [d[k] for d in l]
-        return result
+    def _lt2tl(self, l):
+        '''converts a list of tuples to a tuple of lists'''
+        result = []
+        for i in range(len(l[0])):
+            result.append([t[i] for t in l])
+        return tuple(result)
 
     def map(self, func, *iterables):
         its = []
@@ -262,53 +253,55 @@ class XflowClient(object):
             else:
                 its.append([it] * maxlen)
         if isinstance(func, SubprocessKernel):
+            func.tmpdir = self.tmpdir
             l = self.client.map(func.run, *its, pure=False)
-            result = [self.unpack(func, d) for d in l]
+            result = [self.unpack(func, t) for t in l]
         elif isinstance(func, FunctionKernel):
+            func.tmpdir = self.tmpdir
             l = self.client.map(func.run, *its, pure=False)
-            result = [self.unpack(func, d) for d in l]
+            result = [self.unpack(func, t) for t in l]
         else:
             result =  self.client.map(func, *its, pure=False)
-        if isinstance(result[0], dict):
-            result = self._ld2dl(result)
+        if isinstance(result[0], tuple):
+            result = self._lt2tl(result)
         return result
 
 def md5checksum(filename):
     return hashlib.md5(open(filename, 'rb').read()).hexdigest()
 
-def unpack_run_and_pack(cmd, filepack):
+def unpack_run_and_pack(cmd, filepack, tmpdir=None):
     '''
     Unpack some data files, runa commoand, return the results.
     '''
-    tmpdir = tempfile.mkdtemp()
-    os.chdir(tmpdir)
-    filepack.unpack()
-    m5s = {}
-    for filename in filepack.filepack:
-        m5s[filename] = md5checksum(filename)
+    with tempfile.TemporaryDirectory(dir=tmpdir) as tmpd:
+        os.chdir(tmpd)
+        filepack.unpack()
+        m5s = {}
+        for filename in filepack.filepack:
+            m5s[filename] = md5checksum(filename)
 
-    try:
-        result = subprocess.check_output(cmd, shell=True,
-                                         stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        result = e.output
-    with open('STDOUT', 'wb') as f:
-        f.write(result)
-    filelist = glob.glob('*')
-    outfiles = []
-    for filename in filelist:
-        if not filename in filepack.filepack:
-            outfiles.append(filename)
-        elif md5checksum(filename) != m5s[filename]:
-            outfiles.append(filename)
-    outfilepack = Filepack(outfiles)
+        try:
+            result = subprocess.check_output(cmd, shell=True,
+                                             stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            result = e.output
+        with open('STDOUT', 'wb') as f:
+            f.write(result)
+        filelist = glob.glob('*')
+        outfiles = []
+        for filename in filelist:
+            if not filename in filepack.filepack:
+                outfiles.append(filename)
+            elif md5checksum(filename) != m5s[filename]:
+                outfiles.append(filename)
+        outfilepack = Filepack(outfiles)
     return outfilepack
 
-def remote_run(client, cmd):
+def remote_run(client, cmd, tmpdir=None):
     '''
     Run a command on a client, including file staging
     '''
     files = [f for f in glob.glob('*') if os.path.isfile(f)]
     filepack = client.scatter(Filepack(files))
-    result = client.submit(unpack_run_and_pack, cmd, filepack)
+    result = client.submit(unpack_run_and_pack, cmd, filepack, tmpdir)
     result.result().unpack()
