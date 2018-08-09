@@ -1,0 +1,10 @@
+mdexe:       pmemd                      # The MD executable
+startcrds:   ala5.crd                   # The starting coordinates
+prmtop:      ala5.prmtop                # The topology file (AMBER format)
+mdin1:       tmd_1.in                   # MD input file for stage 1
+mdin2:       tmd_2.in                   # MD input file for stage 2
+mdin3:       production_md.in           # Input file for production MD stage
+ncycles:     3                          # Number of CoCo-MD cycles
+npoints:     4                          # Number of walkers
+selection:   protein and (mass > 2.0)   # Atom selection for the PCA analysis
+trajfile:    cocomd.nc                  # Name of the output trajectory file
