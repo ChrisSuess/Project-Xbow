@@ -15,21 +15,19 @@ stage1:
 ix1:
     type: interfacekernel
     configuration: 
-        - shared   $= /home/ubuntu/shared/multirun
-        - rep      ]= {reps}
-        - workdir  $= {shared}/{rep}
+        - repdir      ]= {repdirs}
         
 amber:
     type: subprocesskernel
     configuration: >
-        mpirun -np 2 pmemd.MPI -O -c {workdir}/{inpcrd}
-        -p {workdir}/{parmtop}
-        -i {shared}/{mdin}
-        -x {workdir}/{trajfile}
+        mpirun -np 2 pmemd.MPI -O -c {repdir}/{inpcrd}
+        -p {repdir}/{parmtop}
+        -i {mdin}
+        -x {repdir}/{trajfile}
 
 inputs:
     - parmtop # topology file
     - mdin # MD input file
     - inpcrd # starting coordinates
     - trajfile # name of output trajectory file
-    - reps # list of replicate subdirectory names
+    - repdirs # list of replicate subdirectory names
