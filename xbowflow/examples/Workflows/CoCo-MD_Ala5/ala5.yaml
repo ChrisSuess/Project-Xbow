@@ -1,10 +1,9 @@
 # Input file for CoCo-MD run on alanine pentapeptide
 # A: General parameters
 system_name:       ala5
-#shared_dir:        /home/ubuntu/shared/CoCo-MD_Ala5
 ncycles:           2
 # B: MD parameters
-md_exe:            mpirun -np 2 pmemd.MPI
+md_exe:            mpirun -np 2 sander.MPI
 start_coordinates: ala5.crd
 target_coordinates_list:  
                    - ala5.crd

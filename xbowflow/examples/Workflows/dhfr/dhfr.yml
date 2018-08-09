@@ -1,6 +1,6 @@
 system_name: dhfr
 prmtop: dhfr.prmtop
-md_exe: pmemd
+md_exe: mpirun -np 2 sander.MPI
 start_crds: dhfr.crd
 mdin1: dhfr.step1.in
 mdin2: dhfr.step2.in

@@ -20,12 +20,13 @@ ix1:
 amber:
     type: subprocesskernel
     configuration: >
-        mpirun -np 2 pmemd.MPI -O -c {repdir}/{inpcrd}
+        {mdexe} -O -c {repdir}/{inpcrd}
         -p {repdir}/{parmtop}
         -i {mdin}
         -x {repdir}/{trajfile}
 
 inputs:
+    - mdexe # invocation of executable - e.g. "mpirun -np 2 sander.MPI"
     - parmtop # topology file
     - mdin # MD input file
     - inpcrd # starting coordinates

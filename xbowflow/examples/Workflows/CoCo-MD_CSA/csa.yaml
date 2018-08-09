@@ -3,7 +3,7 @@
 system_name:       csa
 ncycles:           2
 # B: MD parameters
-md_exe:            pmemd.cuda
+md_exe:            mpirun -np 2 sander.MPI
 start_coordinates: csa.rst7
 target_coordinates_list:  
                    - csa.rst7
