@@ -11,16 +11,14 @@ stage1:
 ix1:
     type: interfacekernel
     configuration: 
-        - rep      ]= {reps}
-        - workdir  $= {shared}/{rep}
+        - repdir      ]= {repdirs}
         
 gromacs:
     type: subprocesskernel
     configuration: >
-        gmx mdrun -s {shared}/{tprfile} -deffnm {workdir}/{deffnm}
+        gmx mdrun -s {tprfile} -deffnm {repdir}/{deffnm}
 
 inputs:
-    - shared # name of shared directory
     - tprfile # Gromacs tpr file
     - deffnm # Default name for output files
-    - reps # list of replicate subdirectory names
+    - repdirs # list of replicate subdirectory names

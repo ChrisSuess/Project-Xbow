@@ -1,22 +1,21 @@
 # Input file for CoCo-MD run on alanine pentapeptide
 # A: General parameters
 system_name:       ala5
-shared_dir:        /home/ubuntu/shared/CoCo-MD_Ala5
+#shared_dir:        /home/ubuntu/shared/CoCo-MD_Ala5
 ncycles:           2
 # B: MD parameters
 md_exe:            mpirun -np 2 pmemd.MPI
-start_coordinates: /home/ubuntu/shared/CoCo-MD_Ala5/ala5.crd
+start_coordinates: ala5.crd
 target_coordinates_list:  
-                   - /home/ubuntu/shared/CoCo-MD_Ala5/ala5.crd
-                   - /home/ubuntu/shared/CoCo-MD_Ala5/ala5.crd
+                   - ala5.crd
+                   - ala5.crd
 repids:            [0, 1]
-topfile:           /home/ubuntu/shared/CoCo-MD_Ala5/ala5.top
-md_input_1:        /home/ubuntu/shared/CoCo-MD_Ala5/min1.in
-md_input_2:        /home/ubuntu/shared/CoCo-MD_Ala5/min2.in
-md_input_3:        /home/ubuntu/shared/CoCo-MD_Ala5/md.in
+topfile:           ala5.prmtop
+md_input_1:        tmd_1.in
+md_input_2:        tmd_2.in
+md_input_3:        production_md.in
 # C: CoCo parameters
 coco_exe:          pyCoCo -v
-refpdb:            /home/ubuntu/shared/CoCo-MD_Ala5/ala5.pdb
 grid_size:         30
 ndims:             3
 nreps:             2

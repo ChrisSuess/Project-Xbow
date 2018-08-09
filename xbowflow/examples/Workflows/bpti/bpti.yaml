@@ -1,7 +1,6 @@
-shared: /home/ubuntu/shared/multirun
 tprfile: bpti-md.tpr
 deffnm: bpti-md
-reps: 
+repdirs: 
   - rep0 
   - rep1 
   - rep2 

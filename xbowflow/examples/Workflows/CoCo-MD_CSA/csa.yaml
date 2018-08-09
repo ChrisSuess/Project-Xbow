@@ -1,23 +1,22 @@
 # Input file for CoCo-MD run on cyclosporine A
 # A: General parameters
 system_name:       csa
-shared_dir:        /home/ubuntu/shared/CoCo-MD_CSA
 ncycles:           2
 # B: MD parameters
 md_exe:            pmemd.cuda
-start_coordinates: /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
+start_coordinates: csa.rst7
 target_coordinates_list:  
-                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
-                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
-                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
-                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
-                   - /home/ubuntu/shared/CoCo-MD_CSA/csa.min1
+                   - csa.rst7
+                   - csa.rst7
+                   - csa.rst7
+                   - csa.rst7
+                   - csa.rst7
 
 repids:            [0, 1, 2, 3, 4]
-topfile:           /home/ubuntu/shared/CoCo-MD_CSA/csa.prmtop
-md_input_1:        /home/ubuntu/shared/CoCo-MD_CSA/tmd_1.in
-md_input_2:        /home/ubuntu/shared/CoCo-MD_CSA/tmd_2.in
-md_input_3:        /home/ubuntu/shared/CoCo-MD_CSA/production_md.in
+topfile:           csa.prmtop
+md_input_1:        tmd_1.in
+md_input_2:        tmd_2.in
+md_input_3:        production_md.in
 # C: CoCo parameters
 coco_exe:          pyCoCo -v
 grid_size:         13

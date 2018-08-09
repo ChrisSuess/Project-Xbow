@@ -1,6 +1,6 @@
 # CoCo-MD workflow definition file
 workflow:
-    dryrun: Truealse
+    dryrun: True
     stages:
         - stage1
         - stage2
@@ -32,8 +32,8 @@ ix1:
         - input_file         $= {md_input_1}
         - repid              ]= {repids}
         - target_coordinates ]= {target_coordinates_list}
-        - end_coordinates    $= {shared_dir}/{system_name}_{cycle}_{repid}_{stage}.rst
-        - trajectory         $= {shared_dir}/{system_name}_{cycle}_{repid}.nc
+        - end_coordinates    $= {CWD}/{system_name}_{cycle}_{repid}_{stage}.rst
+        - trajectory         $= {CWD}/{system_name}_{cycle}_{repid}.nc
 
 # Generic amber MD kernel
 ambermd:
@@ -53,7 +53,7 @@ i12:
         - stage             ?= {stage} + 1
         - input_file        $= {md_input_2}
         - start_coordinates $= {end_coordinates}
-        - end_coordinates   $= {shared_dir}/{system_name}_{cycle}_{repid}_{stage}.rst
+        - end_coordinates   $= {CWD}/{system_name}_{cycle}_{repid}_{stage}.rst
 
 # Interface kernel between 2nd and 3rd MD runs
 i23:
@@ -62,16 +62,15 @@ i23:
         - stage             ?= {stage} + 1
         - input_file        $= {md_input_3}
         - start_coordinates $= {end_coordinates}
-        - end_coordinates   $= {shared_dir}/{system_name}_{cycle}_{repid}_{stage}.rst
-        - trajectory        $= {shared_dir}/{system_name}_{cycle}_{repid}.nc
+        - end_coordinates   $= {CWD}/{system_name}_{cycle}_{repid}_{stage}.rst
+        - trajectory        $= {CWD}/{system_name}_{cycle}_{repid}.nc
 
 # Interface kernel between 3rd MD run and CoCo step
 i34:
     type: interfacekernel
     configuration:
-       - target_coordinates_list [= {shared_dir}/{system_name}_{cycle}_{repid}.rst7
+       - target_coordinates_list [= {CWD}/{system_name}_{cycle}_{repid}.rst7
        - repids                  [= {repid}
-       - trajectories            += {trajectory}
 
 # CoCo kernel
 coco:
@@ -81,8 +80,8 @@ coco:
         -t {topfile}
         -s {selection}
         -o {target_coordinates_list}
-        -i {trajectories}
-        -l {shared_dir}/coco_{cycle}.log
+        -i {CWD}/*.nc
+        -l {CWD}/coco_{cycle}.log
 
 # Interface between CoCo step and 1st MD step of next cycle
 i41:
@@ -93,16 +92,15 @@ i41:
         - input_file         $= {md_input_1}
         - target_coordinates ]= {target_coordinates_list}
         - repid              ]= {repids}
-        - end_coordinates    $= {shared_dir}/{system_name}_{cycle}_{repid}_{stage}.rst
+        - end_coordinates    $= {CWD}/{system_name}_{cycle}_{repid}_{stage}.rst
 
 # Checklist of required inputs: this section is optional but aids debugging
 inputs:
    - system_name # A name used to tag output files produced by the workflow
-   - shared_dir # The shared directory visible to all workers
    - md_exe # The name of the md executable - can also include 'mpirun' etc.
    - start_coordinates # The 'good' coordinates used to start targetted MD steps
-   - target_coordinates_list # A list of coordinates used as targets first round
-   - repids # A list of the IDs for each replicate
+   - target_coordinates_list # A whitespace separated list of coordinate files
+   - repids # A whitespace separated list of the IDs for each replicate
    - topfile # The topology file
    - md_input_1 # Input file for MD step 1 (restrained/targetted MD)
    - md_input_2 # Input file for MD step 2 (restrained/targetted MD)

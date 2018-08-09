@@ -24,6 +24,16 @@ def runit(client, wconfig, inputs):
             if not k in inputs:
                 raise RuntimeError('Error - inputs is missing parameter {}'.format(k))
 
+    for key in inputs:
+        if isinstance(inputs[key], str):
+            if os.path.exists(inputs[key]):
+                inputs[key] = os.path.abspath(inputs[key])
+        elif isinstance(inputs[key], list):
+            for i, v in enumerate(inputs[key]):
+                if isinstance(v, str):
+                    if os.path.exists(v):
+                        inputs[key][i] = os.path.abspath(v)
+
     if wconfig['workflow'].get('dryrun', False):
         client = None
 

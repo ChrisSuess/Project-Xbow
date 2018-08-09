@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: xbow
-Version: 0.3.5
+Version: 0.4.1
 Summary: Longbow in the cloud
 Home-page: UNKNOWN
 Author: Christian Suess, Charlie Laughton
@@ -19,6 +19,7 @@ Classifier: Programming Language :: Python :: 2.7
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.4
 Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
 Classifier: Topic :: Scientific/Engineering
 Classifier: Operating System :: MacOS :: MacOS X
 Classifier: Operating System :: POSIX

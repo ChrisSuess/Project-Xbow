@@ -23,12 +23,12 @@ prestep1:
     type: interfacekernel
     configuration:
         - nstep $= 1
-        - mdin $= {CWD}{mdin1}
-        - mdout $= {CWD}{system_name}.step{nstep}.out
-        - inpcrd $= {CWD}{start_crds}
-        - restrt $= {CWD}{system_name}.step{nstep}.rst
-        - refc $= {CWD}{start_crds}
-        - trj $= {CWD}{system_name}.step{nstep}.nc
+        - mdin $= {mdin1}
+        - mdout $= {CWD}/{system_name}.step{nstep}.out
+        - inpcrd $= {start_crds}
+        - restrt $= {CWD}/{system_name}.step{nstep}.rst
+        - refc $= {start_crds}
+        - trj $= {CWD}/{system_name}.step{nstep}.nc
 
 step1tostep2:
     type: interfacekernel
@@ -36,7 +36,7 @@ step1tostep2:
         - nstep ?= {nstep} + 1
         - inpcrd $= {restrt}
         - restrt $= {CWD}/{system_name}.step{nstep}.rst
-        - mdin $= {CWD}/{mdin2}
+        - mdin $= {mdin2}
         - mdout $= {CWD}/{system_name}.step{nstep}.out
         - trj $= {CWD}/{system_name}.step{nstep}.nc
 
@@ -44,9 +44,9 @@ step2tostep3:
     type: interfacekernel
     configuration:
         - nstep ?= {nstep} + 1
-        - inpcrd $= {CWD}/{restrt}
+        - inpcrd $= {restrt}
         - restrt $= {CWD}/{system_name}.step{nstep}.rst
-        - mdin $= {CWD}/{mdin3}
+        - mdin $= {mdin3}
         - mdout $= {CWD}/{system_name}.step{nstep}.out
         - trj $= {CWD}/{system_name}.step{nstep}.nc
 
