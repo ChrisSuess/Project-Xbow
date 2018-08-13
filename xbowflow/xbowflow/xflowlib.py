@@ -5,7 +5,20 @@ import tempfile
 import copy
 import hashlib
 import glob
+from path import Path
 from .clients import dask_client
+
+def load(filename):
+    '''
+    Load a file, return the corresponding CompressedFileContents object
+
+    Arguments:
+        filename (str): filename
+
+    Returns:
+        CompressedFileContents
+    '''
+    return CompressedFileContents(filename)
 
 class CompressedFileContents(object):
     '''contains the contents of a file in compressed form'''
@@ -13,6 +26,15 @@ class CompressedFileContents(object):
         self.name = os.path.basename(filename)
         self.data = zlib.compress(open(filename, 'rb').read())
     
+    def __str__(self):
+        return zlib.decompress(self.data).decode()
+
+    def as_file(self):
+        ext = os.path.splitext(self.name)[1]
+        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f:
+            f.write(zlib.decompress(self.data))
+        return f.name
+
     def write(self, filename=None, suffix=None):
         if suffix is not None:
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
@@ -24,6 +46,9 @@ class CompressedFileContents(object):
             with open(filename, 'wb') as f:
                 f.write(zlib.decompress(self.data))
             return filename
+
+    def save(self, filename):
+        return self.write(filename=filename)
 
 class Filepack(object):
     """
@@ -37,7 +62,7 @@ class Filepack(object):
     def unpack(self, outputdir='.'):
         for filename in self.filepack:
             outname = os.path.join(outputdir, filename)
-            self.filepack[filename].write(outname)
+            self.filepack[filename].save(outname)
 
 class SubprocessKernel(object):
     def __init__(self, cmd):
@@ -50,6 +75,7 @@ class SubprocessKernel(object):
         self.outputs = []
         self.constants = {}
         self.tmpdir = None
+        self.STDOUT = None
 
     def set_inputs(self, inputs):
         """
@@ -65,12 +91,16 @@ class SubprocessKernel(object):
 
     def set_constant(self, key, value):
         """
-        Set a parameters for the kernel
+        Set a constant for the kernel
+        If it was previously defined as an input variable, remove it from
+        that list.
         """
         self.constants[key] = value
         if isinstance(value, str):
             if os.path.exists(value):
                 self.constants[key] = CompressedFileContents(value)
+        if key in self.inputs:
+            self.inputs.remove(key)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -86,18 +116,21 @@ class SubprocessKernel(object):
                 self.outputs
         """
         outputs = []
-        with tempfile.TemporaryDirectory(dir=self.tmpdir) as tmpdir:
-            os.chdir(tmpdir)
+        td = tempfile.TemporaryDirectory(dir=self.tmpdir)
+        with Path(td.name) as tmpdir:
             indict = {}
             for i in range(len(args)):
-                if not isinstance(args[i], CompressedFileContents):
-                    raise TypeError('Error - argument {} is of type {} but must be of type CompressedFileContents'.format(self.inputs[i], type(args[i])))
-                args[i].write(self.inputs[i])
+                try:
+                    args[i].save(self.inputs[i])
+                except AttributeError:
+                    print('Error - argument {} is of type {} and has no save method'.format(self.inputs[i], type(args[i])))
+                    raise
             for key in self.constants:
-                self.constants[key].write(key)
+                self.constants[key].save(key)
             try:
                 result = subprocess.check_output(self.cmd, shell=True,
                                              stderr=subprocess.STDOUT)
+                self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
                 print(e.output)
                 raise
@@ -156,8 +189,8 @@ class FunctionKernel(object):
             Whatever the function returns, with output files converted
                 to CompressedFileContents
         """
-        with tempfile.TemporaryDirectory(dir=self.tmpdir) as tmpdir:
-            os.chdir(tmpdir)
+        td = tempfile.TemporaryDirectory(dir=self.tmpdir)
+        with Path(td.name) as tmpdir:
             indict = {}
             for i, v in enumerate(args):
                 if isinstance(v, CompressedFileContents):
