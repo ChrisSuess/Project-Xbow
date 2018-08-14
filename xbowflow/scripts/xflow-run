@@ -4,7 +4,7 @@ import os
 import sys
 import yaml
 from xbowflow.pipelines import InterfaceKernel, SubprocessKernel, Pipeline
-#from xbowflow.clients import dask_client
+from xbowflow.clients import dask_client
 from distributed import Client, LocalCluster
 import argparse
 import time
@@ -33,9 +33,6 @@ def runit(client, wconfig, inputs):
                 if isinstance(v, str):
                     if os.path.exists(v):
                         inputs[key][i] = os.path.abspath(v)
-
-    if wconfig['workflow'].get('dryrun', False):
-        client = None
 
     mykernels = {}
     for stage in wconfig['workflow']['stages']:
@@ -70,6 +67,8 @@ if __name__ ==  '__main__':
     parser = argparse.ArgumentParser(description='Run an xbowflow workflow')
     parser.add_argument('configfile', help='Name of the workflow configuration file')
     parser.add_argument('inputsfile', help='Name of the workflow job inputs file')
+    parser.add_argument('--dryrun', action='store_true', help='Dryrun: just print commands that would be executed')
+    parser.add_argument('--local', action='store_true', help='Use a local dask client')
 
     args = parser.parse_args()
 
@@ -79,10 +78,18 @@ if __name__ ==  '__main__':
     with open(args.inputsfile) as f:
         inputs = yaml.load(f)
 
-    print('going local')
-    cluster = LocalCluster()
-    client = Client(cluster)
+    if args.local:
+        print('Going local')
+        cluster = LocalCluster()
+        client = Client(cluster)
+    elif args.dryrun:
+        client = None
+        print('Dry run:')
+    else:
+        client = dask_client()
+
     ok = runit(client, wconfig, inputs)
-    client.close()
+    if client is not None:
+        client.close()
     if ok:
         print('Workflow completed without errors')

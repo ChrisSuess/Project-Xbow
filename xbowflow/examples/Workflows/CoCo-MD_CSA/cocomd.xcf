@@ -1,6 +1,5 @@
 # CoCo-MD workflow definition file
 workflow:
-    dryrun: True
     stages:
         - stage1
         - stage2

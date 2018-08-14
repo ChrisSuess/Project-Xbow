@@ -1,6 +1,0 @@
-Energy minimisation without restraints
-&cntrl
-  imin=1, maxcyc=500,
-  ntpr=50,
-  ntb=2, ntp=1,
-/

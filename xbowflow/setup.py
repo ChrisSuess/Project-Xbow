@@ -100,11 +100,10 @@ setup_args = {
     'packages': find_packages(),
 
     'scripts': [
-                'scripts/xflow-foo',
                 'scripts/xflow-run',
                 'scripts/xflow-exec',
                 'scripts/xflow-execall',
-                'scripts/xflow-submit',
+                'scripts/xflow-stat',
                ],
 
     'install_requires': [

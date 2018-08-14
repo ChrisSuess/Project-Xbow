@@ -1,6 +1,5 @@
 # A simple three step Amber MD equilibration workflow.
 workflow:
-    dryrun: True
     stages:
         - stage1
 

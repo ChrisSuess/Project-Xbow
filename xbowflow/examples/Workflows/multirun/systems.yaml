@@ -1,6 +1,0 @@
-mdexe: mpirun -np 2 sander.MPI
-parmtop: system.top
-inpcrd: system.crd
-mdin: md.in
-trajfile: system.nc
-repdirs: [wildtype, mutant1, mutant2, mutant3]
