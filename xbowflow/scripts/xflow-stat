@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+from __future__ import print_function
+from xbowflow._version import __version__
+from xbowflow.clients import dask_client
+import argparse
+
+parser = argparse.ArgumentParser(description='Report on the status of the xbow cluster')
+
+parser.add_argument('--summary', '-s', action='store_true', help='Summary information only')
+parser.add_argument('-V', '--version', action='version', version=__version__)
+args = parser.parse_args()
+
+client = dask_client()
+info = (client.scheduler_info())
+if not args.summary:
+    print('  {:30s} {:7s} {:9s} {:9s}'.format('Worker name', 'ncores', 'executing', 'in_memory'))
+    for worker in info['workers']:
+        print('{name:30s} {ncores:5d} {executing:9d} {in_memory:9d}'.format(**info['workers'][worker]))
+else:
+    n_ex = 0
+    for worker in info['workers']:
+       n_ex += int(info['workers'][worker]['executing'])
+    if n_ex == 0:
+        print('Idle')
+    else:
+        print('Busy')
+client.close()
