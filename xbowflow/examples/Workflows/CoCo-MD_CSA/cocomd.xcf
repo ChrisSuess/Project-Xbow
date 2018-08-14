@@ -76,7 +76,7 @@ coco:
     type: subprocesskernel
     configuration: >
         {coco_exe} --dims {ndims} --grid {grid_size}
-        -t {topfile}
+        -t {refpdb}
         -s {selection}
         -o {target_coordinates_list}
         -i {CWD}/*.nc
@@ -105,6 +105,7 @@ inputs:
    - md_input_2 # Input file for MD step 2 (restrained/targetted MD)
    - md_input_3 # Input file for MD step 3 (production MD)
    - coco_exe # The pyCoCo executable, may include flags such as '-v'
+   - refpdb # Reference pdb file, used by pyCoCo
    - grid_size # Grid size parameter for pyCoCo
    - ndims # Dimensions parameter for pyCoCo
    - selection # Atoms selected for pyCoCo analysis in MDTraj DSL

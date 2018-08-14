@@ -22,6 +22,9 @@ The workflow goes someting like this:
    trajectory data to the ensemble.
 4. Go back to step 1, until you have enough data.
 
+Note: this example workflow has fewer cycles, replicates and shorter MD steps 
+than a real one should, so it completes in a reasonable time (which may be up 
+to 15 minutes).
 
 Assuming you are on a well-configured xbow cluster, you can run the
 workflow interactively by issuing the command:
