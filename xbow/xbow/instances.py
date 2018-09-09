@@ -343,8 +343,7 @@ def create(name, image_id, instance_type, region=None,
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
         mount_command += "echo '{}:/ {} nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev,noresvport 0 0' >> /etc/fstab \n".format(dnsname, mount_point)
-
-	
+        mount_command += "echo 'SHARED={}' >> /etc/environment \n".format(mount_point)
     else:
         mount_command = None
     if user_data is None:

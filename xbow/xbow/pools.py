@@ -93,6 +93,7 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
         mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
+        mount_command += "echo 'SHARED={}' >> /etc/environment \n".format(mount_point)
     else:
         mount_command = None
     if user_data is None:
