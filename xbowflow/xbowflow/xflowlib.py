@@ -21,7 +21,7 @@ def load(filename):
     '''
     return SharedFile(filename)
 
-class Sharedile(object):
+class SharedFile(object):
     '''contains the contents of a file stored in some globally shared directory'''
     def __init__(self, filename):
         self.name = os.path.basename(filename)
@@ -136,6 +136,7 @@ class SubprocessKernel(object):
                 self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
                 print(e.output)
+                print(glob.glob('*'))
                 raise
             for outfile in self.outputs:
                 if os.path.exists(outfile):
