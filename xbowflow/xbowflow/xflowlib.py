@@ -47,7 +47,7 @@ class SharedFile(object):
         else:
             if filename is None:
                 filename = self.name
-                copyfile(self.data, filename)
+            copyfile(self.data, filename)
             return filename
 
     def save(self, filename):
