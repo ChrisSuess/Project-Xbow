@@ -84,8 +84,7 @@ if __name__ == '__main__':
         inputs = yaml.load(f)
     if args.local_client:
         print('Note: using local client')
-        cluster = LocalCluster()
-        client = Client(cluster)
+        client = dask_client(local=True)
     elif args.dry_run:
         print('Note: dry run')
         client = None
