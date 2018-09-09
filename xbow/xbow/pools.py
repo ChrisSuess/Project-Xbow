@@ -94,6 +94,7 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
         mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
         mount_command += ' chmod go+rw {}\n'.format(mount_point)
         mount_command += "echo 'SHARED={}' >> /etc/environment \n".format(mount_point)
+        mount_command += "echo 'XFLOWBUCKETNAME={}' >> /etc/environment \n".format(shared_file_system)
     else:
         mount_command = None
     if user_data is None:
