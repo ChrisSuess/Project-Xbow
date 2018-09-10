@@ -24,10 +24,8 @@ def load(filename):
 class SharedFile(object):
     '''contains the contents of a file stored in some globally shared directory'''
     def __init__(self, filename):
+        shared_dir = os.getenv('SHARED') or os.getenv('TMPDIR') or './'
         self.name = os.path.basename(filename)
-        shared_dir = os.getenv('SHARED')
-        if shared_dir == None:
-            shared_dir = './'
         ext = os.path.splitext(self.name)[1]
         tmpname = tempfile.NamedTemporaryFile(dir=shared_dir, suffix=ext, delete=False).name
         copyfile(filename, tmpname)

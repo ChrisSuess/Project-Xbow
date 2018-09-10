@@ -1,0 +1,15 @@
+Energy minimisation with protein C-alphas restrained
+&cntrl
+  imin=1, maxcyc=500,
+  ntpr=50,
+  ntr=1,
+  ntb=2, ntp=1,
+/
+Atoms to be restrained
+0.1
+FIND
+CA * * *
+SEARCH
+RES 1 999
+END
+END
