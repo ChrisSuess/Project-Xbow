@@ -36,6 +36,12 @@ class SharedFile(object):
     def __str__(self):
         return self.data
 
+    def __del__(self):
+        try:
+            os.remove(self.data)
+        except:
+            pass
+
     def as_file(self):
         return self.data
 
@@ -84,13 +90,23 @@ class SubprocessKernel(object):
         """
         Set the inputs the kernel requires
         """
+        if not isinstance(inputs, list):
+            raise TypeError('Error - inputs must be of type list, not of type {}'.format(type(inputs)))
         self.inputs = inputs
+        for i in inputs:
+            if not i in self.cmd:
+                raise ValueError('Error - no input parameter "{}" in the command template'.format(i))
 
     def set_outputs(self, outputs):
         """
         Set the outputs the kernel produces
         """
+        if not isinstance(outputs, list):
+            raise TypeError('Error - outputs must be of type list, not of type {}'.format(type(outputs)))
         self.outputs = outputs
+        for i in outputs:
+            if not i in self.cmd:
+                raise ValueError('Error - no output parameter "{}" in the command template'.format(i))
 
     def set_constant(self, key, value):
         """
@@ -98,6 +114,8 @@ class SubprocessKernel(object):
         If it was previously defined as an input variable, remove it from
         that list.
         """
+        if not key in self.cmd:
+            raise ValueError('Error - no constant "{}" in the command template'.format(key))
         self.constants[key] = value
         if isinstance(value, str):
             if os.path.exists(value):
@@ -119,24 +137,33 @@ class SubprocessKernel(object):
                 self.outputs
         """
         outputs = []
+        template = self.cmd
         td = tempfile.TemporaryDirectory(dir=self.tmpdir)
+        def _replace(template, key, value):
+            if not key in template:
+                raise ValueError('Error - no key {} in template {}'.format(key, template))
+            i = template.index(key)
+            j = i + len(key)
+            return template[:i] + str(value) + template[j:]
+
         with Path(td.name) as tmpdir:
             indict = {}
             for i in range(len(args)):
                 try:
                     args[i].save(self.inputs[i])
                 except AttributeError:
-                    print('Error - argument {} is of type {} and has no save method'.format(self.inputs[i], type(args[i])))
-                    raise
+                    template = _replace(template, self.inputs[i], args[i])
             for key in self.constants:
-                self.constants[key].save(key)
+                try:
+                    self.constants[key].save(key)
+                except AttributeError:
+                    template = _replace(template, key, self.constants[key])
             try:
-                result = subprocess.check_output(self.cmd, shell=True,
+                result = subprocess.check_output(template, shell=True,
                                              stderr=subprocess.STDOUT)
                 self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
                 print(e.output)
-                print(glob.glob('*'))
                 raise
             for outfile in self.outputs:
                 if os.path.exists(outfile):
@@ -308,7 +335,7 @@ def md5checksum(filename):
 
 def unpack_run_and_pack(cmd, filepack, tmpdir=None):
     '''
-    Unpack some data files, runa commoand, return the results.
+    Unpack some data files, run a command, return the results.
     '''
     with tempfile.TemporaryDirectory(dir=tmpdir) as tmpd:
         os.chdir(tmpd)
