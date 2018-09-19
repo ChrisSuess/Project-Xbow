@@ -52,11 +52,13 @@ def pack_and_run_remote(command):
     HOSTFILE.close()
 
     user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
-    
+ 
+
+   
     print("Creating a worker, this may take some time...")
 
     sip = pools.create_spot_pool(cfg['worker_pool_name'],
-                            count='1',
+                            count=1,
                             price=cfg['price'],
                             image_id=cfg['image_id'],
                             instance_type=cfg['worker_instance_type'],
