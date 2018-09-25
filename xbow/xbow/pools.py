@@ -263,7 +263,7 @@ def create_elastic_spot_pool(name, count=1, price=1.0, image_id=None, region=Non
         #    print(spot_instance_id)
         n_up = len(spot_instance_request_ids)
     """
-    time.sleep(5)
+    time.sleep(35)
     response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[launch_group]},
           {'Name': 'state', 'Values': ['open', 'active']}])
     spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
