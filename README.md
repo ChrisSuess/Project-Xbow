@@ -14,5 +14,6 @@ run complex large-scale calculations across an **xbow** cluster.
 Contacts:
 
 Christian Suess (christian.suess@nottingham.ac.uk)
+
 Charlie Laughton (charles.laughton@nottingham.ac.uk)
 
