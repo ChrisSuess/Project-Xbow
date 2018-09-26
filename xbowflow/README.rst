@@ -14,7 +14,7 @@ Once there, the key command is *xflow-run*::
 
 *xflow-run* takes two input files. The first (*workflow.xcf* in this example) defines the workflow pattern. The second (*input.yml* in this example) defines the input data for this run of the workflow. 
 
-For a detailed guide to using **Xbowflow**, see the wiki pages (https://github.com/ChrisSuess/Project-Xbow/wiki).
+For a detailed guide to using **Xbowflow**, see the wiki pages (https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows).
 
 
 Installing  Xbowflow
