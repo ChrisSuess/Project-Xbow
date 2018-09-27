@@ -1,4 +1,7 @@
-import zlib
+'''
+Xflowlib: the Xflow library to build workflows on an Xbow cluster
+'''
+import re
 import subprocess
 import os
 import tempfile
@@ -8,81 +11,60 @@ import hashlib
 import glob
 from path import Path
 from .clients import dask_client
+from .filehandling import TempFileHandle
 
-def load(filename):
+def load(filename, filetype=TempFileHandle):
     '''
-    Load a file, return the corresponding Sharedile object
-
-    Arguments:
-        filename (str): filename
-
-    Returns:
-        SharedFile
+    Returns a FileHandle for a path
     '''
-    return SharedFile(filename)
-
-class SharedFile(object):
-    '''contains the contents of a file stored in some globally shared directory'''
-    def __init__(self, filename):
-        shared_dir = os.getenv('SHARED') or os.getenv('TMPDIR') or './'
-        self.name = os.path.basename(filename)
-        ext = os.path.splitext(self.name)[1]
-        tmpname = tempfile.NamedTemporaryFile(dir=shared_dir, suffix=ext, delete=False).name
-        copyfile(filename, tmpname)
-        self.data = tmpname
-    
-    def __str__(self):
-        return self.data
-
-    def __del__(self):
-        try:
-            os.remove(self.data)
-        except:
-            pass
-
-    def as_file(self):
-        return self.data
-
-    def write(self, filename=None, suffix=None):
-        if suffix is not None:
-            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
-                copyfile(self.data, f.name)
-            return f.name
-        else:
-            if filename is None:
-                filename = self.name
-            copyfile(self.data, filename)
-            return filename
-
-    def save(self, filename):
-        return self.write(filename=filename)
+    return filetype(filename)
 
 class Filepack(object):
     """
     A collection of files
     """
-    def __init__(self, filelist):
+    def __init__(self, filelist, filetype=TempFileHandle):
         self.filepack = {}
         for filename in filelist:
-            self.filepack[filename] = SharedFile(filename)
+            self.filepack[filename] = filetype(filename)
 
     def unpack(self, outputdir='.'):
+        '''
+        Unpack the files in the Filepack into the given directory.
+        '''
         for filename in self.filepack:
             outname = os.path.join(outputdir, filename)
             self.filepack[filename].save(outname)
 
 class SubprocessKernel(object):
-    def __init__(self, cmd):
+    '''
+    A kernel that runs a command-line executable
+    '''
+    def __init__(self, template, filetype=TempFileHandle):
         """
         Arguments:
-            cmd (str): the command to be executed
+            template (str): a template for the command to be executed
+            filetype (FileHandle): the class used for file-type data
         """
-        self.cmd = cmd
         self.inputs = []
         self.outputs = []
         self.constants = {}
+        self.filetype = filetype
         self.tmpdir = None
         self.STDOUT = None
+
+        self.var_dict = {}
+        for key in re.findall('\{.*?\}', template):
+            k = key[1:-1].replace('.', '_')
+            self.var_dict[k] = key[1:-1] 
+
+        templist = []
+        for i in template.split('{'):
+            if '}' in i:
+                templist.append(i.replace('.', '_'))
+            else:
+                templist.append(i)
+        self.template = '{'.join(templist)
 
     def set_inputs(self, inputs):
         """
@@ -90,10 +72,12 @@ class SubprocessKernel(object):
         """
         if not isinstance(inputs, list):
             raise TypeError('Error - inputs must be of type list, not of type {}'.format(type(inputs)))
-        self.inputs = inputs
+        self.inputs = []
         for i in inputs:
-            if not i in self.cmd:
+            i2 = i.replace('.', '_')
+            if not i2 in self.var_dict:
                 raise ValueError('Error - no input parameter "{}" in the command template'.format(i))
+            self.inputs.append(i)
 
     def set_outputs(self, outputs):
         """
@@ -101,10 +85,12 @@ class SubprocessKernel(object):
         """
         if not isinstance(outputs, list):
             raise TypeError('Error - outputs must be of type list, not of type {}'.format(type(outputs)))
-        self.outputs = outputs
+        self.outputs = []
         for i in outputs:
-            if not i in self.cmd:
+            i2 = i.replace('.', '_')
+            if not i2 in self.var_dict:
                 raise ValueError('Error - no output parameter "{}" in the command template'.format(i))
+            self.outputs.append(i)
 
     def set_constant(self, key, value):
         """
@@ -112,12 +98,13 @@ class SubprocessKernel(object):
         If it was previously defined as an input variable, remove it from
         that list.
         """
-        if not key in self.cmd:
+        k = key.replace('.', '_')
+        if not k in self.var_dict:
             raise ValueError('Error - no constant "{}" in the command template'.format(key))
-        self.constants[key] = value
+        self.constants[k] = value
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[key] = SharedFile(value)
+                self.constants[k] = self.filetype(value)
         if key in self.inputs:
             self.inputs.remove(key)
 
@@ -131,33 +118,26 @@ class SubprocessKernel(object):
             args: positional arguments whose order should match self.inputs
 
         Returns:
-            tuple : SharedFile in the order they appear in 
+            tuple : outputs in the order they appear in 
                 self.outputs
         """
         outputs = []
-        template = self.cmd
         td = tempfile.TemporaryDirectory(dir=self.tmpdir)
-        def _replace(template, key, value):
-            if not key in template:
-                raise ValueError('Error - no key {} in template {}'.format(key, template))
-            i = template.index(key)
-            j = i + len(key)
-            return template[:i] + str(value) + template[j:]
-
         with Path(td.name) as tmpdir:
-            indict = {}
+            var_dict = self.var_dict
             for i in range(len(args)):
                 try:
                     args[i].save(self.inputs[i])
                 except AttributeError:
-                    template = _replace(template, self.inputs[i], args[i])
+                    var_dict[self.inputs[i]] = args[i]
             for key in self.constants:
                 try:
-                    self.constants[key].save(key)
+                    self.constants[key].save(self.var_dict[key])
                 except AttributeError:
-                    template = _replace(template, key, self.constants[key])
+                    var_dict[key] = self.constants[key]
             try:
-                result = subprocess.check_output(template, shell=True,
+                cmd = self.template.format(**var_dict)
+                result = subprocess.check_output(cmd, shell=True,
                                              stderr=subprocess.STDOUT)
                 self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
@@ -165,7 +145,7 @@ class SubprocessKernel(object):
                 raise
             for outfile in self.outputs:
                 if os.path.exists(outfile):
-                    outputs.append(SharedFile(outfile))
+                    outputs.append(self.filetype(outfile))
                 else:
                     outputs.append(None)
         if len(outputs) == 1:
@@ -175,15 +155,17 @@ class SubprocessKernel(object):
         return outputs
             
 class FunctionKernel(object):
-    def __init__(self, func):
+    def __init__(self, func, filetype=TempFileHandle):
         """
         Arguments:
             func: the Python function to wrap
+            filetype (FileHandle): the file-type handler
         """
         self.func = func
         self.inputs = []
         self.outputs = []
         self.constants = {}
+        self.filetype = filetype
         self.tmpdir=None
 
     def set_inputs(self, inputs):
@@ -205,7 +187,7 @@ class FunctionKernel(object):
         self.constants[key] = value
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[key] = SharedFile(value)
+                self.constants[key] = self.filetype(value)
 
     def copy(self):
         return copy.copy(self)
@@ -216,26 +198,26 @@ class FunctionKernel(object):
 
         Returns:
             Whatever the function returns, with output files converted
-                to SharedFile
+                to FileHandle objects
         """
         td = tempfile.TemporaryDirectory(dir=self.tmpdir)
         with Path(td.name) as tmpdir:
             indict = {}
             for i, v in enumerate(args):
-                if isinstance(v, SharedFile):
-                    indict[self.inputs[i]] = v.write()
+                if isinstance(v, FileHandle):
+                    indict[self.inputs[i]] = v.save(os.path.basename(v.path))
                 elif isinstance(v, dict):
                     for k in v:
                         if k in self.inputs:
-                            if isinstance(v[k], SharedFile):
-                                indict[k] = v[k].write()
+                            if isinstance(v[k], FileHandle):
+                                indict[k] = v[k].save(os.path.basename(v[k].path))
                             else:
                                 indict[k] = v[k]
                 else:
                     indict[self.inputs[i]] = v
             for k in self.constants:
-                if isinstance(self.constants[k], SharedFile):
-                    indict[k] = self.constants[k].write()
+                if isinstance(self.constants[k], FileHandle):
+                    indict[k] = self.constants[k].save(os.path.basename(self.constants[k].path))
                 else:
                     indict[k] = self.constants[k]
             result = self.func(**indict)
@@ -245,7 +227,7 @@ class FunctionKernel(object):
             for i, v in enumerate(result):
                 if isinstance(v, str):
                     if os.path.exists(v):
-                        outputs.append(SharedFile(v))
+                        outputs.append(self.filetype(v))
                     else:
                         outputs.append(v)
                 else:
