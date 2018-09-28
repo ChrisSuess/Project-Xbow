@@ -1,3 +1,8 @@
+'''
+filehanding.py: this module provides classes for passing files between
+processes on distributed computing platforms that may not share a common
+file system.
+'''
 from __future__ import print_function
 
 import os
@@ -25,17 +30,29 @@ class FileHandle(object):
     '''
     def __init__(self, path):
         self.path = os.path.abspath(path)
-        
+   
     def __str__(self):
         return self.path
-    
+
     def save(self, path):
+        """
+        Save the file
+
+        args:
+            path (str): file path
+
+        returns:
+            str: the path
+        """
         abspath = os.path.abspath(path)
         if abspath != self.path:
             copyfile(self.path, path)
         return path
 
     def as_file(self):
+        """
+        Returns a path which points at the file
+        """
         return self.path
 
 class TempFileHandle(FileHandle):
@@ -55,10 +72,22 @@ class TempFileHandle(FileHandle):
             pass
 
     def save(self, path):
+        """
+        Save a copy of the file.
+
+        args:
+            path (str): the path to use
+
+        returns:
+            str: the path used
+        """
         copyfile(self.tmp_path, path)
         return path
 
     def as_file(self):
+        """
+        returns a path that points at the file
+        """
         return self.tmp_path
 
 class SharedFileHandle(FileHandle):
@@ -72,9 +101,11 @@ class SharedFileHandle(FileHandle):
         if shared_dir is None:
             raise IOError('Error - environment variable $SHARED is not set')
         ext = os.path.splitext(path)[1]
-        self.shared_path = tempfile.NamedTemporaryFile(suffix=ext, dir=shared_dir, delete=False).name
+        self.shared_path = tempfile.NamedTemporaryFile(suffix=ext,
+                                                       dir=shared_dir,
+                                                       delete=False).name
         copyfile(self.path, self.shared_path)
-        
+
     def __del__(self):
         shared_dir = os.getenv('SHARED')
         if shared_dir is not None:
@@ -85,14 +116,26 @@ class SharedFileHandle(FileHandle):
                 pass
 
     def save(self, path):
+        """
+        Save a copy of the file
+
+        args:
+            path (str): path for the saved file
+
+        returns:
+            str: path of the saved file
+        """
         shared_dir = os.getenv('SHARED')
         if shared_dir is None:
             raise IOError('Error - environment variable $SHARED is not set')
-        shared_path = os.path.join(shared_dir, os.path.basename(self.shared_path))
+        shared_path = self.as_file()
         copyfile(shared_path, path)
         return path
 
     def as_file(self):
+        """
+        Returns a path that points at the file
+        """
         shared_dir = os.getenv('SHARED')
         if shared_dir is None:
             raise IOError('Error - environment variable $SHARED is not set')
@@ -107,13 +150,25 @@ class CompressedFileHandle(FileHandle):
         super(CompressedFileHandle, self).__init__(path)
         with open(self.path, 'rb') as f:
             self.compressed_data = zlib.compress(f.read())
-        
+
     def save(self, path):
+        """
+        Save a copy of the file
+
+        args:
+            path (str): path for the saved file
+
+        returns:
+            str: path of the saved file
+        """
         with open(path, 'wb') as f:
             f.write(zlib.decompress(self.compressed_data))
         return path
 
     def as_file(self):
+        """
+        Returns a path that points at the file
+        """
         ext = os.path.splitext(self.path)[1]
         tmp_path = tempfile.NamedTemporaryFile(suffix=ext, delete=False).name
-        return save(tmp_path) 
+        return self.save(tmp_path)

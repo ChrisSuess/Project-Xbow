@@ -1,7 +1,3 @@
-from __future__ import print_function
-import sys
-import tempfile
-import subprocess
 """
 Introduction
 ============
@@ -135,7 +131,7 @@ and interface definitions:
 
 will produce the outputs dictionary:
 
-    {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle'} 
+    {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle'}
 
 Scatter example::
 inputs:
@@ -217,6 +213,10 @@ execute its command, but immediately output the input dictionary unchanged. In
 this way error messages rapidly 'fall through' the pipeline to the end.
 
 """
+from __future__ import print_function
+import sys
+import tempfile
+import subprocess
 class InterfaceKernel(object):
     '''
     An InterfaceKernel provides the rewiring between execution kernels.
@@ -233,9 +233,9 @@ class InterfaceKernel(object):
             connections (list):  A list of strings constructed according to
                 the interface definitions language.
         Attributes:
-            operation (str): the type of interface. takes values 'link', 
+            operation (str): the type of interface. takes values 'link',
                 'gather', or 'scatter'. The first inputs a dict and outputs
-                one when run. The second takes a list of dicts as input and 
+                one when run. The second takes a list of dicts as input and
                 outputs a single dict. The last takes a single dict as input
                 and outputs a list of dicts.
             scatterwidth (None or int): if not None, the number of dicts
