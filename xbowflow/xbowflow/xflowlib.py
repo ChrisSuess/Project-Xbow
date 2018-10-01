@@ -22,12 +22,14 @@ def set_filehandler(fh_type):
 
     Currently three options are available. 
 
-    The most basis ('tmp') uses the
+    The most basic ('tmp') uses the
     temporary file system on the host for sharing files. Obviously this only
     works if all workers reside on the same host.
 
     The second option is 'shared' which uses some shared (e.g. NFS) file
-    system to pass files between worker nodes.
+    system to pass files between worker nodes. This requires each node to
+    have an environment variable SHARED which points to the mount point of
+    the shared file system on that node.
 
     The third option is 'memory' which doesn't use a file system at all, 
     file data is stored in memory and passed to workers the same way as 
@@ -45,7 +47,6 @@ def set_filehandler(fh_type):
                          'or "memory"')
     filehandler_type = fh_type
     filehandler = fh_list[fh_types.index(fh_type)]
-
 
 def load(filename):
     '''
