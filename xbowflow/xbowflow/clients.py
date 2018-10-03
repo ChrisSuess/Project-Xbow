@@ -1,6 +1,9 @@
+'''
+Clients.py: thin wrapper over dask client
+'''
 from __future__ import print_function
-from dask.distributed import Client, LocalCluster
 import socket
+from dask.distributed import Client, LocalCluster
 
 def dask_client(local=False, port=8786):
     """
@@ -10,8 +13,8 @@ def dask_client(local=False, port=8786):
         cluster = LocalCluster()
         client = Client(cluster)
     else:
-        ip = socket.gethostbyname(socket.gethostname())
-        dask_scheduler = '{}:{}'.format(ip, port)
+        ip_address = socket.gethostbyname(socket.gethostname())
+        dask_scheduler = '{}:{}'.format(ip_address, port)
         try:
             client = Client(dask_scheduler, timeout=5)
         except IOError:

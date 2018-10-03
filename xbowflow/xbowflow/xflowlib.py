@@ -1,61 +1,57 @@
-import zlib
+'''
+Xflowlib: the Xflow library to build workflows on an Xbow cluster
+'''
+import re
 import subprocess
 import os
 import tempfile
-from shutil import copyfile
 import copy
 import hashlib
 import glob
 from path import Path
 from .clients import dask_client
+from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle
+
+filehandler = TempFileHandle
+filehandler_type = 'tmp'
+
+def set_filehandler(fh_type):
+    """
+    Set the type of file handler that will be used to pass file data between
+    kernels.
+
+    Currently three options are available. 
+
+    The most basis ('tmp') uses the
+    temporary file system on the host for sharing files. Obviously this only
+    works if all workers reside on the same host.
+
+    The second option is 'shared' which uses some shared (e.g. NFS) file
+    system to pass files between worker nodes.
+
+    The third option is 'memory' which doesn't use a file system at all, 
+    file data is stored in memory and passed to workers the same way as 
+    all other data objects.
+
+    args:
+        fh_type (str): one of 'tmp', 'shared', or 'memory'
+    """
+    global filehandler_type
+    global filehandler
+    fh_types = ['tmp', 'shared', 'memory']
+    fh_list = [TempFileHandle, SharedFileHandle, CompressedFileHandle]
+    if not fh_type in fh_types:
+        raise ValueError('Error - argument must be one of "tmp", "shared". '
+                         'or "memory"')
+    filehandler_type = fh_type
+    filehandler = fh_list[fh_types.index(fh_type)]
+
 
 def load(filename):
     '''
-    Load a file, return the corresponding Sharedile object
-
-    Arguments:
-        filename (str): filename
-
-    Returns:
-        SharedFile
+    Returns a FileHandle for a path
     '''
-    return SharedFile(filename)
-
-class SharedFile(object):
-    '''contains the contents of a file stored in some globally shared directory'''
-    def __init__(self, filename):
-        shared_dir = os.getenv('SHARED') or os.getenv('TMPDIR') or './'
-        self.name = os.path.basename(filename)
-        ext = os.path.splitext(self.name)[1]
-        tmpname = tempfile.NamedTemporaryFile(dir=shared_dir, suffix=ext, delete=False).name
-        copyfile(filename, tmpname)
-        self.data = tmpname
-    
-    def __str__(self):
-        return self.data
-
-    def __del__(self):
-        try:
-            os.remove(self.data)
-        except:
-            pass
-
-    def as_file(self):
-        return self.data
-
-    def write(self, filename=None, suffix=None):
-        if suffix is not None:
-            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
-                copyfile(self.data, f.name)
-            return f.name
-        else:
-            if filename is None:
-                filename = self.name
-            copyfile(self.data, filename)
-            return filename
-
-    def save(self, filename):
-        return self.write(filename=filename)
+    return filehandler(filename)
 
 class Filepack(object):
     """
@@ -64,47 +60,73 @@ class Filepack(object):
     def __init__(self, filelist):
         self.filepack = {}
         for filename in filelist:
-            self.filepack[filename] = SharedFile(filename)
+            self.filepack[filename] = filehandler(filename)
 
     def unpack(self, outputdir='.'):
+        '''
+        Unpack the files in the Filepack into the given directory.
+        '''
         for filename in self.filepack:
             outname = os.path.join(outputdir, filename)
             self.filepack[filename].save(outname)
 
 class SubprocessKernel(object):
-    def __init__(self, cmd):
+    '''
+    A kernel that runs a command-line executable
+    '''
+    def __init__(self, template):
         """
         Arguments:
-            cmd (str): the command to be executed
+            template (str): a template for the command to be executed
         """
-        self.cmd = cmd
         self.inputs = []
         self.outputs = []
         self.constants = {}
         self.tmpdir = None
         self.STDOUT = None
 
+        self.var_dict = {}
+        for key in re.findall(r'\{.*?\}', template):
+            k = key[1:-1].replace('.', '_')
+            self.var_dict[k] = key[1:-1]
+
+        templist = []
+        for i in template.split('{'):
+            if '}' in i:
+                templist.append(i.replace('.', '_'))
+            else:
+                templist.append(i)
+        self.template = '{'.join(templist)
+
     def set_inputs(self, inputs):
         """
         Set the inputs the kernel requires
         """
         if not isinstance(inputs, list):
-            raise TypeError('Error - inputs must be of type list, not of type {}'.format(type(inputs)))
-        self.inputs = inputs
+            raise TypeError('Error - inputs must be of type list,'
+                    ' not of type {}'.format(type(inputs)))
+        self.inputs = []
         for i in inputs:
-            if not i in self.cmd:
-                raise ValueError('Error - no input parameter "{}" in the command template'.format(i))
+            i2 = i.replace('.', '_')
+            if not i2 in self.var_dict:
+                raise ValueError('Error - no input parameter "{}" in'
+                        ' the command template'.format(i))
+            self.inputs.append(i)
 
     def set_outputs(self, outputs):
         """
         Set the outputs the kernel produces
         """
         if not isinstance(outputs, list):
-            raise TypeError('Error - outputs must be of type list, not of type {}'.format(type(outputs)))
-        self.outputs = outputs
+            raise TypeError('Error - outputs must be of type list,'
+                    ' not of type {}'.format(type(outputs)))
+        self.outputs = []
         for i in outputs:
-            if not i in self.cmd:
-                raise ValueError('Error - no output parameter "{}" in the command template'.format(i))
+            i2 = i.replace('.', '_')
+            if not i2 in self.var_dict:
+                raise ValueError('Error - no output parameter "{}" in'
+                        ' the command template'.format(i))
+            self.outputs.append(i)
 
     def set_constant(self, key, value):
         """
@@ -112,16 +134,21 @@ class SubprocessKernel(object):
         If it was previously defined as an input variable, remove it from
         that list.
         """
-        if not key in self.cmd:
-            raise ValueError('Error - no constant "{}" in the command template'.format(key))
-        self.constants[key] = value
+        k = key.replace('.', '_')
+        if not k in self.var_dict:
+            raise ValueError('Error - no constant "{}" in the command'
+                    ' template'.format(key))
+        self.constants[k] = value
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[key] = SharedFile(value)
+                self.constants[k] = filehandler(value)
         if key in self.inputs:
             self.inputs.remove(key)
 
     def copy(self):
+        '''
+        Return a copy of the kernel
+        '''
         return copy.deepcopy(self)
 
     def run(self, *args):
@@ -131,41 +158,34 @@ class SubprocessKernel(object):
             args: positional arguments whose order should match self.inputs
 
         Returns:
-            tuple : SharedFile in the order they appear in 
+            tuple : outputs in the order they appear in
                 self.outputs
         """
         outputs = []
-        template = self.cmd
         td = tempfile.TemporaryDirectory(dir=self.tmpdir)
-        def _replace(template, key, value):
-            if not key in template:
-                raise ValueError('Error - no key {} in template {}'.format(key, template))
-            i = template.index(key)
-            j = i + len(key)
-            return template[:i] + str(value) + template[j:]
-
         with Path(td.name) as tmpdir:
-            indict = {}
+            var_dict = self.var_dict
             for i in range(len(args)):
                 try:
                     args[i].save(self.inputs[i])
                 except AttributeError:
-                    template = _replace(template, self.inputs[i], args[i])
+                    var_dict[self.inputs[i]] = args[i]
             for key in self.constants:
                 try:
-                    self.constants[key].save(key)
+                    self.constants[key].save(self.var_dict[key])
                 except AttributeError:
-                    template = _replace(template, key, self.constants[key])
+                    var_dict[key] = self.constants[key]
             try:
-                result = subprocess.check_output(template, shell=True,
-                                             stderr=subprocess.STDOUT)
+                cmd = self.template.format(**var_dict)
+                result = subprocess.check_output(cmd, shell=True,
+                                                 stderr=subprocess.STDOUT)
                 self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
                 print(e.output)
                 raise
             for outfile in self.outputs:
                 if os.path.exists(outfile):
-                    outputs.append(SharedFile(outfile))
+                    outputs.append(filehandler(outfile))
                 else:
                     outputs.append(None)
         if len(outputs) == 1:
@@ -173,18 +193,19 @@ class SubprocessKernel(object):
         else:
             outputs = tuple(outputs)
         return outputs
-            
+     
 class FunctionKernel(object):
     def __init__(self, func):
         """
         Arguments:
             func: the Python function to wrap
+            filetype (FileHandle): the file-type handler
         """
         self.func = func
         self.inputs = []
         self.outputs = []
         self.constants = {}
-        self.tmpdir=None
+        self.tmpdir = None
 
     def set_inputs(self, inputs):
         """
@@ -205,9 +226,12 @@ class FunctionKernel(object):
         self.constants[key] = value
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[key] = SharedFile(value)
+                self.constants[key] = filehandler(value)
 
     def copy(self):
+        """
+        Return a copy of the kernel
+        """
         return copy.copy(self)
 
     def run(self, *args):
@@ -216,26 +240,26 @@ class FunctionKernel(object):
 
         Returns:
             Whatever the function returns, with output files converted
-                to SharedFile
+                to FileHandle objects
         """
         td = tempfile.TemporaryDirectory(dir=self.tmpdir)
         with Path(td.name) as tmpdir:
             indict = {}
             for i, v in enumerate(args):
-                if isinstance(v, SharedFile):
-                    indict[self.inputs[i]] = v.write()
+                if isinstance(v, FileHandle):
+                    indict[self.inputs[i]] = v.save(os.path.basename(v.path))
                 elif isinstance(v, dict):
                     for k in v:
                         if k in self.inputs:
-                            if isinstance(v[k], SharedFile):
-                                indict[k] = v[k].write()
+                            if isinstance(v[k], FileHandle):
+                                indict[k] = v[k].save(os.path.basename(v[k].path))
                             else:
                                 indict[k] = v[k]
                 else:
                     indict[self.inputs[i]] = v
             for k in self.constants:
-                if isinstance(self.constants[k], SharedFile):
-                    indict[k] = self.constants[k].write()
+                if isinstance(self.constants[k], FileHandle):
+                    indict[k] = self.constants[k].save(os.path.basename(self.constants[k].path))
                 else:
                     indict[k] = self.constants[k]
             result = self.func(**indict)
@@ -245,7 +269,7 @@ class FunctionKernel(object):
             for i, v in enumerate(result):
                 if isinstance(v, str):
                     if os.path.exists(v):
-                        outputs.append(SharedFile(v))
+                        outputs.append(filehandler(v))
                     else:
                         outputs.append(v)
                 else:
@@ -264,30 +288,59 @@ class XflowClient(object):
         self.tmpdir = kwargs.pop('tmpdir', None)
         self.client = dask_client(**kwargs)
 
-    def upload(self, f):
-        c = f
-        if isinstance(f, str):
-            if os.path.exists(f):
-                c = SharedFile(f)
-        return self.client.scatter(c, broadcast=True)
+    def upload(self, some_object):
+        """
+        Upload some data/object to the Xbow cluster.
 
-    def unpack(self, f, t):
-        if len(f.outputs) == 1:
-            return t
+        args:
+            fsome_object (any type): what to upload
+
+        returns:
+            dask.Future
+        """
+        return self.client.scatter(some_object, broadcast=True)
+
+    def unpack(self, kernel, future):
+        """
+        Unpacks the single future returned by kernel when run through
+        a dask submit() or map() method, returning a tuple of futures.
+
+        The outputs attribute of kernel lists how many values kernel
+        should properly return.
+
+        args:
+            kernel (Kernel): the kernel that generated the future
+            future (Future): the future returned by kernel
+
+        returns:
+            future or tuple of futures.
+        """
+        if len(kernel.outputs) == 1:
+            return future
         outputs = []
-        for i in range(len(f.outputs)):
-            outputs.append(self.client.submit(lambda tup, j: tup[j], t, i))
+        for i in range(len(kernel.outputs)):
+            outputs.append(self.client.submit(lambda tup, j: tup[j], future, i))
         return tuple(outputs)
 
     def submit(self, func, *args):
+        """
+        Wrapper round the dask submit() method, so that a tuple of
+        futures, rather than just one future, is returned.
+
+        args:
+            func (function/kernel): the function to be run
+            args (list): the function arguments
+        returns:
+            future or tuple of futures
+        """
         if isinstance(func, SubprocessKernel):
             func.tmpdir = self.tmpdir
-            t = self.client.submit(func.run, *args, pure=False)
-            return self.unpack(func, t)
-        elif isinstance(func, FunctionKernel):
+            future = self.client.submit(func.run, *args, pure=False)
+            return self.unpack(func, future)
+        if isinstance(func, FunctionKernel):
             func.tmpdir = self.tmpdir
-            t = self.client.submit(func.run, *args, pure=False)
-            return self.unpack(func, t)
+            future = self.client.submit(func.run, *args, pure=False)
+            return self.unpack(func, future)
         else:
             return self.client.submit(func, *args)
 
@@ -299,29 +352,40 @@ class XflowClient(object):
         return tuple(result)
 
     def map(self, func, *iterables):
+        """
+        Wrapper arounf the dask map() method so it returns lists of
+        tuples of futures, rather than lists of futures.
+
+        args:
+            func (function): the function to be mapped
+            iterables (iterables): the function arguments
+
+        returns:
+            list or tuple of lists: futures returned by the mapped function
+        """
         its = []
         maxlen = 0
-        for it in iterables:
-            if isinstance(it, list):
+        for iterable in iterables:
+            if isinstance(iterable, list):
                 l = len(it)
                 if l > maxlen:
                     maxlen = l
-        for it in iterables:
-            if isinstance(it, list):
-                l = len(it)
+        for iterable in iterables:
+            if isinstance(iterable, list):
+                l = len(iterable)
                 if l != maxlen:
                     raise ValueError('Error: not all iterables are same length')
-                its.append(it)
+                its.append(iterable)
             else:
                 its.append([it] * maxlen)
         if isinstance(func, SubprocessKernel):
             func.tmpdir = self.tmpdir
-            l = self.client.map(func.run, *its, pure=False)
-            result = [self.unpack(func, t) for t in l]
+            futures = self.client.map(func.run, *its, pure=False)
+            result = [self.unpack(func, future) for future in futures]
         elif isinstance(func, FunctionKernel):
             func.tmpdir = self.tmpdir
-            l = self.client.map(func.run, *its, pure=False)
-            result = [self.unpack(func, t) for t in l]
+            futures = self.client.map(func.run, *its, pure=False)
+            result = [self.unpack(func, future) for future in futures]
         else:
             result =  self.client.map(func, *its, pure=False)
         if isinstance(result[0], tuple):
@@ -329,6 +393,9 @@ class XflowClient(object):
         return result
 
 def md5checksum(filename):
+    """
+    Returns the md5 checksum of a file
+    """
     return hashlib.md5(open(filename, 'rb').read()).hexdigest()
 
 def unpack_run_and_pack(cmd, filepack, tmpdir=None):
