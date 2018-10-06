@@ -26,7 +26,7 @@ And an slightly extended client for **dask-distributed**::
 
     Dask-distributed:
         future = distributed_client.submit(myfunc, input1, input2)
-        [future1, ...] = distributed_client.map(myfunc, [input1a, ...], [input2a, ...]
+        [future1, ...] = distributed_client.map(myfunc, [input1a, ...], [input2a, ...])
     
     **Xbowflow**:
         future1, future2 = xflow_client.submit(myfunc, input1, input2)
