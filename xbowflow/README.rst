@@ -1,3 +1,4 @@
+========
 Xbowflow
 ========
 
@@ -45,7 +46,7 @@ For a detailed guide to using **Xbowflow**'s workflow definition language, see t
 
 
 Installing  Xbowflow
---------------------
+____________________
 
 **Xbowflow** is designed to work on **Xbow clusters**, and assumes they have *dask.distributed* installed on them and configured.
 
