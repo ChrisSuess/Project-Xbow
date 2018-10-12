@@ -110,8 +110,9 @@ class SubprocessKernel(object):
         for i in inputs:
             i2 = i.replace('.', '_')
             if not i2 in self.var_dict:
-                raise ValueError('Error - no input parameter "{}" in'
-                        ' the command template'.format(i))
+                 self.var_dict[i2] = i
+            #    raise ValueError('Error - no input parameter "{}" in'
+            #            ' the command template'.format(i))
             self.inputs.append(i)
 
     def set_outputs(self, outputs):
@@ -137,8 +138,9 @@ class SubprocessKernel(object):
         """
         k = key.replace('.', '_')
         if not k in self.var_dict:
-            raise ValueError('Error - no constant "{}" in the command'
-                    ' template'.format(key))
+             self.var_dict[k] = key
+        #    raise ValueError('Error - no constant "{}" in the command'
+        #            ' template'.format(key))
         self.constants[k] = value
         if isinstance(value, str):
             if os.path.exists(value):
