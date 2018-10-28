@@ -5,6 +5,7 @@ import re
 import subprocess
 import os
 import tempfile
+import shutil
 import copy
 import hashlib
 import glob
@@ -12,8 +13,8 @@ from path import Path
 from .clients import dask_client
 from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle
 
-filehandler = TempFileHandle
-filehandler_type = 'tmp'
+filehandler = SharedFileHandle
+filehandler_type = 'shared'
 
 def set_filehandler(fh_type):
     """
@@ -165,8 +166,10 @@ class SubprocessKernel(object):
                 self.outputs
         """
         outputs = []
-        td = tempfile.TemporaryDirectory(dir=self.tmpdir)
-        with Path(td.name) as tmpdir:
+        #td = tempfile.TemporaryDirectory(dir=self.tmpdir)
+        #with Path(td.name) as tmpdir:
+        td = tempfile.mkdtemp(dir=self.tmpdir)
+        with Path(td) as tmpdir:
             var_dict = self.var_dict
             for i in range(len(args)):
                 try:
@@ -191,6 +194,7 @@ class SubprocessKernel(object):
                     outputs.append(filehandler(outfile))
                 else:
                     outputs.append(None)
+        shutil.rmtree(td)
         if len(outputs) == 1:
             outputs = outputs[0]
         else:
@@ -370,7 +374,7 @@ class XflowClient(object):
         maxlen = 0
         for iterable in iterables:
             if isinstance(iterable, list):
-                l = len(it)
+                l = len(iterable)
                 if l > maxlen:
                     maxlen = l
         for iterable in iterables:
@@ -380,7 +384,7 @@ class XflowClient(object):
                     raise ValueError('Error: not all iterables are same length')
                 its.append(iterable)
             else:
-                its.append([it] * maxlen)
+                its.append([iterable] * maxlen)
         if isinstance(func, SubprocessKernel):
             func.tmpdir = self.tmpdir
             futures = self.client.map(func.run, *its, pure=False)

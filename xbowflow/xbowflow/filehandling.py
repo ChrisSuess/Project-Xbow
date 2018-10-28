@@ -65,12 +65,6 @@ class TempFileHandle(FileHandle):
         self.tmp_path = tempfile.NamedTemporaryFile(suffix=ext, delete=False).name
         copyfile(self.path, self.tmp_path)
         
-    def __del__(self):
-        try:
-            os.remove(self.tmp_path)
-        except:
-            pass
-
     def save(self, path):
         """
         Save a copy of the file.
@@ -105,15 +99,6 @@ class SharedFileHandle(FileHandle):
                                                        dir=shared_dir,
                                                        delete=False).name
         copyfile(self.path, self.shared_path)
-
-    def __del__(self):
-        shared_dir = os.getenv('SHARED')
-        if shared_dir is not None:
-            shared_path = os.path.join(shared_dir, os.path.basename(self.shared_path))
-            try:
-                os.remove(shared_path)
-            except:
-                pass
 
     def save(self, path):
         """

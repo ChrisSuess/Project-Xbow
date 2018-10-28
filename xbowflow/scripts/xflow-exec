@@ -7,7 +7,7 @@ import sys
 import os
 import argparse
 
-def exec(client, args):
+def execute(client, args):
     cmd = ' '.join(args.cmd)
     full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
     kernel = SubprocessKernel(full_cmd)
@@ -21,5 +21,5 @@ if __name__ == '__main__':
     parser.add_argument('cmd', nargs='*', help='The command to execute')
     args = parser.parse_args()
     client = dask_client()
-    exec(client, args)
+    execute(client, args)
     client.close()

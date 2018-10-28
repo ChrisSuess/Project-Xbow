@@ -109,6 +109,7 @@ setup_args = {
     'install_requires': [
                 'dask',
                 'distributed',
+                'path.py',
                ],
 
     'zip_safe': False,
