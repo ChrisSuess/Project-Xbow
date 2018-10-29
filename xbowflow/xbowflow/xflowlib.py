@@ -13,8 +13,9 @@ from path import Path
 from .clients import dask_client
 from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle
 
-filehandler = SharedFileHandle
-filehandler_type = 'shared'
+filehandler = None
+filehandler_type = None
+session_dir = 'ABC123'
 
 def set_filehandler(fh_type):
     """
@@ -53,7 +54,9 @@ def load(filename):
     '''
     Returns a FileHandle for a path
     '''
-    return filehandler(filename)
+    if filehandler is None:
+        set_filehandler('memory')
+    return filehandler(filename, session_dir=session_dir)
 
 class Filepack(object):
     """
@@ -62,7 +65,7 @@ class Filepack(object):
     def __init__(self, filelist):
         self.filepack = {}
         for filename in filelist:
-            self.filepack[filename] = filehandler(filename)
+            self.filepack[filename] = filehandler(filename, session_dir=session_dir)
 
     def unpack(self, outputdir='.'):
         '''
@@ -86,6 +89,10 @@ class SubprocessKernel(object):
         self.constants = {}
         self.tmpdir = None
         self.STDOUT = None
+        if filehandler is None:
+            set_filehandler('memory')
+        self.filehandler = filehandler
+        self.session_dir = session_dir
 
         self.var_dict = {}
         for key in re.findall(r'\{.*?\}', template):
@@ -145,7 +152,7 @@ class SubprocessKernel(object):
         self.constants[k] = value
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[k] = filehandler(value)
+                self.constants[k] = self.filehandler(value, session_dir=self.session_dir)
         if key in self.inputs:
             self.inputs.remove(key)
 
@@ -191,7 +198,7 @@ class SubprocessKernel(object):
                 raise
             for outfile in self.outputs:
                 if os.path.exists(outfile):
-                    outputs.append(filehandler(outfile))
+                    outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
                 else:
                     outputs.append(None)
         shutil.rmtree(td)
@@ -213,6 +220,10 @@ class FunctionKernel(object):
         self.outputs = []
         self.constants = {}
         self.tmpdir = None
+        if filehandler is None:
+            set_filehandler('memory')
+        self.filehandler = filehandler
+        self.session_dir = session_dir
 
     def set_inputs(self, inputs):
         """
@@ -233,7 +244,7 @@ class FunctionKernel(object):
         self.constants[key] = value
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[key] = filehandler(value)
+                self.constants[key] = self.filehandler(value, session_dir=self.session_dir)
 
     def copy(self):
         """
@@ -276,7 +287,7 @@ class FunctionKernel(object):
             for i, v in enumerate(result):
                 if isinstance(v, str):
                     if os.path.exists(v):
-                        outputs.append(filehandler(v))
+                        outputs.append(self.filehandler(v, session_dir=self.session_dir))
                     else:
                         outputs.append(v)
                 else:

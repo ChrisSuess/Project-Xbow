@@ -28,8 +28,9 @@ class FileHandle(object):
     '''
     Base class for file handlers
     '''
-    def __init__(self, path):
+    def __init__(self, path, session_dir=None):
         self.path = os.path.abspath(path)
+        self.session_dir = session_dir
    
     def __str__(self):
         return self.path
@@ -59,10 +60,13 @@ class TempFileHandle(FileHandle):
     '''
     File handler that used $TMPDIR as shared space
     '''
-    def __init__(self, path):
-        super(TempFileHandle, self).__init__(path)
+    def __init__(self, path, session_dir=None):
+        super(TempFileHandle, self).__init__(path, session_dir)
         ext = os.path.splitext(path)[1]
-        self.tmp_path = tempfile.NamedTemporaryFile(suffix=ext, delete=False).name
+        tmpdir = os.path.join(os.path.dirname(tempfile.mkdtemp()), session_dir)
+        if not os.path.exists(tmpdir):
+            os.mkdir(tmpdir)
+        self.tmp_path = tempfile.NamedTemporaryFile(dir=tmpdir, suffix=ext, delete=False).name
         copyfile(self.path, self.tmp_path)
         
     def save(self, path):
@@ -89,11 +93,14 @@ class SharedFileHandle(FileHandle):
     File handler that stores data in some shared - e.g. NFS - space.
     Methods allow for $SHARED to point at different places on different nodes
     '''
-    def __init__(self, path):
-        super(SharedFileHandle, self).__init__(path)
+    def __init__(self, path, session_dir=None):
+        super(SharedFileHandle, self).__init__(path, session_dir)
         shared_dir = os.getenv('SHARED')
         if shared_dir is None:
             raise IOError('Error - environment variable $SHARED is not set')
+        shared_dir = os.path.join(shared_dir, self.session_dir)
+        if not os.path.exists(shared_dir):
+            os.mkdir(shared_dir)
         ext = os.path.splitext(path)[1]
         self.shared_path = tempfile.NamedTemporaryFile(suffix=ext,
                                                        dir=shared_dir,
@@ -113,6 +120,7 @@ class SharedFileHandle(FileHandle):
         shared_dir = os.getenv('SHARED')
         if shared_dir is None:
             raise IOError('Error - environment variable $SHARED is not set')
+        shared_dir = os.path.join(shared_dir, self.session_dir)
         shared_path = self.as_file()
         copyfile(shared_path, path)
         return path
@@ -124,6 +132,7 @@ class SharedFileHandle(FileHandle):
         shared_dir = os.getenv('SHARED')
         if shared_dir is None:
             raise IOError('Error - environment variable $SHARED is not set')
+        shared_dir = os.path.join(shared_dir, self.session_dir)
         shared_path = os.path.join(shared_dir, os.path.basename(self.shared_path))
         return shared_path
 
@@ -131,7 +140,7 @@ class CompressedFileHandle(FileHandle):
     '''
     File handler that stores data in memory
     '''
-    def __init__(self, path):
+    def __init__(self, path, session_dir=None):
         super(CompressedFileHandle, self).__init__(path)
         with open(self.path, 'rb') as f:
             self.compressed_data = zlib.compress(f.read())
