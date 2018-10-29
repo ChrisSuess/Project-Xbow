@@ -9,13 +9,14 @@ import shutil
 import copy
 import hashlib
 import glob
+import uuid
 from path import Path
 from .clients import dask_client
 from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle
 
 filehandler = None
 filehandler_type = None
-session_dir = 'ABC123'
+session_dir = str(uuid.uuid4())
 
 def set_filehandler(fh_type):
     """
@@ -49,6 +50,22 @@ def set_filehandler(fh_type):
                          'or "memory"')
     filehandler_type = fh_type
     filehandler = fh_list[fh_types.index(fh_type)]
+
+def purge():
+    '''
+    Remove all temporary files for the current session.
+    '''
+    if filehandler_type == 'tmp':
+        tmpdir = os.path.join(os.path.dirname(tempfile.mkdtemp()), session_dir)
+    elif filehandler_type == 'shared':
+        tmpdir = os.path.join(os.getenv('SHARED'), session_dir)
+    else:
+        tmpdir = None
+    if tmpdir is not None:
+        try:
+            shutil.rmtree(tmpdir)
+        except:
+            pass
 
 def load(filename):
     '''
@@ -92,6 +109,8 @@ class SubprocessKernel(object):
         if filehandler is None:
             set_filehandler('memory')
         self.filehandler = filehandler
+        if session_dir is None:
+            raise SystemError('Error - session_dir is not set')
         self.session_dir = session_dir
 
         self.var_dict = {}

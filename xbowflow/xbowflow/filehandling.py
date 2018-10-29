@@ -117,10 +117,8 @@ class SharedFileHandle(FileHandle):
         returns:
             str: path of the saved file
         """
-        shared_dir = os.getenv('SHARED')
-        if shared_dir is None:
-            raise IOError('Error - environment variable $SHARED is not set')
-        shared_dir = os.path.join(shared_dir, self.session_dir)
+        if self.session_dir is None:
+            raise SystemError('Error - session_dir not set')
         shared_path = self.as_file()
         copyfile(shared_path, path)
         return path
