@@ -7,6 +7,13 @@ from xbow import pools
 import xbow
 import yaml
 import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-s', '--script', help='name of provisioning script')
+parser.add_argument('-n', '--n_workers', help='number of workers to launch')
+
+args = parser.parse_args()
 
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
@@ -24,6 +31,15 @@ else:
     print("Starting the scheduler node - this may take some time...")
 
     user_data = 'rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
+    
+    extra_data = ''
+    if args.script:
+        with open(args.script, 'r') as f:
+            for line in f:
+                if len(line) > 0 and line[0] != '#':
+                    extra_data += line
+
+    user_data = user_data + extra_data
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
@@ -38,8 +54,13 @@ else:
 
 user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
 
+if args.n_workers:
+    n_workers = int(args.n_workers)
+else:
+    n_workers = cfg['pool_size']
+user_data = user_data + extra_data
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
-                        count=cfg['pool_size'],
+                        count=n_workers,
                         price=cfg['price'],
                         image_id=cfg['image_id'],
                         instance_type=cfg['worker_instance_type'],

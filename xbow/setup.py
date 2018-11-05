@@ -108,6 +108,7 @@ setup_args = {
 		'scripts/xbow-sync',
                 'scripts/xbow-launch',
                 'scripts/xbow-configure',
+                'scripts/xbow-provision',
                 'scripts/xbow-submit',
                 'scripts/xbow-hostname',
                 'scripts/xbow-exec',
