@@ -109,6 +109,8 @@ setup_args = {
                 'scripts/xbow-launch',
                 'scripts/xbow-configure',
                 'scripts/xbow-submit',
+                'scripts/xbow-hostname',
+                'scripts/xbow-exec',
                 'scripts/xbow-check',
                 'scripts/xbow-fetch',
                 'scripts/xbow-login'],

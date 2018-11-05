@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import uuid
+import glob
+import os, yaml
+import sys
+import time
+import xbow
+from xbow.instances import get_by_name
+
+def get_hostname():
+    """
+    Returns the url of the cluster scheduler node.
+    """
+    cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+    with open(cfg_file, 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)
+
+    instances = get_by_name(cfg['scheduler_name'])
+    if len(instances) == 0:
+        raise ValueError('Error - no such instance')
+    elif len(instances) > 1:
+        raise ValueError('Error - more than one instance has that name')
+    instance = instances[0]
+    print(instance.public_dns_name)
+
+if __name__ == '__main__':
+    get_hostname()
+

@@ -8,27 +8,27 @@ import socket
 import sys
 import argparse
 
-parser = argparse.ArgumentParser(description='Execute a command on all workers')
-parser.add_argument('cmd', nargs='*', help='The command to execute')
+def execall(client, args):
+    cmd = ' '.join(args.cmd)
+    full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
+    def myfunc(cmd):
+        result = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        return result
+    result = client.run(myfunc, full_cmd)
+    for key in result.keys():
+        print('Worker {}:'.format(key))
+        print(result[key].decode('utf-8'))
 
-args = parser.parse_args()
-
-cmd = ' '.join(args.cmd)
-
-ip = socket.gethostbyname(socket.gethostname())
-dask_scheduler = '{}:8786'.format(ip)
-try:
-    client = Client(dask_scheduler, timeout=2)
-except IOError:
-    print('Warning: using local dask client')
-    client = Client()
-
-full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
-def myfunc(cmd):
-    result = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    return result
-result = client.run(myfunc, full_cmd)
-for key in result.keys():
-    print('Worker {}:'.format(key))
-    print(result[key].decode('utf-8'))
-client.close()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Execute a command on all workers')
+    parser.add_argument('cmd', nargs='*', help='The command to execute')
+    args = parser.parse_args()
+    ip = socket.gethostbyname(socket.gethostname())
+    dask_scheduler = '{}:8786'.format(ip)
+    try:
+        client = Client(dask_scheduler, timeout=2)
+    except IOError:
+        print('Warning: using local dask client')
+        client = Client()
+    execall(client, args)
+    client.close()

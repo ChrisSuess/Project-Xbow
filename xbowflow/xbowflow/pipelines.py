@@ -1,7 +1,3 @@
-from __future__ import print_function
-import sys
-import tempfile
-import subprocess
 """
 Introduction
 ============
@@ -16,25 +12,25 @@ Kernels are instantiated with some configuration data:
 
 my_kernel = Kernel(config_data)
 
-and are executed when their ".run()' method is called. The run method takes 
+and are executed when their ".run()' method is called. The run method takes
 a single input object and returns a single object:
 
 output = my_kernel.run(input)
 
 Typically the inputs and outputs are dictionaries, but they may be lists
 of dictionaries.
- 
+
 Kernels come in two flavours: those that perform the real compute task,
 and those that define how the outputs from one task become the inputs
-for the next - i.e., they just tweak dictionaries. We call the first 
-type of kernel an "execution kernel" and the second type an "interface 
+for the next - i.e., they just tweak dictionaries. We call the first
+type of kernel an "execution kernel" and the second type an "interface
 kernel".
 
 A pipeline thus becomes a chain of alternating interface kernels and
 execution kernels, associated with some client that can schedule/distribute
 the individual tasks. For this, we use a dask.distributed client:
 
-my_pipe = Pipeline(client,[interface_kernel_01, execution_kernel_1, 
+my_pipe = Pipeline(client,[interface_kernel_01, execution_kernel_1,
                            interface_kernel_12, execution_kernel_2, ...]
 
 Like an individual kernel, a pipeline takes a single object as input (the
@@ -54,7 +50,7 @@ as to how they should 're-wire' the inputs dictionary/list to produce the
 output dictionary/list.
 
 This is done by passing a list of strings. The first word in the string is
-the *key*. The *key* is a key in the output dictionary. It may relate to one 
+the *key*. The *key* is a key in the output dictionary. It may relate to one
 from the input dictionary, or may define a new one. The second word in the
 string is the *operator*. This defines how the value for the *key* is generated
 from all the words in the rest of the string: the *definition*. The available
@@ -79,10 +75,10 @@ from all the words in the rest of the string: the *definition*. The available
           Example:
               input dict: {'reps': ['1', '2']}
               operation:  'rep ]= {reps}'
-              output dicts: [{'rep': '1', 'reps': ['1', '2']}, 
+              output dicts: [{'rep': '1', 'reps': ['1', '2']},
                              {'rep': '2', 'reps': ['1', '2']}]
 
-    [=  : The gather operator. The *key* gets the list of 
+    [=  : The gather operator. The *key* gets the list of
           values of the *definition* from each of the input dictionaries in the
           list of input dictionaries.
           Example:
@@ -92,17 +88,17 @@ from all the words in the rest of the string: the *definition*. The available
               (note how the value of 'rep' in the output dict is set from the
               value in the last input dict)
 
-    +=  : The append operator. Similar to the gather operator, the *key* gets 
-          the list of values of the *definition* from each of the input 
+    +=  : The append operator. Similar to the gather operator, the *key* gets
+          the list of values of the *definition* from each of the input
           dictionaries in the list of input dictionaries appended to it.
           Example:
-              input dicts [{'reps': [1, 2], 'rep': 3}, 
+              input dicts [{'reps': [1, 2], 'rep': 3},
                            {'reps': [1, 2], 'rep': 4}]
               operation:  'reps += {rep}'
               output dict: {'reps': [1, 2, 3, 4], 'rep': 4}
 
 The list of operation strings are used to modify the input dict (or list of
-dicts) and produce the output dict (or list of dicts) as follows. First the 
+dicts) and produce the output dict (or list of dicts) as follows. First the
 input dict is copied to the output dict unchanged. Then each operation
 string in the interface definition list is applied in turn, each time
 updating the current state of the output dict(s). For example, if the interface
@@ -135,7 +131,7 @@ and interface definitions:
 
 will produce the outputs dictionary:
 
-    {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle'} 
+    {'x': 'big', 'y': 'cycle', 'count': 5, 'a': 'big-cycle'}
 
 Scatter example::
 inputs:
@@ -143,7 +139,7 @@ inputs:
 desired outputs:
     [{'filename': 'data-section1'}, {'filename': 'data-section2'}]
 scatter definition:
-    ['section ]= {sections}', 
+    ['section ]= {sections}',
      'filename $=   {file}-{section}']
 
 Gather example:
@@ -167,13 +163,13 @@ SubprocessKernels
 -----------------
 These are initiated with a string argument, which is the template for the
 command the kernel will execute, as a Python subprocess. The template can
-contain placeholders for data from the input dictionary that will be 
+contain placeholders for data from the input dictionary that will be
 passed to it, e.g.:
 
     append_kernel = SubprocessKernel('cat {input} >> {output}')
     result = append_kernel.run({'input': 'newdata.dat', 'output': 'all.dat'})
 
-If the placeholder refers to a key in the inputs dictionary that is a list, 
+If the placeholder refers to a key in the inputs dictionary that is a list,
 it will be represented as a string formed from the space-separeted values of
 the list elements.
 
@@ -217,7 +213,14 @@ execute its command, but immediately output the input dictionary unchanged. In
 this way error messages rapidly 'fall through' the pipeline to the end.
 
 """
+from __future__ import print_function
+import sys
+import tempfile
+import subprocess
 class InterfaceKernel(object):
+    '''
+    An InterfaceKernel provides the rewiring between execution kernels.
+    '''
     def __init__(self, connections):
         """
         Define an interface kernel.
@@ -230,9 +233,9 @@ class InterfaceKernel(object):
             connections (list):  A list of strings constructed according to
                 the interface definitions language.
         Attributes:
-            operation (str): the type of interface. takes values 'link', 
+            operation (str): the type of interface. takes values 'link',
                 'gather', or 'scatter'. The first inputs a dict and outputs
-                one when run. The second takes a list of dicts as input and 
+                one when run. The second takes a list of dicts as input and
                 outputs a single dict. The last takes a single dict as input
                 and outputs a list of dicts.
             scatterwidth (None or int): if not None, the number of dicts
@@ -242,24 +245,23 @@ class InterfaceKernel(object):
         """
         self.connections = []
         for con in connections:
-            w = con.split()
-            key = w[0]
-            operator = w[1]
-            defn = ' '.join(w[2:])
+            words = con.split()
+            key = words[0]
+            operator = words[1]
+            defn = ' '.join(words[2:])
             self.connections.append([key, operator, defn])
         self.scatterwidth = None
         self.operation = 'link'
         for i in range(len(self.connections)):
             if self.connections[i][1] == ']=':
                 self.operation = 'scatter'
-            if self.connections[i][1] == '[=':
+            elif self.connections[i][1] == '[=':
                 self.operation = 'gather'
-            if self.connections[i][1] == '+=':
+            elif self.connections[i][1] == '+=':
                 self.operation = 'gather'
             if len(self.connections[i]) != 3:
                 print('Error: {}'.format(self.connections[i]))
                 exit(1)
-                
 
     def run(self, inputs):
         """
@@ -324,7 +326,7 @@ class InterfaceKernel(object):
                     elif con[1] == '+=':
                         if con[0] in outputs:
                             if not isinstance(outputs[con[0]], list):
-                                outputs[con[0]] = [outputs[con[0]]] 
+                                outputs[con[0]] = [outputs[con[0]]]
                             outputs[con[0]].append(con[2].format(**outputs))
                         else:
                             outputs[con[0]] = [con[2].format(**outputs)]
@@ -332,7 +334,6 @@ class InterfaceKernel(object):
                     for con in self.connections:
                         if con[1] == '[=' or con[1] == '+=':
                             outputs[con[0]].append(con[2].format(**inp))
-                
                 outputs['returncode'] = 0
                 return outputs
             except:
@@ -342,7 +343,7 @@ class InterfaceKernel(object):
         else:
             if 'returncode' in inputs:
                 if inputs['returncode'] != 0:
-                    outputs = [inputs] 
+                    outputs = [inputs]
                     return outputs
             for con in self.connections:
                 if con[1] == ']=':
@@ -369,14 +370,13 @@ class InterfaceKernel(object):
                     output['output'] = sys.exc_info()
                 outputs.append(output)
             return outputs
-        
 
 class SubprocessKernel(object):
     def __init__(self, template):
         """
         Builds a command from the template string and the input dict, then
         executes it  using the Python subprocess module
-        
+
         Attributes:
             template (str): the template for the command to be executed
             operation (str): takes the value 'compute'
@@ -428,21 +428,24 @@ class SubprocessKernel(object):
         try:
             outputs['cmd'] = cmd
             if not dryrun:
-                result = subprocess.check_output(cmd, shell=True, 
-                                             stderr=subprocess.STDOUT)
+                result = subprocess.check_output(cmd, shell=True,
+                                                 stderr=subprocess.STDOUT)
                 outputs['output'] = result
-        except subprocess.CalledProcessError as e:
-            outputs['returncode'] = e.returncode
-            outputs['cmd'] = e.cmd
-            outputs['output'] = e.output
+        except subprocess.CalledProcessError as error:
+            outputs['returncode'] = error.returncode
+            outputs['cmd'] = error.cmd
+            outputs['output'] = error.output
         return outputs
 
 
 class FunctionKernel(object):
+    '''
+    A kernel that wraps a Python function.
+    '''
     def __init__(self, func):
         """
         Applies a given Python function to the input dict
-        
+
         Attributes:
             operation (str): takes the value 'compute'
         """
@@ -471,17 +474,18 @@ class FunctionKernel(object):
         try:
             outputs['cmd'] = self.func.__name__
             if not dryrun:
-                result = self.func(inputs) 
+                result = self.func(inputs)
                 for key in result:
                     outputs[key] = result[key]
-        except Error as e:
-            outputs['returncode'] = e.returncode
-            outputs['cmd'] = e.cmd
-            outputs['output'] = e.output
+        except:
+            outputs['returncode'] = 1
+            outputs['output'] = sys.exc_info()[0]
         return outputs
 
-    
 class Pipeline(object):
+    '''
+    A Pipeline is a seriers of sequentially-executed kernels.
+    '''
     def __init__(self, client, klist):
         """
         Initialises a pipeline instance.
@@ -497,31 +501,31 @@ class Pipeline(object):
 
     def run(self, inputs):
         """
-        Run the pipeline. 
+        Run the pipeline.
 
         Args:
             inputs (dict or list): the inputs to the first kernel in the
                 pipeline.
-        
+
         Returns:
             dict or list: the outputs from the last kernel.
         """
-        if self.client == None:
+        if self.client is None:
             return self.dryrun(inputs)
 
         intermediates = [inputs]
-        for ki in self.klist:
+        for kernel in self.klist:
             evaluated = False
             inp = intermediates[-1]
-            if isinstance(inp, list) and ki.operation == 'gather':
-                intermediates.append(self.client.submit(ki.run, inp, pure=False))
+            if isinstance(inp, list) and kernel.operation == 'gather':
+                intermediates.append(self.client.submit(kernel.run, inp, pure=False))
             else:
                 if isinstance(inp, list):
-                    intermediates.append(self.client.map(ki.run, inp, 
+                    intermediates.append(self.client.map(kernel.run, inp,
                                                          pure=False))
                 else:
-                    inter = self.client.submit(ki.run, inp, pure=False)
-                    if ki.operation == 'scatter':
+                    inter = self.client.submit(kernel.run, inp, pure=False)
+                    if kernel.operation == 'scatter':
                         intermediates.append(inter.result())
                         evaluated = True
                     else:
@@ -537,7 +541,7 @@ class Pipeline(object):
     def dryrun(self, inputs):
         """
         Do a dry run of the pipeline.
-        Print out the commands that would be run. 
+        Print out the commands that would be run.
 
         Args:
             inputs (dict or list): the inputs to the first kernel in the
@@ -546,29 +550,29 @@ class Pipeline(object):
             dict or list: the outputs from the last kernel.
         """
         inp = inputs
-        ik = 0
+        kernel_number = 0
         for k in self.klist:
             if k.operation != 'compute':
                 if isinstance(inp, list) and k.operation != 'gather':
-                   out = [k.run(i) for i in inp]
+                    out = [k.run(i) for i in inp]
                 else:
-                   out = k.run(inp)
+                    out = k.run(inp)
             else:
-                print('===== Kernel {} ====='.format(ik))
+                print('===== Kernel {} ====='.format(kernel_number))
                 if isinstance(inp, list):
-                    out = [k.run(i, dryrun=True) for i in inp]
-                    for o in out:
-                        if o['returncode'] != 0:
-                            print('Error: {}'.format(o['output']))
+                    out_list = [k.run(i, dryrun=True) for i in inp]
+                    for out in out_list:
+                        if out['returncode'] != 0:
+                            print('Error: {}'.format(out['output']))
                         else:
-                            print(o['cmd'])
+                            print(out['cmd'])
                         print('--------------')
                 else:
                     out = k.run(inp, dryrun=True)
                     print(out['cmd'])
                     if out['returncode'] != 0:
                         print('Error: {}'.format(out['output']))
-                ik += 1
+                kernel_number += 1
             inp = out
         print('======================')
         return out

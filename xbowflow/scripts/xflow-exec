@@ -7,19 +7,19 @@ import sys
 import os
 import argparse
 
-parser = argparse.ArgumentParser(description='Execute a command on a worker')
+def exec(client, args):
+    cmd = ' '.join(args.cmd)
+    full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
+    kernel = SubprocessKernel(full_cmd)
+    pipe = Pipeline(client, [kernel])
+    result = pipe.run({})
+    print(result['output'].decode('utf-8'))
 
-parser.add_argument('cmd', nargs='*', help='The command to execute')
-args = parser.parse_args()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Execute a command on a worker')
 
-client = dask_client()
-cmd = ' '.join(args.cmd)
-def shellquote(s):
-    return "'" + s.replace("'", "'\\''") + "'"
-full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
-#kernel = SubprocessKernel(shellquote(full_cmd))
-kernel = SubprocessKernel(full_cmd)
-pipe = Pipeline(client, [kernel])
-result = pipe.run({})
-print(result['output'].decode('utf-8'))
-client.close()
+    parser.add_argument('cmd', nargs='*', help='The command to execute')
+    args = parser.parse_args()
+    client = dask_client()
+    exec(client, args)
+    client.close()
