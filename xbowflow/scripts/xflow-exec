@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from xbowflow._version import __version__
-from xbowflow.pipelines import SubprocessKernel, Pipeline
-from xbowflow.clients import dask_client
+from xbowflow.xflowlib import SubprocessKernel
+from xbowflow.clients import XflowClient
 import sys
 import os
 import argparse
@@ -11,15 +11,15 @@ def execute(client, args):
     cmd = ' '.join(args.cmd)
     full_cmd = 'cd {}; {}'.format(os.getcwd(), cmd)
     kernel = SubprocessKernel(full_cmd)
-    pipe = Pipeline(client, [kernel])
-    result = pipe.run({})
-    print(result['output'].decode('utf-8'))
+    kernel.set_outputs(['STDOUT'])
+    result = client.submit(kernel)
+    print(result.result().decode('utf-8'))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Execute a command on a worker')
 
     parser.add_argument('cmd', nargs='*', help='The command to execute')
     args = parser.parse_args()
-    client = dask_client()
+    client = XflowClient()
     execute(client, args)
     client.close()

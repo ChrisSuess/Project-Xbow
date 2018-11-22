@@ -11,7 +11,6 @@ import hashlib
 import glob
 import uuid
 from path import Path
-from .clients import dask_client
 from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle
 
 filehandler = None
@@ -152,9 +151,9 @@ class SubprocessKernel(object):
         self.outputs = []
         for i in outputs:
             i2 = i.replace('.', '_')
-            if not i2 in self.var_dict:
-                raise ValueError('Error - no output parameter "{}" in'
-                        ' the command template'.format(i))
+            #if not i2 in self.var_dict:
+            #    raise ValueError('Error - no output parameter "{}" in'
+            #            ' the command template'.format(i))
             self.outputs.append(i)
 
     def set_constant(self, key, value):
@@ -219,7 +218,10 @@ class SubprocessKernel(object):
                 if os.path.exists(outfile):
                     outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
                 else:
-                    outputs.append(None)
+                    if outfile == 'STDOUT':
+                        outputs.append(self.STDOUT)
+                    else:
+                        outputs.append(None)
         shutil.rmtree(td)
         if len(outputs) == 1:
             outputs = outputs[0]
@@ -283,21 +285,22 @@ class FunctionKernel(object):
         with Path(td.name) as tmpdir:
             indict = {}
             for i, v in enumerate(args):
-                if isinstance(v, FileHandle):
-                    indict[self.inputs[i]] = v.save(os.path.basename(v.path))
-                elif isinstance(v, dict):
+                if isinstance(v, dict):
                     for k in v:
                         if k in self.inputs:
-                            if isinstance(v[k], FileHandle):
+                            try:
                                 indict[k] = v[k].save(os.path.basename(v[k].path))
-                            else:
+                            except AttributeError:
                                 indict[k] = v[k]
                 else:
-                    indict[self.inputs[i]] = v
+                    try:
+                        indict[self.inputs[i]] = v.save(os.path.basename(v.path))
+                    except AttributeError:
+                        indict[self.inputs[i]] = v
             for k in self.constants:
-                if isinstance(self.constants[k], FileHandle):
+                try:
                     indict[k] = self.constants[k].save(os.path.basename(self.constants[k].path))
-                else:
+                except AttributeError:
                     indict[k] = self.constants[k]
             result = self.func(**indict)
             if not isinstance(result, list):
@@ -317,157 +320,3 @@ class FunctionKernel(object):
             outputs = tuple(outputs)
         return outputs
 
-class XflowClient(object):
-    '''Thin wrapper around Dask client so functions that return multiple
-       values (tuples) generate tuples of futures rather than single futures.
-    '''
-    def __init__(self, **kwargs):
-        self.tmpdir = kwargs.pop('tmpdir', None)
-        self.client = dask_client(**kwargs)
-
-    def upload(self, some_object):
-        """
-        Upload some data/object to the Xbow cluster.
-
-        args:
-            fsome_object (any type): what to upload
-
-        returns:
-            dask.Future
-        """
-        return self.client.scatter(some_object, broadcast=True)
-
-    def unpack(self, kernel, future):
-        """
-        Unpacks the single future returned by kernel when run through
-        a dask submit() or map() method, returning a tuple of futures.
-
-        The outputs attribute of kernel lists how many values kernel
-        should properly return.
-
-        args:
-            kernel (Kernel): the kernel that generated the future
-            future (Future): the future returned by kernel
-
-        returns:
-            future or tuple of futures.
-        """
-        if len(kernel.outputs) == 1:
-            return future
-        outputs = []
-        for i in range(len(kernel.outputs)):
-            outputs.append(self.client.submit(lambda tup, j: tup[j], future, i))
-        return tuple(outputs)
-
-    def submit(self, func, *args):
-        """
-        Wrapper round the dask submit() method, so that a tuple of
-        futures, rather than just one future, is returned.
-
-        args:
-            func (function/kernel): the function to be run
-            args (list): the function arguments
-        returns:
-            future or tuple of futures
-        """
-        if isinstance(func, SubprocessKernel):
-            func.tmpdir = self.tmpdir
-            future = self.client.submit(func.run, *args, pure=False)
-            return self.unpack(func, future)
-        if isinstance(func, FunctionKernel):
-            func.tmpdir = self.tmpdir
-            future = self.client.submit(func.run, *args, pure=False)
-            return self.unpack(func, future)
-        else:
-            return self.client.submit(func, *args)
-
-    def _lt2tl(self, l):
-        '''converts a list of tuples to a tuple of lists'''
-        result = []
-        for i in range(len(l[0])):
-            result.append([t[i] for t in l])
-        return tuple(result)
-
-    def map(self, func, *iterables):
-        """
-        Wrapper arounf the dask map() method so it returns lists of
-        tuples of futures, rather than lists of futures.
-
-        args:
-            func (function): the function to be mapped
-            iterables (iterables): the function arguments
-
-        returns:
-            list or tuple of lists: futures returned by the mapped function
-        """
-        its = []
-        maxlen = 0
-        for iterable in iterables:
-            if isinstance(iterable, list):
-                l = len(iterable)
-                if l > maxlen:
-                    maxlen = l
-        for iterable in iterables:
-            if isinstance(iterable, list):
-                l = len(iterable)
-                if l != maxlen:
-                    raise ValueError('Error: not all iterables are same length')
-                its.append(iterable)
-            else:
-                its.append([iterable] * maxlen)
-        if isinstance(func, SubprocessKernel):
-            func.tmpdir = self.tmpdir
-            futures = self.client.map(func.run, *its, pure=False)
-            result = [self.unpack(func, future) for future in futures]
-        elif isinstance(func, FunctionKernel):
-            func.tmpdir = self.tmpdir
-            futures = self.client.map(func.run, *its, pure=False)
-            result = [self.unpack(func, future) for future in futures]
-        else:
-            result =  self.client.map(func, *its, pure=False)
-        if isinstance(result[0], tuple):
-            result = self._lt2tl(result)
-        return result
-
-def md5checksum(filename):
-    """
-    Returns the md5 checksum of a file
-    """
-    return hashlib.md5(open(filename, 'rb').read()).hexdigest()
-
-def unpack_run_and_pack(cmd, filepack, tmpdir=None):
-    '''
-    Unpack some data files, run a command, return the results.
-    '''
-    with tempfile.TemporaryDirectory(dir=tmpdir) as tmpd:
-        os.chdir(tmpd)
-        filepack.unpack()
-        m5s = {}
-        for filename in filepack.filepack:
-            m5s[filename] = md5checksum(filename)
-
-        try:
-            result = subprocess.check_output(cmd, shell=True,
-                                             stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            result = e.output
-        with open('STDOUT', 'wb') as f:
-            f.write(result)
-        filelist = glob.glob('*')
-        outfiles = []
-        for filename in filelist:
-            if not filename in filepack.filepack:
-                outfiles.append(filename)
-            elif md5checksum(filename) != m5s[filename]:
-                outfiles.append(filename)
-        outfilepack = Filepack(outfiles)
-    return outfilepack
-
-def remote_run(client, cmd, tmpdir=None):
-    '''
-    Run a command on a client, including file staging
-    '''
-    files = [f for f in glob.glob('*') if os.path.isfile(f)]
-    filepack = client.scatter(Filepack(files))
-    result = client.submit(unpack_run_and_pack, cmd, filepack, tmpdir)
-    result.result().unpack()

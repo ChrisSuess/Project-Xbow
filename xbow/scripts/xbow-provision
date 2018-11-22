@@ -12,10 +12,13 @@ def provision(args):
     """
     Run a script that configures each node in an xbow cluster.
 
-    Each line in the script should be a shell command, this will be
+    Each line in the script should begin with RUN or COPY.
+    If it is RUN, the rest of the line should be a shell command, this will be
     executed in parallel on each node in the cluster (scheduler plus
     workers). If any command exits with a non-zero exit status on
     any node, execution of the script stops and the error is reported.
+    If it is COPY, then the given local file will be copied to the given
+    remote file.
     Lines in the script file that begin with # are ignored..
     """
     cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
@@ -37,10 +40,10 @@ def provision(args):
         for line in f:
             if len(line) > 0 and line[0] == '#':
                 print(line[:-1])
-            elif len(line) > 0 and line[0] != '#':
+            elif len(line) > 0 and line[:3] == 'RUN':
                 command = line[:-1]
                 print(command + ' : ', end='', flush=True)
-                result = exec_all(all_cis, command)
+                result = exec_all(all_cis, command[4:])
                 status = np.all(np.array(result) == 0)
                 if status:
                     print('OK')
@@ -54,6 +57,22 @@ def provision(args):
                                 print('Error on worker {}'.format(i-1))
                             print(all_cis[i].output)
                     break
+            elif len(line) > 0 and line[:4] == "COPY":
+                status = True
+                command = line[:-1]
+                print(command + ' : ', end='', flush=True)
+                words = command.split()
+                if len(words) != 3:
+                    status = False
+                    print('ERROR')
+                    break
+                for ci in all_cis:
+                    ci.upload(words[1], words[2])
+                print('OK')
+            else:
+                status = False
+                print(line[:-1], ' : ERROR')
+                break
 
     return status
 
