@@ -106,6 +106,7 @@ setup_args = {
                 'scripts/xbow-delete_filesystem',
 		'scripts/xbow-create_filesystem',
 		'scripts/xbow-sync',
+                'scripts/xbow-launch',
                 'scripts/xbow-configure',
                 'scripts/xbow-provision',
                 'scripts/xbow-submit',

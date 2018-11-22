@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+from xbow import instances
+from xbow import pools
+
+import xbow
+import yaml
+import os
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+schedulers = instances.get_by_name(cfg['scheduler_name'])
+if len(schedulers) > 1:
+    print('Error - there is more than one scheduler already running with this name.')
+    exit(1)
+if len(schedulers) == 1:
+    inst = schedulers[0]
+    print('Scheduler already running.')
+else:
+    print("Starting the scheduler node - this may take some time...")
+
+    user_data = 'rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
+    inst = instances.create(
+                            cfg['scheduler_name'],
+                            image_id=cfg['image_id'],
+                            instance_type=cfg['scheduler_instance_type'],
+                            shared_file_system=cfg['shared_file_system'],
+                            mount_point=cfg['mount_point'],
+                            ec2_security_groups = cfg['ec2_security_groups'],
+			    efs_security_groups = cfg['efs_security_groups'],
+                            user_data=user_data
+                      )
+    print("Scheduler ready, now waiting until xbow-cluster is accessible...")
+'''
+user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+
+sip = pools.create_spot_pool(cfg['worker_pool_name'],
+                        count=cfg['pool_size'],
+                        price=cfg['price'],
+                        image_id=cfg['image_id'],
+                        instance_type=cfg['worker_instance_type'],
+                        shared_file_system=cfg['shared_file_system'],
+                        mount_point=cfg['mount_point'],
+                        ec2_security_groups=cfg['ec2_security_groups'],
+	                efs_security_groups=cfg['efs_security_groups'],
+                        user_data=user_data
+                      )
+print("Instance running, now waiting until xbow-cluster is accessible...")
+'''
+ci = instances.ConnectedInstance(inst)
+print("All ready for use")

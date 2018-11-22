@@ -138,7 +138,6 @@ class XflowClient(object):
             result = self._lt2tl(result)
         return result
 
-
     def execall(self, cmd):
         '''
         Run a command on all workers in a cluster.

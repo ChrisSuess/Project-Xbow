@@ -9,6 +9,7 @@ import time
 import xbow
 from xbow.metering import SpotMeter
 from xbow.instances import get_by_name, ConnectedInstance
+from xbow import pools
 
 def pack_and_run_remote(command):
     """
@@ -32,7 +33,7 @@ def pack_and_run_remote(command):
     jobid = uuid.uuid4()
     mount_point=cfg['mount_point']
 
-    ci.exec_command('sudo apt update && sudo apt install task-spooler && tsp -S 20')
+    ci.exec_command('sudo apt update && sudo apt install task-spooler && tsp -S 80')
     print('remote directory will be {}/{}'.format(mount_point, jobid))
     ci.exec_command('mkdir {}/{}'.format(mount_point, jobid))
     infiles = glob.glob('*')
@@ -49,6 +50,23 @@ def pack_and_run_remote(command):
     HOSTFILE.write('jobid: {}\n'.format(jobid))
     HOSTFILE.write('tsp_id: {}\n'.format(tsp_id))
     HOSTFILE.close()
+
+    user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+   
+    print("Creating a worker, this may take some time...")
+
+    sip = pools.create_elastic_spot_pool(cfg['worker_pool_name'],
+                            count=1,
+                            price=cfg['price'],
+                            image_id=cfg['image_id'],
+                            instance_type=cfg['worker_instance_type'],
+                            shared_file_system=cfg['shared_file_system'],
+                            mount_point=cfg['mount_point'],
+                            ec2_security_groups=cfg['ec2_security_groups'],
+                            efs_security_groups=cfg['efs_security_groups'],
+                            user_data=user_data
+                          )
+    print("Instance running")
 
 if __name__ == '__main__':
     command = ' '.join(sys.argv[1:])

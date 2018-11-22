@@ -139,6 +139,141 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
     sip = SpotInstancePool(launch_group, region)
     return sip
 
+def create_elastic_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
+                     instance_type=None, user_data=None,
+                     efs_security_groups=None, ec2_security_groups=None, username=None,
+                     shared_file_system=None, mount_point=None):
+    """
+    Creates an instance of a SpotInstancePool.
+
+    Args:
+        name (str): The name to give the SpotInstancePool. It must not match 
+            any known pool in the same region.
+        count (int, optional): Number of ConnectedInstances in the pool.
+        price (float, optional): The target spot price, in dollars.
+        image_id (str): The AMI to use.
+        region (str, optional): The EC2 region to create instances in. If not
+            specified the value in tbe boto3 configuration file is used.
+        security_groups (list): List of security groups for the instance.
+        username (str, optional): The username to connect to the instance. If
+            not supplied, an attempt will be name to find it from the tags
+            associated with the AMI.
+        user_data (str, optional): Commands to be executed at start-up.
+        shared_file_system (str, optional): Name of an efs file system to
+            attach to each instance.
+        mount_point (str, optional): Mount directory for the shared file system.
+
+    Returns:
+        SpotInstancePool
+
+    """
+    if region is None:
+        region = boto3.session.Session().region_name
+    if region is None:
+        raise ValueError('Error - no region identified')
+    ec2_resource = boto3.resource('ec2', region_name=region)
+    ec2_client = boto3.client('ec2')
+    response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[name]},
+      {'Name': 'state', 'Values': ['open', 'active']}])
+    spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+    launch_group = name
+    key_name = launch_group
+    pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
+    if not os.path.exists(pem_file):
+        raise RuntimeError('Error - cannot find key file {}'.format(pem_file))
+
+    if username is None:
+        image = ec2_resource.Image(image_id)
+        tagdict = {}
+        for tag in image.tags:
+            tagdict[tag['Key']] = tag['Value']
+        username = tagdict.get('username')
+
+    efs_client = boto3.client('efs', region_name=region)
+    if shared_file_system is not None:
+        dfs = efs_client.describe_file_systems
+        response = dfs(CreationToken=shared_file_system)['FileSystems']
+        if len(response) > 0:
+            FileSystemId = response[0]['FileSystemId']
+        else:
+            cfs = efs_client.create_file_system
+            response = cfs(CreationToken=shared_file_system)
+            FileSystemId = response['FileSystemId']
+
+        subnets = ec2_resource.subnets.all()
+        sgf = ec2_resource.security_groups.filter
+        security_groups = sgf(GroupNames=efs_security_groups)
+        efs_security_groupid = [security_group.group_id
+                                    for security_group in security_groups]
+        response = efs_client.describe_mount_targets(FileSystemId = FileSystemId)
+        mounttargets = response["MountTargets"]
+        if len(mounttargets) == 0:
+            for subnet in subnets:
+                cmt = efs_client.create_mount_target
+                cmt(FileSystemId=FileSystemId,
+                    SubnetId=subnet.id,
+                    SecurityGroups=efs_security_groupid
+                   )
+
+        mount_command = '#!/bin/bash\n mkdir -p {}\n'.format(mount_point)
+        dnsname = '{}.efs.{}.amazonaws.com'.format(FileSystemId, region)
+        mount_command += 'mount -t nfs -o nfsvers=4.1,rsize=1048576,'
+        mount_command += 'wsize=1048576,hard,timeo=600,retrans=2 '
+        mount_command += '{}:/ {}\n'.format(dnsname, mount_point)
+        mount_command += ' chmod go+rw {}\n'.format(mount_point)
+        mount_command += "echo 'SHARED={}' >> /etc/environment \n".format(mount_point)
+        mount_command += "echo 'XFLOWBUCKETNAME={}' >> /etc/environment \n".format(shared_file_system)
+    else:
+        mount_command = None
+    if user_data is None:
+        user_data = mount_command
+    else:
+        user_data = mount_command + user_data
+
+    rsi = ec2_resource.meta.client.request_spot_instances
+
+    if sys.version_info > (3, 0):
+        use_the_data = base64.b64encode(bytes(user_data, 'utf-8')).decode()
+
+    if sys.version_info[:2] <= (2, 7):
+        use_the_data = base64.b64encode(user_data)
+
+    response = rsi(ClientToken=str(uuid.uuid4()),
+                   InstanceCount=count,
+                   SpotPrice=price,
+                   Type='persistent',
+                   LaunchGroup=launch_group,
+                   LaunchSpecification={
+                                        'SecurityGroups': ec2_security_groups,
+                                        'ImageId': image_id,
+                                        'InstanceType': instance_type,
+                                        'KeyName': key_name,
+                                        'UserData': use_the_data
+                                       })
+    """    
+    n_up = 0
+    while n_up == 0:
+        time.sleep(5)
+        response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[launch_group]},
+              {'Name': 'state', 'Values': ['open', 'active']}])
+        spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+        spot_instance_ids = [s['InstanceId'] for s in response['SpotInstanceRequests']]
+        #print(spot_instance_ids)
+        #for spot_instance_id in spot_instance_ids:
+        #    print(spot_instance_id)
+        n_up = len(spot_instance_request_ids)
+    """
+    time.sleep(35)
+    response = ec2_resource.meta.client.describe_spot_instance_requests(Filters=[{'Name': 'launch-group', 'Values':[launch_group]},
+          {'Name': 'state', 'Values': ['open', 'active']}])
+    spot_instance_request_ids = [s['SpotInstanceRequestId'] for s in response['SpotInstanceRequests']]
+    spot_instance_ids = [s['InstanceId'] for s in response['SpotInstanceRequests']]
+    for spot_instance_id in spot_instance_ids:
+        ec2_client.create_tags(Resources=[spot_instance_id],Tags=[{'Key': 'username', 'Value': username}, {'Key': 'name', 'Value': name}])
+    #sip = SpotInstancePool(launch_group, region)
+    #return sip
+
+
 class SpotInstancePool(object):
     """A pool of persistent connected spot instances"""
 
