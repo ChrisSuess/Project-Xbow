@@ -6,7 +6,9 @@ import socket
 import hashlib
 import subprocess
 import glob
+import os
 from dask.distributed import Client, LocalCluster
+from xflowlib import FunctionKernel, SubprocessKernel
 
 def dask_client(local=False, port=8786):
     """

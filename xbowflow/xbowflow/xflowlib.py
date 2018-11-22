@@ -120,7 +120,9 @@ class SubprocessKernel(object):
         templist = []
         for i in template.split('{'):
             if '}' in i:
-                templist.append(i.replace('.', '_'))
+                j = i[:i.index('}')].replace('.', '_')
+                j += i[i.index('}'):]
+                templist.append(j)
             else:
                 templist.append(i)
         self.template = '{'.join(templist)
@@ -222,7 +224,10 @@ class SubprocessKernel(object):
                         outputs.append(self.STDOUT)
                     else:
                         outputs.append(None)
-        shutil.rmtree(td)
+        try:
+            shutil.rmtree(td)
+        except:
+            pass
         if len(outputs) == 1:
             outputs = outputs[0]
         else:
@@ -281,8 +286,10 @@ class FunctionKernel(object):
             Whatever the function returns, with output files converted
                 to FileHandle objects
         """
-        td = tempfile.TemporaryDirectory(dir=self.tmpdir)
-        with Path(td.name) as tmpdir:
+        #td = tempfile.TemporaryDirectory(dir=self.tmpdir)
+        #with Path(td.name) as tmpdir:
+        td = tempfile.mkdtemp(dir=self.tmpdir)
+        with Path(td) as tmpdir:
             indict = {}
             for i, v in enumerate(args):
                 if isinstance(v, dict):
@@ -314,6 +321,10 @@ class FunctionKernel(object):
                         outputs.append(v)
                 else:
                     outputs.append(v)
+        try:
+            shutil.rmtree(td)
+        except:
+            pass
         if len(outputs) == 1:
             outputs = outputs[0]
         else:
