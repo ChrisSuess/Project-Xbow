@@ -23,6 +23,11 @@ and have a save() method that creates a local copy of that file:
 
     filename_here = fh.save(filename_here)
 
+and also an as_file() method which returns a path that points at a (maybe temporary) copy of the file contents, suitable for use in cases where a function requires a filename:
+
+    with open(fh.as_file()) as f:
+        ...
+
 '''
 class FileHandle(object):
     '''

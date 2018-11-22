@@ -1,8 +1,7 @@
 import unittest
 import os
 
-from xbowflow import xflowlib
-from xbowflow import filehandling
+from xbowflow import xflowlib, filehandling
 
 class TestTempFilehandlingMethods(unittest.TestCase):
 
