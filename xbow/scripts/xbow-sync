@@ -39,7 +39,7 @@ def exists_remote(name=None, instance_id=None, region=None):
 
     pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
     mount_point = cfg['mount_point']
-    cwd = os.getcwd()
+    cwd = os.getcwd().replace(" ", "\\ ")
     base = os.path.basename(cwd)
 
     status = "ssh -i {} {}@{} '[ -d {}/{} ]'".format(pem_file, username, instance.public_dns_name, mount_point, base)

@@ -100,10 +100,10 @@ class SubprocessKernel(object):
         Arguments:
             template (str): a template for the command to be executed
         """
+        self.template = template
         self.inputs = []
         self.outputs = []
-        self.constants = {}
-        self.tmpdir = None
+        self.constants = []
         self.STDOUT = None
         if filehandler is None:
             set_filehandler('memory')
@@ -112,20 +112,9 @@ class SubprocessKernel(object):
             raise SystemError('Error - session_dir is not set')
         self.session_dir = session_dir
 
-        self.var_dict = {}
-        for key in re.findall(r'\{.*?\}', template):
-            k = key[1:-1].replace('.', '_')
-            self.var_dict[k] = key[1:-1]
-
-        templist = []
-        for i in template.split('{'):
-            if '}' in i:
-                j = i[:i.index('}')].replace('.', '_')
-                j += i[i.index('}'):]
-                templist.append(j)
-            else:
-                templist.append(i)
-        self.template = '{'.join(templist)
+        self.variables = []
+        for key in re.findall(r'\{.*?\}', self.template):
+            self.variables.append(key[1:-1])
 
     def set_inputs(self, inputs):
         """
@@ -134,14 +123,7 @@ class SubprocessKernel(object):
         if not isinstance(inputs, list):
             raise TypeError('Error - inputs must be of type list,'
                     ' not of type {}'.format(type(inputs)))
-        self.inputs = []
-        for i in inputs:
-            i2 = i.replace('.', '_')
-            if not i2 in self.var_dict:
-                 self.var_dict[i2] = i
-            #    raise ValueError('Error - no input parameter "{}" in'
-            #            ' the command template'.format(i))
-            self.inputs.append(i)
+        self.inputs = inputs
 
     def set_outputs(self, outputs):
         """
@@ -150,13 +132,7 @@ class SubprocessKernel(object):
         if not isinstance(outputs, list):
             raise TypeError('Error - outputs must be of type list,'
                     ' not of type {}'.format(type(outputs)))
-        self.outputs = []
-        for i in outputs:
-            i2 = i.replace('.', '_')
-            #if not i2 in self.var_dict:
-            #    raise ValueError('Error - no output parameter "{}" in'
-            #            ' the command template'.format(i))
-            self.outputs.append(i)
+        self.outputs = outputs
 
     def set_constant(self, key, value):
         """
@@ -164,15 +140,17 @@ class SubprocessKernel(object):
         If it was previously defined as an input variable, remove it from
         that list.
         """
-        k = key.replace('.', '_')
-        if not k in self.var_dict:
-             self.var_dict[k] = key
-        #    raise ValueError('Error - no constant "{}" in the command'
-        #            ' template'.format(key))
-        self.constants[k] = value
+        d = {}
+        d['name'] = key
         if isinstance(value, str):
             if os.path.exists(value):
-                self.constants[k] = self.filehandler(value, session_dir=self.session_dir)
+                d['value'] = self.filehandler(value, session_dir=self.session_dir)
+            else:
+                d['value'] = value
+        else:
+            d['value'] = value
+        self.constants.append(d)
+
         if key in self.inputs:
             self.inputs.remove(key)
 
@@ -193,28 +171,26 @@ class SubprocessKernel(object):
                 self.outputs
         """
         outputs = []
-        #td = tempfile.TemporaryDirectory(dir=self.tmpdir)
-        #with Path(td.name) as tmpdir:
-        td = tempfile.mkdtemp(dir=self.tmpdir)
+        td = tempfile.mkdtemp()
         with Path(td) as tmpdir:
-            var_dict = self.var_dict
+            var_dict = {}
             for i in range(len(args)):
-                try:
-                    args[i].save(self.inputs[i])
-                except AttributeError:
+                if args[i] in self.variables:
                     var_dict[self.inputs[i]] = args[i]
-            for key in self.constants:
+                else:
+                    args[i].save(self.inputs[i])
+            for d in self.constants:
                 try:
-                    self.constants[key].save(self.var_dict[key])
+                    d['value'].save(d['name'])
                 except AttributeError:
-                    var_dict[key] = self.constants[key]
+                    var_dict[d['name']] = d['value']
             try:
                 cmd = self.template.format(**var_dict)
                 result = subprocess.check_output(cmd, shell=True,
                                                  stderr=subprocess.STDOUT)
                 self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
-                print(e.output)
+                print(e.output.decode())
                 raise
             for outfile in self.outputs:
                 if os.path.exists(outfile):

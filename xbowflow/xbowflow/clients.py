@@ -8,7 +8,7 @@ import subprocess
 import glob
 import os
 from dask.distributed import Client, LocalCluster
-from xflowlib import FunctionKernel, SubprocessKernel
+from .xflowlib import FunctionKernel, SubprocessKernel
 
 def dask_client(local=False, port=8786):
     """
@@ -35,6 +35,18 @@ class XflowClient(object):
     def __init__(self, **kwargs):
         self.tmpdir = kwargs.pop('tmpdir', None)
         self.client = dask_client(**kwargs)
+
+    def cluster(self):
+        """
+        Basic info about the cluster
+        """
+        return self.client.cluster
+
+    def close(self):
+        """
+        The close() method of the underlying dask client
+        """
+        return self.client.close
 
     def upload(self, some_object):
         """
