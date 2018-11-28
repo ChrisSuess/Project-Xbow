@@ -1,0 +1,2 @@
+# Basic provisioning script for an xbow cluster with xflow
+pip install xbowflow==0.1.7
