@@ -178,7 +178,10 @@ class SubprocessKernel(object):
                 if self.inputs[i] in self.variables:
                     var_dict[self.inputs[i]] = args[i]
                 else:
-                    args[i].save(self.inputs[i])
+                    try:
+                        args[i].save(self.inputs[i])
+                    except:
+                        raise TypeError('Error with variable {} {}'.format(i, args[i]))
             for d in self.constants:
                 try:
                     d['value'].save(d['name'])
