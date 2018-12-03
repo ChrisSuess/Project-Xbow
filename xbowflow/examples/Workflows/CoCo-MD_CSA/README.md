@@ -1,15 +1,5 @@
-The files in this folder show how to run a CoCo_MD enhanced sampling simulation
+The files in this folder show how to run a CoCo-MD enhanced sampling simulation
 for cyclosporine A, using AMBER as the MD code.
-
-To test the workflow type:
-% xflow-run --dryrun cocomd.xcf csa.yaml
-
-This will print out all the commands that would be run.
-
-The file cocomd.xcf contains the workflow definition.
-The file csa.yaml contains the inputs for this instance of the workflow.
-
-The other files are the various Amber and pyCoCo input files.
 
 The workflow goes someting like this:
 
@@ -29,9 +19,16 @@ to 15 minutes).
 Assuming you are on a well-configured xbow cluster, you can run the
 workflow interactively by issuing the command:
 
-% xflow-run cocomd.xcf csa.yaml
+% python run_coco.py
 
 Or you can submit it as a background job using tsp:
 
-% tsp xflow-run cocomd.xcf csa.yaml
+% tsp python run_coco.py
 
+The requirements are:
+
+ - Python packages:
+   - MDTraj
+   - extasycoco
+ - Applications:
+   - Amber (or AmberTools, if you edit the scriots to use sander instead of pmemd)
