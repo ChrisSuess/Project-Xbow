@@ -175,7 +175,7 @@ class SubprocessKernel(object):
         with Path(td) as tmpdir:
             var_dict = {}
             for i in range(len(args)):
-                if args[i] in self.variables:
+                if self.inputs[i] in self.variables:
                     var_dict[self.inputs[i]] = args[i]
                 else:
                     args[i].save(self.inputs[i])
