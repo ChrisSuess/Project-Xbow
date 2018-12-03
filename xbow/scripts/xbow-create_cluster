@@ -30,7 +30,7 @@ if len(schedulers) == 1:
 else:
     print("Starting the scheduler node - this may take some time...")
 
-    user_data = 'rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
+    user_data = 'pip install dask distributed && rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
     
     extra_data = ''
     if args.script:
@@ -52,7 +52,7 @@ else:
                       )
     print("Scheduler ready, now starting workers. This may take some time...")
 
-user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+user_data = 'pip install dask distributed && sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
 
 if args.n_workers:
     n_workers = int(args.n_workers)
