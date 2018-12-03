@@ -1,0 +1,7 @@
+# Provisioning script for an xbow cluster for this example Notebook  
+pip install xbowflow
+pip install cython
+pip install mdtraj
+pip install pinda
+pinda install fpocket 3.0
+pinda install vina 1.1.2
