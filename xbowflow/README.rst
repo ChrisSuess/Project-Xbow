@@ -24,20 +24,33 @@ A workflow is then built up by chaining these function calls together, according
     output3 = myfunc4(output2a, output2b)
     
     
+Here's a simple example, a script that uses the standard unix *rev* command::
+
+    from xbowflow import xflowlib
+    rev = xflowlib.SubprocessKernel('rev input > output') # creates the 'kernel'
+    rev.set_inputs(['input'])                             # sets the kernel inputs
+    rev.set_outputs(['output'])                           # sets the kernel outputs
+    input = xflowlib.load('my_text.txt')                  # loads the input data from a file
+    output = rev.run(input)                               # runs the kernel with the given input, creating output
+    output.save('my_reversed_text.txt')                   # the output is saved to a file
+    
+    
 Running Workflow jobs
 ______________________
 
 
-**XBowflow**'s **xflowlib** library provides an extended version of the **dask.distributed** client, that distributes tasks (function calls) across the set of available worker nodes::
+**XBowflow**'s **xflowlib** library provides an extended version of the **dask.distributed** client, that distributes tasks (function calls) across the set of available worker nodes. The example script above would execute locally, to spread execution over the cluster, we use the client::
 
-    Dask-distributed:
-        future = distributed_client.submit(myfunc, input1, input2)
-        [future1, ...] = distributed_client.map(myfunc, [input1a, ...], [input2a, ...])
+    from xbowflow import xflowlib
+    rev = xflowlib.SubprocessKernel('rev input > output') # creates the 'kernel'
+    rev.set_inputs(['input'])                             # sets the kernel inputs
+    rev.set_outputs(['output'])                           # sets the kernel outputs
+    input = xflowlib.load('my_text.txt')                  # loads the input data from a file
+    from xbowflow.clients import XflowClient
+    client = XflowClient                                  # create a client for the cluster of workers
+    output = client.submit(rev, input)                    # the function is submitted to one of the workers for execution
+    output.result().save('my_reversed_text.txt')          # the output is converted from a **future** and saved to a file
     
-    **Xbowflow**:
-        future1, future2 = xflow_client.submit(myfunc, input1, input2)
-        [future1a, ...], [future2a, ...] = xflow_client.map(myfunc, [input1a, ...], [input2a, ...])
-        
 
 Installing  Xbowflow
 ____________________
