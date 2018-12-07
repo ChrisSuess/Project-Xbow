@@ -31,7 +31,8 @@ Here's a simple example, a script that uses the standard unix *rev* command::
     rev.set_inputs(['input'])                             # sets the kernel inputs
     rev.set_outputs(['output'])                           # sets the kernel outputs
     input = xflowlib.load('my_text.txt')                  # loads the input data from a file
-    output = rev.run(input)                               # runs the kernel with the given input, creating output
+    output = rev.run(input)                               # runs the kernel with the given 
+                                                          #   input, creating output
     output.save('my_reversed_text.txt')                   # the output is saved to a file
     
     
@@ -47,9 +48,12 @@ ______________________
     rev.set_outputs(['output'])                           # sets the kernel outputs
     input = xflowlib.load('my_text.txt')                  # loads the input data from a file
     from xbowflow.clients import XflowClient
-    client = XflowClient                                  # create a client for the cluster of workers
-    output = client.submit(rev, input)                    # the function is submitted to one of the workers for execution
-    output.result().save('my_reversed_text.txt')          # the output is converted from a **future** and saved to a file
+    client = XflowClient                                  # create a client for the cluster 
+                                                          #   of workers
+    output = client.submit(rev, input)                    # the function is submitted to one of 
+                                                          #   the workers for execution
+    output.result().save('my_reversed_text.txt')          # the output is converted from a **future** 
+                                                          #   and saved to a file
     
 
 Installing  Xbowflow
