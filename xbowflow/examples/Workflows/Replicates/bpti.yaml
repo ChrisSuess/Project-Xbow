@@ -1,0 +1,10 @@
+local: True
+startcrds: bpti.gro
+topfile: bpti.top
+mdpfile: mdrun.mdp
+deffnm: bpti-md
+repdirs: 
+  - rep0 
+  - rep1 
+  - rep2 
+  - rep3

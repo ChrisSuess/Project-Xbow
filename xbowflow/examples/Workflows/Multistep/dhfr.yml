@@ -1,0 +1,9 @@
+local: True # If True, use a a local (not distributed) client
+prmtop: dhfr.prmtop # Name of the Amber .prmtop file
+mdexe: pmemd # Name of the executable, pmemd, or sander, or pmemd.cuda, etc.
+startcrds: dhfr.crd # Initial coordinates
+mdin1: dhfr.step1.in # MD input file for stage 1 of workflow
+mdin2: dhfr.step2.in # MD input file for stage 2 of workflow
+mdin3: dhfr.step3.in # MD input file for stage 3 of workflow
+outcrds: dhfr.step3.rst # File name for final (restart) coordinates
+outtraj: dhfr.step3.nc # File name for trajectory file.

@@ -1,7 +1,0 @@
-tprfile: bpti-md.tpr
-deffnm: bpti-md
-repdirs: 
-  - rep0 
-  - rep1 
-  - rep2 
-  - rep3
