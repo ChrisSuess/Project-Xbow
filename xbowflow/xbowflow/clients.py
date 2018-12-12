@@ -168,11 +168,15 @@ class XflowClient(object):
         result = self.client.run(myfunc, full_cmd)
         return result
 
-    def install(self, package):
+    def install(self, package, sudo=False):
         '''
         Install a package on all workers in a cluster.
         '''
-        cmd = 'sudo pip install {}'.format(package)
+        if sudo:
+            cmd = 'sudo pip install {}'.format(package)
+        else:
+            cmd = 'pip install {}'.format(package)
+
         result = self.execall(cmd)
         errors = False
         errortext = ''
