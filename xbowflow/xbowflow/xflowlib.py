@@ -180,7 +180,7 @@ class SubprocessKernel(object):
                 else:
                     try:
                         args[i].save(self.inputs[i])
-                    except:
+                    except AttributeError:
                         raise TypeError('Error with variable {} {}'.format(i, args[i]))
             for d in self.constants:
                 try:
@@ -194,7 +194,7 @@ class SubprocessKernel(object):
                 self.STDOUT = result.decode()
             except subprocess.CalledProcessError as e:
                 print(e.output.decode())
-                raise
+                raise 
             for outfile in self.outputs:
                 if os.path.exists(outfile):
                     outputs.append(self.filehandler(outfile, session_dir=self.session_dir))

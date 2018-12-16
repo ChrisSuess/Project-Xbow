@@ -38,7 +38,7 @@ class FileHandle(object):
         self.session_dir = session_dir
    
     def __str__(self):
-        return self.path
+        return "Filehandle for file {}".format(self.path)
 
     def save(self, path):
         """
