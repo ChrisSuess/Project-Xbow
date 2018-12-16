@@ -10,13 +10,15 @@ import os
 from dask.distributed import Client, LocalCluster
 from .xflowlib import FunctionKernel, SubprocessKernel
 
-def dask_client(local=False, port=8786):
+def dask_client(scheduler_file=None, local=False, port=8786):
     """
     returns an instance of a dask.distributed client
     """
     if local:
         cluster = LocalCluster()
         client = Client(cluster)
+    elif scheduler_file:
+        client = Client(scheduler_file=scheduler_file)
     else:
         ip_address = socket.gethostbyname(socket.gethostname())
         dask_scheduler = '{}:{}'.format(ip_address, port)
