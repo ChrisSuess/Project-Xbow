@@ -57,10 +57,27 @@ def check_the_job():
     filelist = ci.output.split()
     outfiles = [f for f in filelist if not f in infiles]
     if len(filelist) > 0:
-        print('downloading output files:')
-    for filename in outfiles:
-        ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
-        print('    {}'.format(filename))
+        get_input = input
+
+        if sys.version_info[:2] <= (2, 7):
+            get_input = raw_input
+
+        print('Would you like to download the output files?')
+        a = get_input("Enter yes/no to continue: ")
+        
+        if a=="yes":
+            for filename in outfiles:
+                ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
+                print('    {}'.format(filename))
+        elif a=="no":
+            print("Your files have not been downloaded")
+            sys.exit()
+        else:
+            print("Enter either yes/no")
+
+    #for filename in outfiles:
+    #    ci.download('{}/{}/{}'.format(mount_point, jobid, filename), filename)
+    #    print('    {}'.format(filename))
     print('\nOutput from remote command:')
     ci.exec_command('tsp -c {}'.format(tsp_id))
     print(ci.output)
