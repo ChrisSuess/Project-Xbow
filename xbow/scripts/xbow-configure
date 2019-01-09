@@ -78,8 +78,8 @@ def configure_pem_keys(region=None, force=False):
     and worker_pool_name defined in .xbow/settings.yml
     """
     ec2 = boto3.resource('ec2', region_name=region)
-    #keynames = [cfg['scheduler_name'], cfg['worker_pool_name']]
-    keynames = [cfg['scheduler_name']]
+    keynames = [cfg['scheduler_name'], cfg['worker_pool_name']]
+    #keynames = [cfg['scheduler_name']]
     if not os.path.exists(xbow.XBOW_CONFIGDIR):
         os.mkdir(xbow.XBOW_CONFIGDIR)
     for keyname in keynames:
