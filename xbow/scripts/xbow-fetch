@@ -10,10 +10,9 @@ import xbow
 from xbow.metering import SpotMeter
 from xbow.instances import get_by_name, ConnectedInstance
 
-def check_the_job():
+def pull_back_files():
     """
-    Stage the contents of the current directory to the xbow cluster, then
-    run the given command, then stage output files back, then clean up.
+    Stage output files back, then clean up.
     """
 
     cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
@@ -45,13 +44,6 @@ def check_the_job():
     status = ci.output[:-1]
     
     print('Job Status:')
-    #while status != 'finished':
-    #    print('    {}...'.format(status))
-        #time.sleep(10)
-    #    ci.exec_command('tsp -s {}'.format(tsp_id))
-    #    status = ci.output[:-1]
-    #    sys.exit()
-    #print('Job Status:')
     print('    {}'.format(status))
     ci.exec_command('ls -1 {}/{}'.format(mount_point, jobid))
     filelist = ci.output.split()
@@ -68,7 +60,6 @@ def check_the_job():
     ci.exec_command('tsp -i {}'.format(tsp_id))
     print(ci.output)
     ci.exec_command('rm -rf {}/{}'.format(mount_point, jobid))
-    #print('Estamated cost of this job: {:6.3f} USD'.format(meter.total_cost()))
 
 if __name__ == '__main__':
-    check_the_job()
+    pull_back_files()

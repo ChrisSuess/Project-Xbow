@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 from xbow import instances
+from xbow import filesystems
 from xbow import pools
 
 import xbow
@@ -24,13 +25,50 @@ schedulers = instances.get_by_name(cfg['scheduler_name'])
 if len(schedulers) > 1:
     print('Error - there is more than one scheduler already running with this name.')
     exit(1)
+
+fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'], 
+                                   region=cfg['region'] 
+                                  )
+if fs_id is None:
+    fs_id = filesystem.create_fs(cfg['shared_file_system'],
+                                 region=cfg['region'], 
+                                 efs_security_groups=cfg['efs_security_groups']
+                                )
+cfg['fs_id'] = fs_id
 if len(schedulers) == 1:
     inst = schedulers[0]
     print('Scheduler already running, now starting workers. This may take some time...')
 else:
     print("Starting the scheduler node - this may take some time...")
 
-    user_data = 'pip install dask distributed && rm -f {}/.dsf.json && sudo -u ubuntu dask-scheduler --scheduler-file {}/.dsf.json > /home/ubuntu/scheduler.log 2>&1 &\n'.format(cfg['mount_point'], cfg['mount_point'])
+    user_data = '''Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config.txt"
+
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+
+#!/bin/bash
+pip install dask distributed && sudo -u ubuntu dask-scheduler > /home/ubuntu/scheduler.log 2>&1 &
+mkdir -p {mount_point}
+mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
+chmod go+rw {mount_point}
+echo 'SHARED={mount_point} >> /etc/environment
+'''.format(**cfg)
+    final_data = '''
+--//'''
     
     extra_data = ''
     if args.script:
@@ -39,35 +77,55 @@ else:
                 if len(line) > 0 and line[0] != '#':
                     extra_data += line
 
-    user_data = user_data + extra_data
+    user_data = user_data + extra_data + final_data
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
                             instance_type=cfg['scheduler_instance_type'],
-                            shared_file_system=cfg['shared_file_system'],
-                            mount_point=cfg['mount_point'],
                             ec2_security_groups = cfg['ec2_security_groups'],
-			    efs_security_groups = cfg['efs_security_groups'],
                             user_data=user_data
                       )
     print("Scheduler ready, now starting workers. This may take some time...")
+    
+    cfg['scheduler_ip_address'] = inst.private_ip_address
+    user_data = '''Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
 
-user_data = 'pip install dask distributed && sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config.txt"
+
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+
+#!/bin/bash
+pip install dask distributed && sudo -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1 --worker-port 45792 {scheduler_ip_address}:8786 &
+mkdir -p {mount_point}
+mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
+chmod go+rw {mount_point}
+echo 'SHARED={mount_point} >> /etc/environment
+'''.format(**cfg)
 
 if args.n_workers:
     n_workers = int(args.n_workers)
 else:
     n_workers = cfg['pool_size']
-user_data = user_data + extra_data
+user_data = user_data + extra_data + final_data
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
                         count=n_workers,
                         price=cfg['price'],
                         image_id=cfg['image_id'],
                         instance_type=cfg['worker_instance_type'],
-                        shared_file_system=cfg['shared_file_system'],
-                        mount_point=cfg['mount_point'],
                         ec2_security_groups=cfg['ec2_security_groups'],
-	                efs_security_groups=cfg['efs_security_groups'],
                         user_data=user_data
                       )
 print("Instance running, now waiting until xbow-cluster is accessible...")

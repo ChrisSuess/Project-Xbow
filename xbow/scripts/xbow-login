@@ -5,6 +5,7 @@ import xbow
 import boto3
 import subprocess
 import os, yaml
+from xbow.instances import get_by_name
 
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
@@ -13,14 +14,14 @@ with open(cfg_file, 'r') as ymlfile:
 
 def login_instance(name=None, instance_id=None, region=None):
     """
-    returns a string that could be used to log in to the selected instance
+    Log in to the selected instance
     """
     if name is None and instance_id is None:
         raise ValueError('Error - either the name or instance_id must be provided')
 
     ec2 = boto3.resource('ec2', region_name=region)
     if name is not None:
-        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+        instances = get_by_name(name, region)
     else:
         instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
 
@@ -44,14 +45,9 @@ def login_instance(name=None, instance_id=None, region=None):
         cwd = os.getcwd()
         base = os.path.basename(cwd)
         pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
-        #cmd_change = 'export PS1="\[\e[34;1m\]\u\[\e[0m\]@\[\e[32;1m\]xbow\[\e[0m\]:\w> "'
 
- #       launch_command = "ssh -t -i {} {}@{} -oStrictHostKeyChecking=no 'cd {}/{} && exec bash -l'".format(pem_file, username, instance.public_dns_name, mount_point, base)
         launch_command = "ssh -i {} {}@{} -oStrictHostKeyChecking=no".format(pem_file, username, instance.public_dns_name)
-        #print(launch_command)
         subprocess.call(launch_command, shell=True)
-     
-
 try:
     result = login_instance(name=cfg['scheduler_name'])
 except ValueError as e:

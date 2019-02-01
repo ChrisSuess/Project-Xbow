@@ -9,12 +9,13 @@ import time
 import xbow
 from xbow.metering import SpotMeter
 from xbow.instances import get_by_name, ConnectedInstance
+from xbow.filesystems import fs_id_from_name
 from xbow import pools
 
 def pack_and_run_remote(command):
     """
     Stage the contents of the current directory to the xbow cluster, then
-    run the given command, then stage output files back, then clean up.
+    run the given command, creating the neccessary worker instance.
     """
     cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
@@ -51,20 +52,46 @@ def pack_and_run_remote(command):
     HOSTFILE.write('tsp_id: {}\n'.format(tsp_id))
     HOSTFILE.close()
 
-    user_data = 'sudo -H -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1  --scheduler-file {}/.dsf.json --worker-port 45792 &\n'.format(cfg['mount_point'])
-   
+    cfg['scheduler_ip_address'] = instance.private_ip_address
+    cfg['fs_id'] = fs_id_from_name(cfg['shared_file_system'])
+    user_data = '''Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config.txt"
+
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+
+#!/bin/bash
+pip install dask distributed && sudo -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1 --worker-port 45792 {scheduler_ip_address}:8786 &
+mkdir -p {mount_point}
+mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
+chmod go+rw {mount_point}
+echo 'SHARED={mount_point} >> /etc/environment
+'''.format(**cfg)
+
     print("Creating a worker, this may take some time...")
 
-    sip = pools.create_elastic_spot_pool(cfg['worker_pool_name'],
+    sip = pools.create_spot_pool(cfg['worker_pool_name'],
                             count=1,
                             price=cfg['price'],
                             image_id=cfg['image_id'],
+                            region=cfg['region'],
                             instance_type=cfg['worker_instance_type'],
-                            shared_file_system=cfg['shared_file_system'],
-                            mount_point=cfg['mount_point'],
                             ec2_security_groups=cfg['ec2_security_groups'],
-                            efs_security_groups=cfg['efs_security_groups'],
-                            user_data=user_data
+                            user_data=user_data,
+                            append=True, wait=False
                           )
     print("Instance running")
 

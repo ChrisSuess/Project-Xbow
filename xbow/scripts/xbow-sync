@@ -4,6 +4,7 @@ from __future__ import print_function
 import xbow
 import boto3
 import argparse, os, subprocess, yaml
+from xbow.instances import get_by_name
 
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
@@ -18,7 +19,7 @@ def exists_remote(name=None, instance_id=None, region=None):
 
     ec2 = boto3.resource('ec2', region_name=region)
     if name is not None:
-        instances = list(ec2.instances.filter(Filters=[{'Name': 'key-name', 'Values': [name]}, {'Name': 'instance-state-name', 'Values': ['running']}]))
+        instances = get_by_name(name, region)
     else:
         instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
 
