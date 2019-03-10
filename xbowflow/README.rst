@@ -57,6 +57,9 @@ ______________________
                                                           #   and saved to a file
     
 
+For more details, see the Wiki page (https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows)
+
+
 Installing  Xbowflow
 ____________________
 
