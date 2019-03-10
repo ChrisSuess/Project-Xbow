@@ -8,12 +8,12 @@ Creating Workflow jobs
 _____________________
  
 
-Workflows are created by writing Python scripts, that use **Xbowflow**'s **xflowlib** library to provide an interface with conventional command-line tools. The library enables a call to a command line tool to be converted into a Python function, e.g.::
+Workflows are created by writing Python scripts, that use **Xbowflow**'s **xflowlib** library to provide an interface with conventional command-line tools. The library enables a call to a command line tool to be converted into a Python function.
+For example, if we have a command lime tool that takes two inputs and provides two outputs::
 
-    Command line:
-        mytool -a input1 -b input2 -y output1 -z output2
+    mytool -a input1 -b input2 -y output1 -z output2
     
-    Python/xflowlib:
+Then in Python with xflowlib, this command line tool could become the function below::
         output1, output2 = myfunc(input1, input2)
 
 A workflow is then built up by chaining these function calls together, according to the workflow logic.e.g.::
