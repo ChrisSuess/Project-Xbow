@@ -14,6 +14,7 @@ For example, if we have a command lime tool that takes two inputs and provides t
     mytool -a input1 -b input2 -y output1 -z output2
     
 Then in Python with xflowlib, this command line tool could become the function below::
+
         output1, output2 = myfunc(input1, input2)
 
 A workflow is then built up by chaining these function calls together, according to the workflow logic.e.g.::
