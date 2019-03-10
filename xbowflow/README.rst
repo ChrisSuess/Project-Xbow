@@ -48,7 +48,7 @@ ______________________
     rev.set_outputs(['output'])                           # sets the kernel outputs
     input = xflowlib.load('my_text.txt')                  # loads the input data from a file
     from xbowflow.clients import XflowClient
-    client = XflowClient                                  # create a client for the cluster 
+    client = XflowClient()                                  # create a client for the cluster 
                                                           #   of workers
     output = client.submit(rev, input)                    # the function is submitted to one of 
                                                           #   the workers for execution
