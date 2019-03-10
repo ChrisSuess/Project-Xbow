@@ -9,11 +9,11 @@ _____________________
  
 
 Workflows are created by writing Python scripts, that use **Xbowflow**'s **xflowlib** library to provide an interface with conventional command-line tools. The library enables a call to a command line tool to be converted into a Python function.
-For example, if we have a command lime tool that takes two inputs and provides two outputs::
+For example, if we have a command line tool that takes two inputs and provides two outputs::
 
     mytool -a input1 -b input2 -y output1 -z output2
     
-Then in Python with xflowlib, this command line tool could become the function below::
+Then in Python with xflowlib, this command line tool could become the function::
 
         output1, output2 = myfunc(input1, input2)
 
@@ -49,7 +49,7 @@ ______________________
     rev.set_outputs(['output'])                           # sets the kernel outputs
     input = xflowlib.load('my_text.txt')                  # loads the input data from a file
     from xbowflow.clients import XflowClient
-    client = XflowClient()                                  # create a client for the cluster 
+    client = XflowClient()                                # create a client for the cluster 
                                                           #   of workers
     output = client.submit(rev, input)                    # the function is submitted to one of 
                                                           #   the workers for execution
