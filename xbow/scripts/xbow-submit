@@ -34,7 +34,7 @@ def pack_and_run_remote(command):
     jobid = uuid.uuid4()
     mount_point=cfg['mount_point']
 
-    ci.exec_command('sudo apt update && sudo apt install task-spooler && tsp -S 80')
+    ci.exec_command('sudo apt update && sudo apt install -y task-spooler && tsp -S 80')
     print('remote directory will be {}/{}'.format(mount_point, jobid))
     ci.exec_command('mkdir {}/{}'.format(mount_point, jobid))
     infiles = glob.glob('*')

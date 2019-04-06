@@ -21,6 +21,13 @@ cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
+extra_data = ''
+if args.script:
+    with open(args.script, 'r') as f:
+        for line in f:
+            if len(line) > 0 and line[0] != '#':
+                extra_data += line
+
 schedulers = instances.get_by_name(cfg['scheduler_name'])
 if len(schedulers) > 1:
     print('Error - there is more than one scheduler already running with this name.')
@@ -70,14 +77,7 @@ echo 'SHARED={mount_point} >> /etc/environment
     final_data = '''
 --//'''
     
-    extra_data = ''
-    if args.script:
-        with open(args.script, 'r') as f:
-            for line in f:
-                if len(line) > 0 and line[0] != '#':
-                    extra_data += line
-
-    user_data = user_data + extra_data + final_data
+    user_data = user_data + extra_data
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],

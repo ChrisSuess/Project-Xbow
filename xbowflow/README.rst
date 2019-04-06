@@ -8,12 +8,13 @@ Creating Workflow jobs
 _____________________
  
 
-Workflows are created by writing Python scripts, that use **Xbowflow**'s **xflowlib** library to provide an interface with conventional command-line tools. The library enables a call to a command line tool to be converted into a Python function, e.g.::
+Workflows are created by writing Python scripts, that use **Xbowflow**'s **xflowlib** library to provide an interface with conventional command-line tools. The library enables a call to a command line tool to be converted into a Python function.
+For example, if we have a command line tool that takes two inputs and provides two outputs::
 
-    Command line:
-        mytool -a input1 -b input2 -y output1 -z output2
+    mytool -a input1 -b input2 -y output1 -z output2
     
-    Python/xflowlib:
+Then in Python with xflowlib, this command line tool could become the function::
+
         output1, output2 = myfunc(input1, input2)
 
 A workflow is then built up by chaining these function calls together, according to the workflow logic.e.g.::
@@ -48,13 +49,16 @@ ______________________
     rev.set_outputs(['output'])                           # sets the kernel outputs
     input = xflowlib.load('my_text.txt')                  # loads the input data from a file
     from xbowflow.clients import XflowClient
-    client = XflowClient                                  # create a client for the cluster 
+    client = XflowClient()                                # create a client for the cluster 
                                                           #   of workers
     output = client.submit(rev, input)                    # the function is submitted to one of 
                                                           #   the workers for execution
     output.result().save('my_reversed_text.txt')          # the output is converted from a **future** 
                                                           #   and saved to a file
     
+
+For more details, see the Wiki page (https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows)
+
 
 Installing  Xbowflow
 ____________________
