@@ -72,12 +72,14 @@ pip install dask distributed && sudo -u ubuntu dask-scheduler > /home/ubuntu/sch
 mkdir -p {mount_point}
 mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
 chmod go+rw {mount_point}
-echo 'SHARED={mount_point} >> /etc/environment
+echo 'SHARED={mount_point}' >> /etc/environment
+
 '''.format(**cfg)
     final_data = '''
+
 --//'''
     
-    user_data = user_data + extra_data
+    user_data = user_data + extra_data + final_data
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
@@ -112,7 +114,8 @@ pip install dask distributed && sudo -u ubuntu dask-worker --local-directory /tm
 mkdir -p {mount_point}
 mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
 chmod go+rw {mount_point}
-echo 'SHARED={mount_point} >> /etc/environment
+echo 'SHARED={mount_point}' >> /etc/environment
+
 '''.format(**cfg)
 
 if args.n_workers:
