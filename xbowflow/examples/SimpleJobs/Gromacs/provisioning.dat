@@ -1,0 +1,9 @@
+sed 's/APT::Periodic::Update-Package-Lists "1"/APT::Periodic::Update-Package-Lists "0"/' /etc/apt/apt.conf.d/20auto-upgrades > /tmp/20auto-upgrades
+mv /tmp/20auto-upgrades /etc/apt/apt.conf.d/
+apt update
+apt install -y task-spooler
+tsp -S 80
+pip install xbowflow
+pip install pinda
+pinda install gromacs 2018-cuda
+pinda install amber 18
