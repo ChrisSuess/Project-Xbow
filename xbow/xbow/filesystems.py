@@ -35,6 +35,16 @@ def create_fs(name, region=None, efs_security_groups=None):
     response = cfs(CreationToken=name, Encrypted=True)
     fs_id = response['FileSystemId']
 
+    create_tag = efs_client.create_tags(
+            FileSystemId = response['FileSystemId'],
+                Tags=[
+                    {
+                        'Key': 'Name',
+                        'Value': name
+                    },
+                ]
+            )
+
     time.sleep(5)
 
     subnets = ec2_resource.subnets.all()
