@@ -26,7 +26,7 @@ while True:
     a = get_input("Enter yes/no to continue: ")
     if a=="yes":
         print("Deleting mount targets")
-        filesystems.delete_mount_targsts(name, region)
+        filesystems.delete_mount_targets(name, region)
         print("Deleting filesystem")
         time.sleep(15)
         filesystems.delete_fs(name, region)
