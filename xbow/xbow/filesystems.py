@@ -90,7 +90,7 @@ def delete_mount_targets(name, region=None):
     """
     efs_client = boto3.client('efs', region_name=region)
     fs_id = fs_id_from_name(name, region=region)
-    dmt = efs.client.describe_mount_targets
+    dmt = efs_client.describe_mount_targets
     mount_targets = dmt(FileSystemId=fs_id).get('MountTargets', [])
     for mount_target in mount_targets:
         mount_target_id = mount_target['MountTargetId']
