@@ -21,13 +21,6 @@ cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
-extra_data = ''
-if args.script:
-    with open(args.script, 'r') as f:
-        for line in f:
-            if len(line) > 0 and line[0] != '#':
-                extra_data += line
-
 schedulers = instances.get_by_name(cfg['scheduler_name'])
 if len(schedulers) > 1:
     print('Error - there is more than one scheduler already running with this name.')
@@ -75,6 +68,26 @@ chmod go+rw {mount_point}
 echo 'SHARED={mount_point}' >> /etc/environment
 
 '''.format(**cfg)
+    extra_data = ''
+    if args.script:
+        with open(args.script, 'r') as f:
+            on = True
+            for line in f:
+                if len(line) == 0:
+                    pass
+                elif line[0] == '#':
+                    pass
+                elif line[0] == '[':
+                    if '[all]' in line or '[scheduler]' in line:
+                        on = True
+                    elif '[workers]' in line:
+                        on = False
+                    else:
+                        raise ValueError('Error - unrecognised command in provisioning file')
+                else:
+                    if on:
+                        extra_data += line
+
     final_data = '''
 
 --//'''
@@ -117,6 +130,25 @@ chmod go+rw {mount_point}
 echo 'SHARED={mount_point}' >> /etc/environment
 
 '''.format(**cfg)
+    extra_data = ''
+    if args.script:
+        with open(args.script, 'r') as f:
+            on = True
+            for line in f:
+                if len(line) == 0:
+                    pass
+                elif line[0] == '#':
+                    pass
+                elif line[0] == '[':
+                    if '[all]' in line or '[workers]' in line:
+                        on = True
+                    elif '[scheduler]' in line:
+                        on = False
+                    else:
+                        raise ValueError('Error - unrecognised command in provisioning file')
+                else:
+                    if on:
+                        extra_data += line
 
 if args.n_workers:
     n_workers = int(args.n_workers)
