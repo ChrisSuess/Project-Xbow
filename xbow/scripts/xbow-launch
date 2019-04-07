@@ -26,8 +26,9 @@ if len(schedulers) > 1:
 
 fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'], 
                                    region=cfg['region'], 
-                                   efs_security_groups=cfg['efs_security_groups']
-                                  )
+                                  ) 
+				   #efs_security_groups=cfg['efs_security_groups']
+                                  # )
 if fs_id is None:
     fs_id = filesystem.create_fs(cfg['shared_file_system'],
                                  region=cfg['region'], 
