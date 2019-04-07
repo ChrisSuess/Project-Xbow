@@ -47,7 +47,7 @@ def create_settings():
             HOSTFILE.write('worker_instance_type: c5.large\n')
             HOSTFILE.write('scheduler_instance_type: t2.small\n')
             HOSTFILE.write('#image_id: ami-813a3a6b # new image created 15/06/2018\n')
-            HOSTFILE.write('image_id: ami-0bec9e0965fb653e2 # Deep Learning Base AMI (Ubuntu) Version 17.0\n')
+            HOSTFILE.write('image_id: ami-07c7a309b70bc57f8 # Deep Learning Base AMI (Ubuntu) Version 17.0\n')
             HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")
             HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
             HOSTFILE.write('shared_file_system: MyFileSystem\n')
@@ -56,7 +56,7 @@ def create_settings():
             HOSTFILE.write('cluster_name: MyCluster\n')
             HOSTFILE.write('scheduler_name: MyScheduler\n')
             HOSTFILE.write('worker_pool_name: MyWorkers\n')
-            HOSTFILE.write('pool_size: 1\n')
+            HOSTFILE.write('pool_size: 2\n')
 
             HOSTFILE.close()
 
