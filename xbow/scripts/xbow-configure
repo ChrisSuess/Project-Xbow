@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import sys
 import xbow
 from botocore.exceptions import ClientError
 import boto3
@@ -37,29 +38,39 @@ def create_settings():
                   'need to edit this file with your cloud preferences for the \n'
                   'cloud machines you wish to use. See documentation for more \n'
                   'information on best cloud practices.')
+            
+            get_input = input
+            if sys.version_info[:2] <= (2, 7):
+                get_input = raw_input
 
-            #os.mkdir(os.path.expanduser('~/.xbow'))
+            user = input("Enter a Cluster Name: ")
+            
+            print("Configuring {}'s Xbow with default settings (Recommended)"
+      .format(user))
+      
+            newfile = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
 
-            HOSTFILE = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
+            newfile.write('### USER SPECIFIC SETTINGS ###\n')
+            newfile.write('cluster_name: {}\n'.format(user))
+            newfile.write('scheduler_name: {}Schd\n'.format(user))
+            newfile.write('worker_pool_name: {}Work\n'.format(user))
+            newfile.write('shared_file_system: {}FS\n'.format(user))
+            newfile.write('creation_token: {}FS\n'.format(user))
+            newfile.write('mount_point: /home/ubuntu/shared\n\n')
 
-            HOSTFILE.write('region: eu-west-1\n')
-            HOSTFILE.write("price: '0.05'\n")
-            HOSTFILE.write('worker_instance_type: c5.large\n')
-            HOSTFILE.write('scheduler_instance_type: t2.small\n')
-            HOSTFILE.write('#image_id: ami-813a3a6b # new image created 15/06/2018\n')
-            HOSTFILE.write('image_id: ami-07c7a309b70bc57f8 # Deep Learning Base AMI (Ubuntu) Version 17.0\n')
-            HOSTFILE.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")
-            HOSTFILE.write("efs_security_groups: ['Xbow-SG-mt']\n")
-            HOSTFILE.write('shared_file_system: MyFileSystem\n')
-            HOSTFILE.write('creation_token: MyFileSystem\n')
-            HOSTFILE.write('mount_point: /home/ubuntu/shared\n')
-            HOSTFILE.write('cluster_name: MyCluster\n')
-            HOSTFILE.write('scheduler_name: MyScheduler\n')
-            HOSTFILE.write('worker_pool_name: MyWorkers\n')
-            HOSTFILE.write('pool_size: 2\n')
+            newfile.write('### CLUSTER SPECIFIC SETTINGS ###\n')
 
-            HOSTFILE.close()
+            newfile.write('region: eu-west-1\n')
+            newfile.write("price: '0.50'\n")
+            newfile.write('image_id: ami-07c7a309b70bc57f8\n')
+            newfile.write('scheduler_instance_type: t2.small\n')
+            newfile.write('worker_instance_type: p2.xlarge\n')
+            newfile.write('pool_size: 10\n\n')
 
+            newfile.write('### SECURITY SPECIFIC SETTINGS ###\n')
+            newfile.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")
+            newfile.write("efs_security_groups: ['Xbow-SG-mt']\n")
+            newfile.close()
 
         else:
 
