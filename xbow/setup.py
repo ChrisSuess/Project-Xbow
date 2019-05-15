@@ -107,7 +107,7 @@ setup_args = {
 		'scripts/xbow-create_filesystem',
 		'scripts/xbow-sync',
                 'scripts/xbow-launch',
-                'scripts/xbow-configure',
+                'scripts/xbow-config',
                 'scripts/xbow-provision',
                 'scripts/xbow-notebook',
                 'scripts/xbow-submit',
