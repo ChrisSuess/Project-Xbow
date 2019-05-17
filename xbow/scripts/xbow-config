@@ -43,7 +43,7 @@ def create_settings():
             if sys.version_info[:2] <= (2, 7):
                 get_input = raw_input
 
-            user = input("Enter a Cluster Name: ")
+            user = get_input("Enter a Cluster Name: ")
             
             print("Configuring {}'s Xbow with default settings (Recommended)"
       .format(user))
