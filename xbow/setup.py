@@ -60,7 +60,7 @@ else:
 """Check Python version"""
 print("* Checking Python version...")
 if sys.version_info[:2] < (2, 7) or (3, 0) <= sys.version_info[0:2] < (3, 4):
-    exit_with_error("You need Python 2.7 or 3.4+ to install tios!")
+    exit_with_error("You need Python 2.7 or 3.4+ to install xbow!")
 print("* Python version OK!")
 
 
@@ -84,7 +84,7 @@ setup_args = {
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
         'Environment :: Console',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
@@ -113,6 +113,7 @@ setup_args = {
                 'scripts/xbow-submit',
                 'scripts/xbow-hostname',
                 'scripts/xbow-exec',
+                'scripts/xbow-portal',
                 'scripts/xbow-check',
                 'scripts/xbow-fetch',
                 'scripts/xbow-login'],
