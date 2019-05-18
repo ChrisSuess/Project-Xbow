@@ -51,9 +51,9 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
     spot_instance_request_ids = [s['SpotInstanceRequestId'] 
                                  for s in response['SpotInstanceRequests']
                                 ]
-    if len(spot_instance_request_ids) > 0:
-        if not append:
-            raise ValueError('Error - spot pool {} already exists'.format(name))
+    #if len(spot_instance_request_ids) > 0:
+    #    if not append:
+    #        raise ValueError('Error - spot pool {} already exists'.format(name))
     launch_group = name
     key_name = launch_group
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
@@ -102,12 +102,13 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
     sip = SpotInstancePool(launch_group, region)
     return sip
 
-'''
+"""
 def create_elastic_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
                      instance_type=None, user_data=None,
                      efs_security_groups=None, ec2_security_groups=None, username=None,
                      shared_file_system=None, mount_point=None):
-    """
+
+    '''
     Creates an instance of a SpotInstancePool.
 
     Args:
@@ -129,8 +130,8 @@ def create_elastic_spot_pool(name, count=1, price=1.0, image_id=None, region=Non
 
     Returns:
         SpotInstancePool
+    '''
 
-    """
     if region is None:
         region = boto3.session.Session().region_name
     if region is None:
@@ -214,7 +215,7 @@ def create_elastic_spot_pool(name, count=1, price=1.0, image_id=None, region=Non
                                         'KeyName': key_name,
                                         'UserData': use_the_data
                                        })
-    """    
+    """'''    
     n_up = 0
     while n_up == 0:
         time.sleep(5)
@@ -236,8 +237,8 @@ def create_elastic_spot_pool(name, count=1, price=1.0, image_id=None, region=Non
         ec2_client.create_tags(Resources=[spot_instance_id],Tags=[{'Key': 'username', 'Value': username}, {'Key': 'name', 'Value': name}])
     #sip = SpotInstancePool(launch_group, region)
     #return sip
-
 '''
+
 class SpotInstancePool(object):
     """A pool of persistent connected spot instances"""
 
