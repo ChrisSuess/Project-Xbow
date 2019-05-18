@@ -9,7 +9,7 @@ import time
 
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 with open(cfg_file, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+    cfg = yaml.safe_load(ymlfile)
 
 print('Filesystem is being created, this may take some time...')
 

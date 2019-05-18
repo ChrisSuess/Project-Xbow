@@ -18,7 +18,7 @@ def portal_config():
     cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
     with open(cfg_file, 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+        cfg = yaml.safe_load(ymlfile)
 
     instances = get_by_name(cfg['scheduler_name'])
     if len(instances) == 0:
@@ -41,7 +41,7 @@ def get_hostname():
     cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
     with open(cfg_file, 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+        cfg = yaml.safe_load(ymlfile)
 
     instances = get_by_name(cfg['scheduler_name'])
     if len(instances) == 0:

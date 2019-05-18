@@ -7,7 +7,7 @@ from xbow import instances
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
 with open(cfg_file, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+    cfg = yaml.safe_load(ymlfile)
 
 name = cfg['worker_pool_name']
 region = cfg['region']
