@@ -7,20 +7,24 @@ import os, yaml
 import sys
 import time
 import xbow
+import argparse
+
+from xbow import filesystems
 from xbow.metering import SpotMeter
 from xbow.instances import get_by_name, ConnectedInstance
 from xbow.filesystems import fs_id_from_name
 from xbow import pools
+
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 def pack_and_run_remote(command):
     """
     Stage the contents of the current directory to the xbow cluster, then
     run the given command, creating the neccessary worker instance.
     """
-    cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
-
-    with open(cfg_file, 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
 
     instances = get_by_name(cfg['scheduler_name'])
     if len(instances) == 0:
@@ -52,17 +56,29 @@ def pack_and_run_remote(command):
     HOSTFILE.write('tsp_id: {}\n'.format(tsp_id))
     HOSTFILE.close()
 
-    exit(0)
-    #
-    # Stuff below is disabled for now - we assume the cluster has been
-    # created with a worker node ready to go. This is because the
-    # script here can't pick up any provisioning that might have been
-    # dome when the original cluster was launched. Since this typically
-    # includes things like adding the MD codes (via pinda), an extra
-    # worker launched without this stuff is not going to be much use.
-    #
-    cfg['scheduler_ip_address'] = instance.private_ip_address
-    cfg['fs_id'] = fs_id_from_name(cfg['shared_file_system'])
+def boot_worker():
+
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument('-s', '--script', help='name of provisioning script')
+    #parser.add_argument('-n', '--n_workers', help='number of workers to launch')
+
+    #args = parser.parse_args()
+
+    fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'],
+                                   region=cfg['region']
+                                  )
+
+    cfg['fs_id'] = fs_id
+    print(fs_id)
+    print(cfg['fs_id'])
+    print("Job is ready, now starting a worker. This may take some time...")
+    
+    instances = get_by_name(cfg['scheduler_name'])
+    inst = instances[0]
+    #print(inst.private_ip_address)
+
+    cfg['scheduler_ip_address'] = inst.private_ip_address
+    print(cfg['scheduler_ip_address'])
     user_data = '''Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
@@ -88,22 +104,29 @@ mkdir -p {mount_point}
 mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
 chmod go+rw {mount_point}
 echo 'SHARED={mount_point}' >> /etc/environment
+
 '''.format(**cfg)
 
-    print("Creating a worker, this may take some time...")
+    final_data = '''
+
+--//'''
+
+    user_data = user_data + final_data
+    print(user_data)
+
+    n_workers = 1
 
     sip = pools.create_spot_pool(cfg['worker_pool_name'],
-                            count=1,
+                            count=n_workers,
                             price=cfg['price'],
                             image_id=cfg['image_id'],
-                            region=cfg['region'],
                             instance_type=cfg['worker_instance_type'],
                             ec2_security_groups=cfg['ec2_security_groups'],
-                            user_data=user_data,
-                            append=True, wait=False
-                          )
-    print("Instance running")
+                            user_data=user_data
+                          )  
+    print("Instance running, now waiting until xbow-cluster is accessible...")
 
 if __name__ == '__main__':
     command = ' '.join(sys.argv[1:])
     pack_and_run_remote(command)
+    boot_worker()
