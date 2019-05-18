@@ -8,7 +8,7 @@ from xbow import instances
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
 with open(cfg_file, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+    cfg = yaml.safe_load(ymlfile)
 
 result = instances.terminate_cluster(name=cfg['scheduler_name'])
 result2 = instances.terminate_cluster(name=cfg['worker_pool_name'])
