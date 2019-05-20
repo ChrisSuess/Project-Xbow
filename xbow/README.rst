@@ -31,6 +31,28 @@ First configure **Xbow** itself, by running the command::
 
 This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name.
 
+Your settings.yml file will look like this::
+
+    ### USER SPECIFIC SETTINGS ###
+    cluster_name: mycluster                 # your cluster name; type it in the prompt while xbow-config
+    scheduler_name: myclusterSchd           # your scheduler name
+    worker_pool_name: myclusterWork         # your worker(s) name
+    shared_file_system: myclusterFS         # your filesystem name
+    creation_token: myclusterFS
+    mount_point: /home/ubuntu/shared        # path to where your filesystem is mounted
+
+    ### CLUSTER SPECIFIC SETTINGS ###
+    region: eu-west-1                       # AWS region where your instance will be launched 
+    price: '0.15'                           # max spot price in US dollars
+    image_id: ami-4fgh647925ats             # Amazon Machine Image (AMI)
+    scheduler_instance_type: t2.small       # scheduler instance type (hardware)
+    worker_instance_type: c5.xlarge         # worker instance type (hardware)
+    pool_size: 10                           # how many workers required
+
+    ### SECURITY SPECIFIC SETTINGS ###
+    ec2_security_groups: ['SG-1']
+    efs_security_groups: ['SG-2']
+
 The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
 instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_. All
