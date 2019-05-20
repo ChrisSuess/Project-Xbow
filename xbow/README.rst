@@ -27,9 +27,9 @@ Once you have raeched the point where you have a ``$HOME/.aws`` folder containin
 
 First configure **Xbow** itself, by running the command::
 
-    xbow-configure
+    xbow-config
 
-This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster.
+This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name.
 
 The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
@@ -83,7 +83,7 @@ Logging in to the head node
 
 For simple jobs you may never need to log into the **xbow** cluster at all. But if you want to log in to the head node you can using the command::
 
-    xbow-login_instance
+    xbow-login
 
 From here you can run more complex jobs and workflows using the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
