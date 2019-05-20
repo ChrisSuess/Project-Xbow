@@ -69,16 +69,16 @@ def boot_worker():
                                   )
 
     cfg['fs_id'] = fs_id
-    print(fs_id)
-    print(cfg['fs_id'])
-    print("Job is ready, now starting a worker. This may take some time...")
+    #print(fs_id)
+    #print(cfg['fs_id'])
+    print("Job has been submitted, now starting a worker. This may take some time...")
     
     instances = get_by_name(cfg['scheduler_name'])
     inst = instances[0]
     #print(inst.private_ip_address)
 
     cfg['scheduler_ip_address'] = inst.private_ip_address
-    print(cfg['scheduler_ip_address'])
+    #print(cfg['scheduler_ip_address'])
     user_data = '''Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
@@ -112,7 +112,7 @@ echo 'SHARED={mount_point}' >> /etc/environment
 --//'''
 
     user_data = user_data + final_data
-    print(user_data)
+    #print(user_data)
 
     n_workers = 1
 
@@ -124,7 +124,7 @@ echo 'SHARED={mount_point}' >> /etc/environment
                             ec2_security_groups=cfg['ec2_security_groups'],
                             user_data=user_data
                           )  
-    print("Instance running, now waiting until xbow-cluster is accessible...")
+    print("Worker now ready. Please use `xbow-check` to monitor your job...")
 
 if __name__ == '__main__':
     command = ' '.join(sys.argv[1:])
