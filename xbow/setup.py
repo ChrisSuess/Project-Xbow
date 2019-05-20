@@ -120,6 +120,7 @@ setup_args = {
 
     'install_requires': ['boto3',
                          'paramiko',
+                         'cryptography==2.4.2',
 			 'pyYAML'],
 
     'zip_safe': False,
