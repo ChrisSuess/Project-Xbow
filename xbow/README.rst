@@ -23,13 +23,35 @@ Configuring **Xbow**
 
 Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
 
-Once you have raeched the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
+Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
 First configure **Xbow** itself, by running the command::
 
-    xbow-configure
+    xbow-config
 
-This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster.
+This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name.
+
+Your settings.yml file will look like this::
+
+    ### USER SPECIFIC SETTINGS ###
+    cluster_name: mycluster                 # your cluster name; type it in the prompt while xbow-config
+    scheduler_name: myclusterSchd           # your scheduler name
+    worker_pool_name: myclusterWork         # your worker(s) name
+    shared_file_system: myclusterFS         # your filesystem name
+    creation_token: myclusterFS
+    mount_point: /home/ubuntu/shared        # path to where your filesystem is mounted
+
+    ### CLUSTER SPECIFIC SETTINGS ###
+    region: eu-west-1                       # AWS region where your instance will be launched 
+    price: '0.15'                           # max spot price in US dollars
+    image_id: ami-4fgh647925ats             # Amazon Machine Image (AMI)
+    scheduler_instance_type: t2.small       # scheduler instance type (hardware)
+    worker_instance_type: c5.xlarge         # worker instance type (hardware)
+    pool_size: 10                           # how many workers required
+
+    ### SECURITY SPECIFIC SETTINGS ###
+    ec2_security_groups: ['SG-1']
+    efs_security_groups: ['SG-2']
 
 The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
@@ -37,7 +59,6 @@ instance but the workers are "spot" instances - see the AWS documentation `here 
 instances use the same image; the default provides pre-installed versions of Gromacs2018 and AmberTools16 (i.e.,
 the MD engines ``gmx mdrun``, ``sander`` and ``sander.MPI``, but not ``pmemd`` as an Amber license is required to use this and 
 we can't assume you have one).
-
 
 Creating an Xbow Filesystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,17 +69,17 @@ If this is the first time you have used **Xbow** you will need to create a share
 
 This only needs to be performed once and **Xbow** handles all the configuration settings.
 
-Creating an **Xbow** Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating a head (scheduler) node
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create a new **Xbow** cluster, run the command::
+If you only want to boot up a scheduler, you can use the command::
 
-    xbow-create_cluster
+    xbow-launch
+    
+This boots up only a scheduler, but not any worker nodes.    
 
-This command will create the head node, worker nodes, and shared file system according to the specification in your ``settings.yml`` file.
-
-Using Your **Xbow** Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running **Xbow** jobs without logging in to the cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Xbow** has been designed to require you to make minimal changes to the way you are used to running jobs on your local machine. Running jobs using **Xbow** can be as simple as the following example::
 
@@ -70,7 +91,7 @@ Simply change it to::
 
     xbow-submit executable -a arg1 -b arg2 -c arg3
 
-This will transfer all your data to the **xbow** cluster and begin running your job there.
+This will boot a worker node, transfer all your data to the **xbow** cluster, and begin running your job there. 
 
 To check on the status of your job use the command::
 
@@ -78,12 +99,31 @@ To check on the status of your job use the command::
 
 This will tell you if your job is still running or if it is finished. If it has finished it will copy all your data back to your local machine and delete it from the cloud. 
 
+Creating an **Xbow** Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a new **Xbow** cluster, run the command::
+
+    xbow-create_cluster
+
+This command will create the head node, worker nodes, and shared file system according to the specification in your ``settings.yml`` file.
+
+Launching Xbow:Portal
+~~~~~~~~~~~~~~~~~~~~~
+
+To launch Xbow:Portal, run the command::
+
+    xbow-portal
+
+This will start configuring the Xbow:Portal. Copy the URL from the terminal to your browser, and you can start using the GUI to run Amber and Gromacs simulations on your Xbow cluster. On Xbow:Portal you can also monitor the progress of your jobs, view and download output files, or check your cluster status.
+
+    
 Logging in to the head node
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For simple jobs you may never need to log into the **xbow** cluster at all. But if you want to log in to the head node you can using the command::
 
-    xbow-login_instance
+    xbow-login
 
 From here you can run more complex jobs and workflows using the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
 
