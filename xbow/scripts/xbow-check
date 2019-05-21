@@ -23,7 +23,7 @@ def check_the_job():
 
     try:
         with open('.xbow_ids.yml', 'r') as job_ids:
-            xbow_ids = yaml.load(job_ids)
+            xbow_ids = yaml.safe_load(job_ids)
     except IOError:
         print('No Xbow job running in this directory.')
         sys.exit()
