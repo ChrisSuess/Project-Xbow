@@ -128,6 +128,12 @@ You should be getting some helpful output on your screen while your job is run.
 
 When you are finished with your simulation, and if you don't intend to run any other jobs, you can then log out from the cluster by hitting Ctrl+D on your keyboard.
 
+Your data is still on your **xbow:cluster** but not on your local machine.
+
+If your would like to bring this back simply run:
+
+    xbow-sync
+
 Deleting your **Xbow** Cluster
 ====================================
 
