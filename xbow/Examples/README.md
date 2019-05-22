@@ -100,7 +100,7 @@ This will return an address. Go ahead and copy this into your browser and try **
 
 Make sure your are in the correct folder
 
-    cd RMSD_loop
+    cd RMSD_Loop
 
 You will then need to run:
 
@@ -116,7 +116,7 @@ Then you are going to log in to your **Crossbow** cluster:
 
 Navigate here 
 
-    cd shared/RMSD_loop
+    cd shared/RMSD_Loop
     
 Which will be a copy of your local directory.
 
