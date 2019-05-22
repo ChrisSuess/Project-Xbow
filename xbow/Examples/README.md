@@ -61,5 +61,19 @@ If you are not planning on running any more simulations, don't forget to run:
     xbow-delete_cluster
 
 This deletes your scheduler and your worker node(s), but not your filesystem.
+
+
+Using **Xbow:Portal**
+===============================
+
+Last example we simply booted a head node and added workers 'elastically'. This time we are going to create a cluster with workers ready to go and use **Xbow:Portal** to submit jobs.
+
+    xbow-create_cluster
     
+Once this is ready, we need to configure our 'Portal'
+
+    xbow-portal
+    
+This will return an address. Go ahead and copy this into your browser and try **Xbow:Portal** out!
+
     
