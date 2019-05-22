@@ -61,7 +61,7 @@ You can use:
 
 To check on the progress of your job. If your job is finished, you'll have the option to download your data (you will be prompted). When your data is downloaded, it is also deleted from the cloud.
 
-If you are not planning on running any more simulations, don't forget to run:
+Delete your cluster by issuing the following command:
 
     xbow-delete_cluster
 
