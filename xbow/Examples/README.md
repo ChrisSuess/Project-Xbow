@@ -60,7 +60,7 @@ This will boot up a scheduler node for you, but not any worker nodes yet.
 
 Navigate to the gromacs example folder.
 
-    cd CCPBioSimWorkshopExamples/gromacs
+    cd CCPBioSimWorkshopExamples/Gromacs
 
 Then issue the command:
 
