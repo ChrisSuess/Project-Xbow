@@ -11,6 +11,7 @@ This should be an empty folder ready for your journey into the cloud!
 
 Now we are going to need some examples
 
+    git clone https://github.com/ChrisSuess/CCPBioSimWorkshopExamples
 
 
 Getting and Installing **AWS**
