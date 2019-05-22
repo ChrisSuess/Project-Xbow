@@ -33,7 +33,7 @@ Getting and Installing **Xbow**
 
 The recommended method to install **Xbow** is using pip
 
-    pip install xbow
+    pip install xbow --upgrade
     
 Then configure Xbow using
 
