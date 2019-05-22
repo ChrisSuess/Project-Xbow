@@ -1,3 +1,8 @@
+Connecting to the CCPBioSim Server
+===============================
+
+To launch the workshop please navigate to the [CCPBioSim Server](http://132.145.243.165/) 
+
 Getting and Installing **AWS**
 ===============================
 
