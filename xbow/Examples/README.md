@@ -25,7 +25,9 @@ Then run
 
     aws configure
 
-Which will prompt you for your credentials provided.
+Which will prompt you for your credentials provided. It will ask for your default region, please use
+
+    eu-west-1
 
 
 Getting and Installing **Xbow**
