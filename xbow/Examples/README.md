@@ -71,7 +71,7 @@ This deletes your scheduler and your worker node(s), but not your filesystem.
 Using **Xbow:Portal**
 ===============================
 
-In the last example, we simply booted a head node and then added workers on-the-fly using `xbow-submit` (i.e. added workers 'elastically'). This time we are going to create a cluster with workers ready to go and use **Xbow:Portal** to submit jobs.
+In the last example, we simply booted a head node and then added workers on the fly using `xbow-submit` (i.e. added workers 'elastically'). This time we are going to create a cluster with workers ready to go and use **Xbow:Portal** to submit jobs.
 
     xbow-create_cluster
     
