@@ -78,6 +78,7 @@ echo 'SHARED={mount_point} >> /etc/environment
                     extra_data += line
 
     user_data = user_data + extra_data + final_data
+
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
