@@ -18,7 +18,6 @@ The recommended method to install **Xbow** is using pip::
 
     pip install xbow
 
-
 Using **Xbow** and Building your Lab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -30,7 +29,6 @@ If this is the first time you have run **Xbow** then it will first configure **X
 This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. See the section **Xbow** settings file for more info on this. As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
 to every cloud resource you boot up. It also creates temporary credential files which allow you to login to your resources.
 After all these checks have been done it creates a head node ready for you to use your lab.
-
 
 Using **Xbow:Lab**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +84,7 @@ By default the command ``xbow flow`` will use the specifications in the ``~/.xbo
 
 -c   type of compute resource eg. p2.xlarge
 -n   number of workers
+--max-cost   the maximum cost you are willing to spend on your job   
 
 **Xbow:Flow** uses the workflow language **Xbowflow** which allows you to run more complex jobs and workflows using the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for more details.
 
@@ -120,37 +119,6 @@ To create a new **Xbow** cluster, run the command::
     xbow-create_cluster
 
 This command will create the head node, worker nodes, and shared file system according to the specification in your ``settings.yml`` file.
-
-Launching Xbow:Portal
-~~~~~~~~~~~~~~~~~~~~~
-
-To launch Xbow:Portal, run the command::
-
-    xbow-portal
-
-This will start configuring the Xbow:Portal. Copy the URL from the terminal to your browser, and you can start using the GUI to run Amber and Gromacs simulations on your Xbow cluster. On Xbow:Portal you can also monitor the progress of your jobs, view and download output files, or check your cluster status.
-
-    
-Logging in to the head node
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For simple jobs you may never need to log into the **xbow** cluster at all. But if you want to log in to the head node you can using the command::
-
-    xbow-login
-
-From here you can run more complex jobs and workflows using the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for details.
-
-Transferring Data to and from your **Xbow** Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you choose to use **Xbow** outside the **xbow-sync** command, you take responsibility for transferring ("staging") data
-between your local machine and the cluster. Typically, you first create a folder on your local workstation in which you place 
-all required input files for your simulation. You then copy the whole folder to the shared filesystem on the **Xbow** cluster,
-log in to the cluster and run the job, and when it has finished copy all the results files back to your local machine.
-
-To **Sync** data between your machine and your **Xbow** cluster use the command::
-
-    xbow-sync
 
 Deleting Your **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
