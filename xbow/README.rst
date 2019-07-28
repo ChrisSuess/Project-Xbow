@@ -52,6 +52,8 @@ There are several ways to use your **Xbow:Lab** which have been designed to acco
 .. image:: pics/XbowPortal.png
     :height: 20px
 
+Using **Xbow:Portal** allows you to monitor the progress of your jobs, view and download output files, or check your cluster status from other devices such as Tablets and Mobile phones.
+
 **Xbow:Note**
 ~~~~~~~~~~~~~~~~~
 
@@ -72,7 +74,7 @@ Simply change it to::
 
     xbow flow executable -a arg1 -b arg2 -c arg3
 
-This will:
+Running this **Xbow:Flow** command will:
 
 - Boot a worker/workers
 - Transfer your data to your **Xbow:Lab**
@@ -85,6 +87,8 @@ By default the command ``xbow flow`` will use the specifications in the ``~/.xbo
 -c   type of compute resource eg. p2.xlarge
 -n   number of workers
 
+**Xbow:Flow** uses the workflow language **Xbowflow** which allows you to run more complex jobs and workflows using the **Xflow** tool. See `here <https://github.com/ChrisSuess/Project-Xbow/wiki/An-Introduction-to-Xbowflow-Workflows>`_ for more details.
+
 **Xbow:Login**
 ~~~~~~~~~~~~~~~~~~
 
@@ -93,8 +97,6 @@ Using **Xbow:Lab** can be done entirely remotely but if you prefer to work direc
     xbow login
 
 All your jobs can be run using the same commands from **Xbow:Flow**. As you are on the head node it is assumed all your data is already here so no data staging is done.
-
-
 
 
 
