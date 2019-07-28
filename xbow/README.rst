@@ -5,7 +5,7 @@ Project-Xbow
 
 Currently **Xbow** focusses on supporting the Biomolecular Simulation community, but is potentially useful in any field.
 
-.. image:: xbow_diagram_v2.png
+.. image:: pics/xbow_diagram_v2.png
 
 Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
 
@@ -27,7 +27,7 @@ In order to boot a **Xbow** Cluster run the command::
     xbow lab
 
 If this is the first time you have run **Xbow** then it will first configure **Xbow** and get everything ready to build your lab. 
-This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name. See the section **Xbow** settings file for more info on this. As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
+This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. See the section **Xbow** settings file for more info on this. As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
 to every cloud resource you boot up. It also creates temporary credential files which allow you to login to your resources.
 After all these checks have been done it creates a head node ready for you to use your lab.
 
@@ -37,13 +37,21 @@ Using **Xbow:Lab**
 
 There are several ways to use your **Xbow:Lab** which have been designed to accomadate most users needs:
 
-- **Xbow:Portal**. A Web Based GUI that allows you to submit your jobs to your **Xbow:Lab** via a browser
+- **Xbow:Portal**. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
 - **Xbow:Note**. A Jupyter Notebook running on your **Xbow:Lab**
 - **Xbow:Flow**. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. Can be run on your local workstation or remotely using **Xbow:Login**  
 - **Xbow:Login**. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
 
-Using **Xbow:Lab** from your local machine
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Xbow:Portal**
+~~~~~~~~~~~~~~~~~
+
+.. image:: pics/XbowPortal.png
+
+**Xbow:Note**
+~~~~~~~~~~~~~~~~~
+
+**Xbow:Flow**
+~~~~~~~~~~~~~~~~
 
 **Xbow** has been designed to require you to make minimal changes to the way you are used to running jobs on your local machine. Running jobs using **Xbow** can be as simple as the following example::
 
@@ -58,16 +66,18 @@ Simply change it to::
 This will boot a worker node, transfer all your data to your **Xbow:Lab**, and begin running your job there. Once it's finished it will shut
 down your worker, bring your data back (if you want it to!) and you'll stop paying for the resource. 
 
-Logging into your **Xbow:Lab**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Xbow:Login**
+~~~~~~~~~~~~~~~~~~
 
 Using **Xbow:Lab** can be done entirely remotely but if you prefer to work directly on the head node this is possible with the command::
 
     xbow login
 
-To check on the status of your job use the command::
+All your jobs can be run using the same commands from **Xbow:Flow**. As you are on the head node it is assumed all your data is already here so no data staging is done.
 
-    xbow-check
+
+
+
 
 This will tell you if your job is still running or if it is finished. If it has finished it will copy all your data back to your local machine and delete it from the cloud. 
 
