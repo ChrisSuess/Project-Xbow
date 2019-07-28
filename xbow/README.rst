@@ -46,7 +46,7 @@ There are several ways to use your **Xbow:Lab** which have been designed to acco
 ~~~~~~~~~~~~~~~~~
 
 .. image:: pics/XbowPortal.png
-
+    :height: 20px
 **Xbow:Note**
 ~~~~~~~~~~~~~~~~~
 
