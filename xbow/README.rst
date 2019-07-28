@@ -39,7 +39,7 @@ There are several ways to use your **Xbow:Lab** which have been designed to acco
 
 - **Xbow:Portal**. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
 - **Xbow:Note**. A Jupyter Notebook running on your **Xbow:Lab**
-- **Xbow:Flow**. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. Can be run on your local workstation or remotely using **Xbow:Login**  
+- **Xbow:Flow**. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. **Xbow:Flow** can be run on your local workstation or remotely using **Xbow:Login**  
 - **Xbow:Login**. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
 
 **Xbow:Portal**
