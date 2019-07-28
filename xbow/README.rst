@@ -55,6 +55,10 @@ There are several ways to use your **Xbow:Lab** which have been designed to acco
 **Xbow:Note**
 ~~~~~~~~~~~~~~~~~
 
+**Xbow:Note** is a Jupyter Notebook running on your **Xbow:Lab**. To start your notebook::
+
+    xbow note
+
 **Xbow:Flow**
 ~~~~~~~~~~~~~~~~
 
