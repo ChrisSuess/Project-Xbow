@@ -68,8 +68,18 @@ Simply change it to::
 
     xbow flow executable -a arg1 -b arg2 -c arg3
 
-This will boot a worker node, transfer all your data to your **Xbow:Lab**, and begin running your job there. Once it's finished it will shut
-down your worker, bring your data back (if you want it to!) and you'll stop paying for the resource. 
+This will:
+
+- Boot a worker/workers
+- Transfer your data to your **Xbow:Lab**
+- Run your simulation
+- Shut your worker/workers down
+- Bring your data back to your local resource (if you want it to!)
+
+By default the command ``xbow flow`` will use the specifications in the ``~/.xbow/settings.yml`` file. These can be overridden by adding the flags:
+
+-c   type of compute resource
+-n   number of workers
 
 **Xbow:Login**
 ~~~~~~~~~~~~~~~~~~
