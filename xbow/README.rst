@@ -2,6 +2,7 @@ Project-Xbow
 ============
 
 **Xbow** allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
+See `Xbow Architecture <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbow-architecture>`_ for more details.
 
 Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that. Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
@@ -29,7 +30,7 @@ Using **Xbow:Lab**
 
 There are several ways to use your **Xbow:Lab** which have been designed to accomadate most users needs:
 
-- **Xbow:Portal**. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
+- `**Xbow:Portal** <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowportal>`_. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
 - **Xbow:Note**. A Jupyter Notebook running on your **Xbow:Lab**
 - **Xbow:Flow**. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. **Xbow:Flow** can be run on your local workstation or remotely using **Xbow:Login**  
 - **Xbow:Login**. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
