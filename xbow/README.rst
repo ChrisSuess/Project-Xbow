@@ -9,6 +9,7 @@ Currently **Xbow** focusses on supporting the Biomolecular Simulation community,
 
 Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
 
+Before using **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that. Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
 Getting and Installing **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,12 +19,8 @@ The recommended method to install **Xbow** is using pip::
     pip install xbow
 
 
-Using **Xbow**
-~~~~~~~~~~~~~~~~~~~~~
-
-Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
-
-Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
+Using **Xbow** and Building your Lab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 
 In order to boot a **Xbow** Cluster run the command::
 
@@ -31,33 +28,7 @@ In order to boot a **Xbow** Cluster run the command::
 
 If this is the first time you have run **Xbow** then it will first configure **Xbow** and get everything ready to build your lab.
 
-This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name.
-
-Your settings.yml file will look like this::
-
-    ### USER SPECIFIC SETTINGS ###
-    cluster_name: mycluster                 # your cluster name; type it in the prompt while xbow-config
-    scheduler_name: myclusterSchd           # your scheduler name
-    worker_pool_name: myclusterWork         # your worker(s) name
-    shared_file_system: myclusterFS         # your filesystem name
-    creation_token: myclusterFS
-    mount_point: /home/ubuntu/shared        # path to where your filesystem is mounted
-
-    ### CLUSTER SPECIFIC SETTINGS ###
-    region: eu-west-1                       # AWS region where your instance will be launched 
-    price: '0.15'                           # max spot price in US dollars
-    image_id: ami-4fgh647925ats             # Amazon Machine Image (AMI)
-    scheduler_instance_type: t2.small       # scheduler instance type (hardware)
-    worker_instance_type: c5.xlarge         # worker instance type (hardware)
-    pool_size: 10                           # how many workers required
-
-    ### SECURITY SPECIFIC SETTINGS ###
-    ec2_security_groups: ['SG-1']
-    efs_security_groups: ['SG-2']
-
-The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
-head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
-instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_.
+This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name. See the section **Xbow** settings file for more info on this.
 
 As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
 to every cloud resource you boot up.
@@ -91,7 +62,7 @@ Simply change it to::
     xbow flow executable -a arg1 -b arg2 -c arg3
 
 This will boot a worker node, transfer all your data to your **Xbow:Lab**, and begin running your job there. Once it's finished it will shut
-down your worker and you'll stop paying for the resource. 
+down your worker, bring your data back (if you want it to!) and you'll stop paying for the resource. 
 
 Logging into your **Xbow:Lab**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,3 +187,35 @@ If you wish to delete your filesystem use the command::
     xbow-delete_filesystem
 
 This further prompts you to help avoid any nasty data deletion accidents!
+
+
+**Xbow** Settings File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Your settings.yml file will look like this::
+
+    ### USER SPECIFIC SETTINGS ###
+    cluster_name: mycluster                 # your cluster name; type it in the prompt while xbow-config
+    scheduler_name: myclusterSchd           # your scheduler name
+    worker_pool_name: myclusterWork         # your worker(s) name
+    shared_file_system: myclusterFS         # your filesystem name
+    creation_token: myclusterFS
+    mount_point: /home/ubuntu/shared        # path to where your filesystem is mounted
+
+    ### CLUSTER SPECIFIC SETTINGS ###
+    region: eu-west-1                       # AWS region where your instance will be launched 
+    price: '0.15'                           # max spot price in US dollars
+    image_id: ami-4fgh647925ats             # Amazon Machine Image (AMI)
+    scheduler_instance_type: t2.small       # scheduler instance type (hardware)
+    worker_instance_type: c5.xlarge         # worker instance type (hardware)
+    pool_size: 10                           # how many workers required
+
+    ### SECURITY SPECIFIC SETTINGS ###
+    ec2_security_groups: ['SG-1']
+    efs_security_groups: ['SG-2']
+
+The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
+head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
+instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_.
+
+
