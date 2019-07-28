@@ -111,27 +111,14 @@ and::
 
     xbow download
 
-Creating an **Xbow** Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To create a new **Xbow** cluster, run the command::
-
-    xbow-create_cluster
-
-This command will create the head node, worker nodes, and shared file system according to the specification in your ``settings.yml`` file.
-
-Deleting Your **Xbow** Cluster
+Closing your **Xbow:Lab**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not, so once your jobs are finished, you should delete it. Deleting the cluster does NOT delete the shared file system though, so at any time you can create a new **Xbow** cluster and your data will still be there (unless it has alreday been copied back by an **xbow-check** command). 
+Remember that, as a cloud resource, you are paying for your **Xbow** cluster whether you are using it or not. **Xbow** will always shut idle machines down in order keep all costs to a minimum. However there are still some minimal costs. If you are finished using **Xbow** and want to completely clear your cloud footprint you need to issue the command::
 
-To delete the entire cluster::
+    xbow lab --shutdown
 
-    xbow-delete_cluster
-
-To delete the workers and keep the head node alive use the command::
-
-    xbow-delete_workers
+This will terminate your head node and clean up your private keys and security groups. It will also prompt to see if you wanted to delete your filesystem.
 
 Running an Example **Xbow** Job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
