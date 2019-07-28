@@ -20,7 +20,7 @@ The recommended method to install **Xbow** is using pip::
 
 
 Using **Xbow** and Building your Lab
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to boot a **Xbow** Cluster run the command::
 
