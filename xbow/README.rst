@@ -30,10 +30,10 @@ Using **Xbow:Lab**
 
 There are several ways to use your **Xbow:Lab** which have been designed to accomadate most users needs:
 
-- `**Xbow:Portal** <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowportal>`_. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
-- **Xbow:Note**. A Jupyter Notebook running on your **Xbow:Lab**
-- **Xbow:Flow**. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. **Xbow:Flow** can be run on your local workstation or remotely using **Xbow:Login**  
-- **Xbow:Login**. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
+- `Xbow:Portal <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowportal>`_. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
+- `Xbow:Note <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbownote>`_. A Jupyter Notebook running on your **Xbow:Lab**
+- `Xbow:Flow <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowflow>`_. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. **Xbow:Flow** can be run on your local workstation or remotely using **Xbow:Login**  
+- `Xbow:Login <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowlogin>`_. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
 
 **Xbow:Portal**
 ~~~~~~~~~~~~~~~~~
