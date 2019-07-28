@@ -123,61 +123,7 @@ This will terminate your head node and clean up your private keys and security g
 Running an Example **Xbow** Job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Obtain the example files
----------------------------
-Download the examples tarball::
-
-    curl https://raw.githubusercontent.com/ChrisSuess/Project-Xbow/devel/xbowflow/examples.tgz -o examples.tgz
-
-Then uncompress this::
-
-    tar -zxvf examples.tgz
-
-This should create a new folder called *examples*. For this example we are going to use the files in the folder
-*SimpleJobs/Gromacs* which will run a short MD simulation of BPTI::
-
-    cd examples/SimpleJobs/Gromacs
-    
-2. Launch your **Xbow** cluster
--------------------------------
-
-If you have not already done so, create your **Xbow** environment: run ``xbow-configure`` and ``xbow-create_filesystem`` 
-(see above).
-
-Next launch your **Xbow** cluster.::
-
-    xbow-create_cluster
-
-(Note: this step may take five minutes or so to complete.)
-
-3. Running your job on **Xbow**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Running a job on a xbow cluster is easy. Simply add the command **xbow-submit** to the start of your usual job command.::
-
-    xbow-submit gmx mdrun -deffnm bpti-md
-
-To check on the status of the job use the command::
-
-    xbow-check
-
-When finished **xbow-check** will bring all your data back to your local machine and delete it from the cloud.
-
-4. Deleting your **Xbow** cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Unless you want to try one of the other examples, delete the cluster::
-
-    xbow-delete_cluster
-
-The filesystem you created is not deleted so all your data remains safe. This allows you to resume working exactly where you left off however you will still be charged for data storage in the cloud.
-
-If you wish to delete your filesystem use the command::
-
-    xbow-delete_filesystem
-
-This further prompts you to help avoid any nasty data deletion accidents!
-
+There are many example jobs on how to use **Xbow** see `here <https://github.com/ChrisSuess/Project-Xbow/tree/master/xbow/Examples>`_ for more details.
 
 **Xbow** Settings File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
