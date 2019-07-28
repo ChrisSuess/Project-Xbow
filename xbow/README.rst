@@ -3,13 +3,7 @@ Project-Xbow
 
 **Xbow** allows you to create your own custom compute cluster in the cloud. The cluster has a "head' node that you communicate with and can log in to, a number of 'worker' nodes to run your jobs, and a shared file system that links them all together.
 
-Currently **Xbow** focusses on supporting the Biomolecular Simulation community, but is potentially useful in any field.
-
-.. image:: pics/xbow_diagram_v2.png
-
-Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**.
-
-Before using **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that. Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
+Currently **Xbow** runs only on Amazon Web Services (AWS), and you must have an AWS account set up before you can use **Xbow**. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that. Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
 Getting and Installing **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -154,4 +148,7 @@ The default values in ``settings.yml`` will launch a **Xbow** cliuster consistin
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
 instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_.
 
+**Xbow** Architecture
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. image:: pics/xbow_diagram_v2.png
