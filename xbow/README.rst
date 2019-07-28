@@ -21,7 +21,7 @@ In order to boot a **Xbow** Cluster run the command::
     xbow lab
 
 If this is the first time you have run **Xbow** then it will first configure **Xbow** and get everything ready to build your lab. 
-This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. See the section **Xbow** settings file for more info on this. As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
+This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. See the section **Xbow** `settings <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbow-settings-file>`_ file for more info on this. As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
 to every cloud resource you boot up. It also creates temporary credential files which allow you to login to your resources.
 After all these checks have been done it creates a head node ready for you to use your lab.
 
