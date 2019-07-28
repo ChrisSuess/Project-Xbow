@@ -78,7 +78,7 @@ This will:
 
 By default the command ``xbow flow`` will use the specifications in the ``~/.xbow/settings.yml`` file. These can be overridden by adding the flags:
 
--c   type of compute resource
+-c   type of compute resource eg. p2.xlarge
 -n   number of workers
 
 **Xbow:Login**
