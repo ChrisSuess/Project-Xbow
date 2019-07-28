@@ -18,16 +18,18 @@ The recommended method to install **Xbow** is using pip::
     pip install xbow
 
 
-Configuring **Xbow**
+Using **Xbow**
 ~~~~~~~~~~~~~~~~~~~~~
 
 Before configuring **Xbow**, you must configure your AWS environment. Follow the instructions `here <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_ to do that.
 
 Once you have reached the point where you have a ``$HOME/.aws`` folder containing a ``config`` and ``credentials`` file you are ready to use **Xbow**!
 
-First configure **Xbow** itself, by running the command::
+In order to boot a **Xbow** Cluster run the command::
 
-    xbow-config
+    xbow lab
+
+If this is the first time you have run **Xbow** then it will first configure **Xbow** and get everything ready to build your lab.
 
 This command creates a directory ``$HOME/.xbow`` containing a number of files, including ``settings.yml`` which you can edit at any time in the future to adjust the make-up of your **Xbow** cluster. It also prompts you to type your cluster name.
 
@@ -55,30 +57,27 @@ Your settings.yml file will look like this::
 
 The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
 head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
-instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_. All
-instances use the same image; the default provides pre-installed versions of Gromacs2018 and AmberTools16 (i.e.,
-the MD engines ``gmx mdrun``, ``sander`` and ``sander.MPI``, but not ``pmemd`` as an Amber license is required to use this and 
-we can't assume you have one).
+instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_.
 
-Creating an Xbow Filesystem
+As part of the configuration step the ``xbow lab`` command will create a shared filesystem in the 'cloud' which will be attached
+to every cloud resource you boot up.
+
+It also creates temporary credential files which allow you to login to your resources.
+
+After all these checks have been done it creates a head node ready for you to use your lab.
+
+
+Using **Xbow:Lab**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If this is the first time you have used **Xbow** you will need to create a shared filesystem for use with **Xbow**. This is done by running the command::
+There are several ways to use your **Xbow:Lab** which have been designed to accomadate most users needs:
 
-    xbow-create_filesystem
+ - **Xbow:Portal**. A Web Based GUI that allows you to submit your jobs to your **Xbow:Lab** via a browser
+ - **Xbow:Note**. A Jupyter Notebook running on your **Xbow:Lab**
+ - **Xbow:Flow**. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. Can be run on your local workstation or remotely using **Xbow:Login**  
+ - **Xbow:Login**. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
 
-This only needs to be performed once and **Xbow** handles all the configuration settings.
-
-Creating a head (scheduler) node
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you only want to boot up a scheduler, you can use the command::
-
-    xbow-launch
-    
-This boots up only a scheduler, but not any worker nodes.    
-
-Running **Xbow** jobs without logging in to the cluster
+Using **Xbow:Lab** from your local machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Xbow** has been designed to require you to make minimal changes to the way you are used to running jobs on your local machine. Running jobs using **Xbow** can be as simple as the following example::
@@ -89,9 +88,17 @@ If your local job runs like this::
 
 Simply change it to::
 
-    xbow-submit executable -a arg1 -b arg2 -c arg3
+    xbow flow executable -a arg1 -b arg2 -c arg3
 
-This will boot a worker node, transfer all your data to the **xbow** cluster, and begin running your job there. 
+This will boot a worker node, transfer all your data to your **Xbow:Lab**, and begin running your job there. Once it's finished it will shut
+down your worker and you'll stop paying for the resource. 
+
+Logging into your **Xbow:Lab**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using **Xbow:Lab** can be done entirely remotely but if you prefer to work directly on the head node this is possible with the command::
+
+    xbow login
 
 To check on the status of your job use the command::
 
