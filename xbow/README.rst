@@ -98,9 +98,19 @@ Using **Xbow:Lab** can be done entirely remotely but if you prefer to work direc
 
 All your jobs can be run using the same commands from **Xbow:Flow**. As you are on the head node it is assumed all your data is already here so no data staging is done.
 
+**Xbow:Status**
+~~~~~~~~~~~~~~~~~~
 
+**Xbow** file transfer
+~~~~~~~~~~~~~~~~~~~~~~
 
-This will tell you if your job is still running or if it is finished. If it has finished it will copy all your data back to your local machine and delete it from the cloud. 
+Transferring data back and forth to remote machines can sometimes be awkward. **Xbow** has upload and download commands make this easier::
+
+    xbow upload 
+
+and:: 
+
+    xbow download
 
 Creating an **Xbow** Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
