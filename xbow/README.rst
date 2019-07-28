@@ -45,6 +45,10 @@ There are several ways to use your **Xbow:Lab** which have been designed to acco
 **Xbow:Portal**
 ~~~~~~~~~~~~~~~~~
 
+**Xbow:Portal** creates a browser based GUI. To start this::
+
+    xbow portal
+
 .. image:: pics/XbowPortal.png
     :height: 20px
 
