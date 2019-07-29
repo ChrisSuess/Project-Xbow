@@ -6,6 +6,11 @@ import datetime
 import os
 import xbow
 
+from botocore.credentials import RefreshableCredentials
+from botocore.session import get_session
+
+#from boto3 import Session
+
 class ConnectedInstance(object):
     """ An Instance you can talk to"""
     def __init__(self, instance,  username=None, key_filename=None):
@@ -222,7 +227,7 @@ def create(name, image_id, instance_type, region=None,
         region = boto3.session.Session().region_name
     if region is None:
         raise ValueError('Error - no region identified')
-    ec2_resource = boto3.resource('ec2', region_name=region)
+
     key_name = name
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
     if not os.path.exists(pem_file):
@@ -266,6 +271,104 @@ def create(name, image_id, instance_type, region=None,
                               ]
                         )
     return instance
+
+def create_lab(name, image_id, instance_type, region=None, 
+           user_data=None, ec2_security_groups=None, username=None):
+    """
+    Creates a single instance - not in the spot pool
+    """
+    sshclient = paramiko.SSHClient()
+    sshclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    if region is None:
+        region = boto3.session.Session().region_name
+    if region is None:
+        raise ValueError('Error - no region identified')
+
+    key_name = name
+    pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
+    if not os.path.exists(pem_file):
+        raise RuntimeError('Error - cannot find {}'.format(pem_file))
+
+    instances = get_by_name(key_name)
+    if len(instances) > 0:
+        raise ValueError('Error - an instance with this name already exists')
+     
+    ec2_resource = boto3.resource('ec2')
+    image = ec2_resource.Image(image_id)
+
+    #if session is None:
+    #    session = boto3.session.Session()
+    session_name = 'sesh'
+    session = boto3.session.Session()
+
+    def refresh():
+        credentials = session.client('sts').assume_role(
+            RoleArn='arn:aws:iam::737935987320:role/EC2InstanceRole', #HARDCODE
+            RoleSessionName=session_name)['Credentials']
+        return dict(
+            access_key=credentials['AccessKeyId'],
+            secret_key=credentials['SecretAccessKey'],
+            token=credentials['SessionToken'],
+            expiry_time=credentials['Expiration'].isoformat())
+    
+    session_credentials = RefreshableCredentials.create_from_metadata(
+        metadata=refresh(),
+        refresh_using=refresh,
+        method='sts-assume-role')
+
+    s = get_session()
+    s._credentials = session_credentials
+    region = session._session.get_config_variable('region') or 'us-east-1'
+    s.set_config_variable('region', region)
+    ec2_client = s.create_client('ec2', region_name=region)
+
+    instance = ec2_client.run_instances(ImageId=image_id, 
+                                        InstanceType=instance_type, 
+                                        KeyName=key_name,
+                                        UserData=user_data, 
+                                        SecurityGroups=ec2_security_groups,
+                                        ClientToken=str(uuid.uuid4()), 
+                                        MaxCount=1, MinCount=1
+                                        )
+
+    ids = instance['Instances'][0]
+
+    ec2 = boto3.resource('ec2')
+    instance = ec2.Instance(ids["InstanceId"])
+
+    instance.wait_until_running()
+
+    ec2 = boto3.client('ec2')
+    #HARD CODED ARN
+    response = ec2.associate_iam_instance_profile(
+        IamInstanceProfile={
+            'Arn': 'arn:aws:iam::737935987320:instance-profile/EC2InstanceRole'
+        },
+        InstanceId= ids["InstanceId"]
+    )
+
+    if username is None:
+        for test_username in ['ubuntu', 'ec2_user']:
+            try:
+                sshclient.connect(instance.public_ip_address, 
+                                  username=test_username,
+                                  key_filename=pem_file
+                                 )
+                username = test_username
+                sshclient.close()
+                break
+            except:
+                pass
+
+    if username is None:
+        username = 'ubuntu'
+    image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
+    instance.create_tags(Tags=[{'Key': 'username', 'Value': username}, 
+                               {'Key': 'name', 'Value': name}
+                              ]
+                        )
+    return instance
+
 
 def terminate_cluster(name, region=None):
     """
