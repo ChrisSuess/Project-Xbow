@@ -116,9 +116,11 @@ setup_args = {
                 'scripts/xbow-portal',
                 'scripts/xbow-check',
                 'scripts/xbow-fetch',
+                'scripts/xbow',
                 'scripts/xbow-login'],
 
     'install_requires': ['boto3',
+                         'argparse',
                          'paramiko',
                          'cryptography',
 			 'pyYAML'],
