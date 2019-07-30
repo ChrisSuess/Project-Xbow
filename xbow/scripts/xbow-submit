@@ -75,7 +75,7 @@ def boot_worker():
     
     instances = get_by_name(cfg['scheduler_name'])
     inst = instances[0]
-    #print(inst.private_ip_address)
+    print(inst.private_ip_address)
 
     cfg['scheduler_ip_address'] = inst.private_ip_address
     #print(cfg['scheduler_ip_address'])
