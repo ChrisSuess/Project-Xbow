@@ -2,7 +2,7 @@
 
 import argparse
 from xbow._version import __version__
-#from xbow import commands
+from xbow import commands
 
 parser = argparse.ArgumentParser(description='Xbow: Add compute to your problems not problems to your compute.')
 parser.add_argument('-V', '--version', action='version', version=__version__)
@@ -32,8 +32,8 @@ download_parser = subparsers.add_parser('download', description='Download data t
 
 args = parser.parse_args()
 
-if args.subparser_name == 'list':
-    commands.list_instances()
+if args.subparser_name == 'lab':
+    commands.create_lab()
 
 if args.subparser_name == 'create':
     commands.create_instance(args.region, args.instance_type, tag=args.instance_name)
