@@ -10,17 +10,20 @@ subparsers = parser.add_subparsers(dest='subparser_name')
 
 lab_parser = subparsers.add_parser('lab', description='create your lab in the cloud', help='Create a lab ready for jobs')
 lab_parser.add_argument('-c', '--compute', help='Compute resource of head node')
+lab_parser.add_argument('-s', '--shutdown', help='Shutdown your lab')
 
 flow_parser = subparsers.add_parser('flow', description='Run a job in your Xbow Lab', help='xbow flow executable -a arg1 -b arg2 -c arg3')
 flow_parser.add_argument('-c', '--compute', help='Compute resource of worker to use eg. p2.xlarge')
 flow_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
 flow_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
 
-login_parser = subparsers.add_parser('login', description='Log in to an instance', help='login to an instance')
+login_parser = subparsers.add_parser('login', description='Log in to your lab', help='login to your lab')
 login_parser.add_argument('uid')
 
-terminate_parser = subparsers.add_parser('terminate', description='Terminate an instance', help='terminate an instance')
-terminate_parser.add_argument('uid')
+portal_parser = subparsers.add_parser('portal', description='Launch Xbow:Portal', help='connects you to xbow:portal')
+portal_parser.add_argument('uid')
+
+note_parser = subparsers.add_parser('note', description='Launch a Xbow Notebook', help='configures a notebook running from your xbow:lab')
 
 args = parser.parse_args()
 
