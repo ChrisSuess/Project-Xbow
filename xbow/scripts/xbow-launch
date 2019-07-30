@@ -79,7 +79,7 @@ echo 'SHARED={mount_point} >> /etc/environment
 
     user_data = user_data + extra_data + final_data
 
-    inst = instances.create(
+    inst = instances.create_lab(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
                             instance_type=cfg['scheduler_instance_type'],
