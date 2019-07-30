@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import argparse
+from xbow._version import __version__
+from xbow import commands
+
+parser = argparse.ArgumentParser(description='Xbow: Add compute to your problems not problems to your compute.')
+parser.add_argument('-V', '--version', action='version', version=__version__)
+subparsers = parser.add_subparsers(dest='subparser_name')
+
+list_parser = subparsers.add_parser('list', description='List available instances', help='list current instances')
+
+create_parser = subparsers.add_parser('Flow', description='Run a job in your Xbow Lab', help='xbow flow executable -a arg1 -b arg2 -c arg3')
+create_parser.add_argument('-c', '--compute', help='Compute resource to use eg. p2.xlarge')
+create_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
+create_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
+
+login_parser = subparsers.add_parser('login', description='Log in to an instance', help='login to an instance')
+login_parser.add_argument('uid')
+
+terminate_parser = subparsers.add_parser('terminate', description='Terminate an instance', help='terminate an instance')
+terminate_parser.add_argument('uid')
+
+args = parser.parse_args()
+
+if args.subparser_name == 'list':
+    commands.list_instances()
+
+if args.subparser_name == 'create':
+    commands.create_instance(args.region, args.instance_type, tag=args.instance_name)
+
+if args.subparser_name == 'terminate':
+    commands.terminate_instance(args.uid)
+
+if args.subparser_name == 'login':
+    commands.login_instance(args.uid)
+
