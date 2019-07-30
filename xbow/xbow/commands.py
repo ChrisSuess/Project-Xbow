@@ -34,7 +34,7 @@ def create_lab():
     if fs_id is None:
         print('A shared cloud filesystem does not exist')
         print('Creating a filesystem, this may take a moment...')
-        fs_id = filesystem.create_fs(cfg['shared_file_system'],
+        fs_id = filesystems.create_fs(cfg['shared_file_system'],
                                      region=cfg['region'], 
                                      efs_security_groups=cfg['efs_security_groups']
                                     )
