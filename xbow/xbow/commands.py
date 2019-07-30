@@ -24,7 +24,7 @@ def create_lab():
 
     schedulers = instances.get_by_name(cfg['scheduler_name'])
     if len(schedulers) > 1:
-        print('Error - there is more than one scheduler already running with this name.')
+        print('Your Lab is already running.')
         exit(1)
 
     fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'], 
