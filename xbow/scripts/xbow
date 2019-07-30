@@ -2,7 +2,7 @@
 
 import argparse
 from xbow._version import __version__
-from xbow import commands
+#from xbow import commands
 
 parser = argparse.ArgumentParser(description='Xbow: Add compute to your problems not problems to your compute.')
 parser.add_argument('-V', '--version', action='version', version=__version__)
@@ -16,6 +16,7 @@ flow_parser = subparsers.add_parser('flow', description='Run a job in your Xbow 
 flow_parser.add_argument('-c', '--compute', help='Compute resource of worker to use eg. p2.xlarge')
 flow_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
 flow_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
+flow_parser.add_argument('-j', '--jobid', help='Name your job')
 
 login_parser = subparsers.add_parser('login', description='Log in to your lab', help='login to your lab')
 login_parser.add_argument('uid')
@@ -24,6 +25,10 @@ portal_parser = subparsers.add_parser('portal', description='Launch Xbow:Portal'
 portal_parser.add_argument('uid')
 
 note_parser = subparsers.add_parser('note', description='Launch a Xbow Notebook', help='configures a notebook running from your xbow:lab')
+
+upload_parser = subparsers.add_parser('upload', description='Upload data to your xbow:lab', help='upload data to your xbow:lab')
+
+download_parser = subparsers.add_parser('download', description='Download data to your xbow:lab', help='download data to your xbow:lab')
 
 args = parser.parse_args()
 
