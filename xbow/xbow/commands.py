@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from xbow import instances
 from xbow import filesystems
+from xbow import utilities
 
 import xbow
 import yaml
@@ -12,6 +13,9 @@ def create_lab():
     """
     Create a 'lab' - head node in the cloud
     """
+    
+    if not os.path.exists(os.path.expanduser('~/.xbow')):
+        utilities.create_settings()
 
     cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
@@ -26,13 +30,17 @@ def create_lab():
     fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'], 
                                         region=cfg['region'], 
                                         ) 
+    
     if fs_id is None:
+        print('A shared cloud filesystem does not exist')
+        print('Creating a filesystem, this may take a moment...')
         fs_id = filesystem.create_fs(cfg['shared_file_system'],
                                      region=cfg['region'], 
                                      efs_security_groups=cfg['efs_security_groups']
                                     )
 
     cfg['fs_id'] = fs_id
+
     if len(schedulers) == 1:
         inst = schedulers[0]
         print('Scheduler already running')
