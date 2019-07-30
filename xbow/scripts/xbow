@@ -8,12 +8,13 @@ parser = argparse.ArgumentParser(description='Xbow: Add compute to your problems
 parser.add_argument('-V', '--version', action='version', version=__version__)
 subparsers = parser.add_subparsers(dest='subparser_name')
 
-list_parser = subparsers.add_parser('list', description='List available instances', help='list current instances')
+lab_parser = subparsers.add_parser('lab', description='create your lab in the cloud', help='Create a lab ready for jobs')
+lab_parser.add_argument('-c', '--compute', help='Compute resource of head node')
 
-create_parser = subparsers.add_parser('Flow', description='Run a job in your Xbow Lab', help='xbow flow executable -a arg1 -b arg2 -c arg3')
-create_parser.add_argument('-c', '--compute', help='Compute resource to use eg. p2.xlarge')
-create_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
-create_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
+flow_parser = subparsers.add_parser('flow', description='Run a job in your Xbow Lab', help='xbow flow executable -a arg1 -b arg2 -c arg3')
+flow_parser.add_argument('-c', '--compute', help='Compute resource of worker to use eg. p2.xlarge')
+flow_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
+flow_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
 
 login_parser = subparsers.add_parser('login', description='Log in to an instance', help='login to an instance')
 login_parser.add_argument('uid')
