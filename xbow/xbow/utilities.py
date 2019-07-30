@@ -295,3 +295,74 @@ def get_login_string(dirname, region, uid):
     instance = resource.Instance(get_instance_id(region, uid))
     command = 'ssh -i {} ubuntu@{} -oStrictHostKeyChecking=no'.format(pem_file_name, instance.public_ip_address)
     return command
+
+def create_settings():
+    """
+    Create a settings configuration file for use with xbow
+    """
+    try:
+	
+        if not os.path.exists(os.path.expanduser('~/.xbow')):
+            os.makedirs(os.path.expanduser('~/.xbow'))
+
+        # Test for the old directory presence (IE updating).
+        if os.path.isdir(os.path.expanduser('~/.Xbow')):
+
+            os.rename(os.path.expanduser('~/.Xbow'),
+                      os.path.expanduser('~/.xbow'))
+        
+	# Setting up the .xbow directory.
+        if not os.path.isfile(os.path.expanduser('~/.xbow/settings.yml')):
+
+            print('Xbow will create a hidden directory in your $HOME directory \n'
+                  'in which it will create the hosts configuration file. You will\n'
+                  'need to edit this file with your cloud preferences for the \n'
+                  'cloud machines you wish to use. See documentation for more \n'
+                  'information on best cloud practices.')
+            
+            get_input = input
+            if sys.version_info[:2] <= (2, 7):
+                get_input = raw_input
+
+            user = get_input("Enter a Lab Name: ")
+            #compute = get_input("Enter a worker node compute resource: ")
+            #price = get_input("Enter the highest price you are willing to pay for a resource: ")
+
+            print("Configuring {}'s Xbow with default settings (Recommended)"
+      .format(user))
+      
+            newfile = open(os.path.expanduser('~/.xbow/settings.yml'), 'w+')
+
+            newfile.write('### USER SPECIFIC SETTINGS ###\n')
+            newfile.write('cluster_name: {}\n'.format(user))
+            newfile.write('scheduler_name: {}Schd\n'.format(user))
+            newfile.write('worker_pool_name: {}Work\n'.format(user))
+            newfile.write('shared_file_system: {}FS\n'.format(user))
+            newfile.write('creation_token: {}FS\n'.format(user))
+            newfile.write('mount_point: /home/ubuntu/shared\n\n')
+
+            newfile.write('### CLUSTER SPECIFIC SETTINGS ###\n')
+
+            newfile.write('region: eu-west-1\n')
+            newfile.write("price: '0.15'\n")
+            newfile.write('image_id: ami-0e3c951d1401c05fc\n')
+            newfile.write('scheduler_instance_type: t2.small\n')
+            newfile.write('worker_instance_type: c5.xlarge\n')
+            newfile.write('pool_size: 4\n\n')
+
+            newfile.write('### SECURITY SPECIFIC SETTINGS ###\n')
+            newfile.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")
+            newfile.write("efs_security_groups: ['Xbow-SG-mt']\n")
+            newfile.close()
+
+        else:
+
+            print("Settings.yml already exists at '~/.xbow, xbow is skipping "
+                  "creating a new one.")
+
+    except IOError:
+
+        print('Xbow failed to create the host configuration file in '
+              '"~/.xbow/settings.yml", you will have to do this manually. The '
+              'user documentation details the information that should be in this '
+              'file.')
