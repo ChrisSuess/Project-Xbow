@@ -1,0 +1,13 @@
+[Unit]
+Description='Start an Xflow/Dask worker'
+Requires=xbow-worker.path
+After=xbow-worker.path
+ConditionFileNotEmpty=/run/metadata/xbow/scheduler_ip_address
+
+[Service]
+User=ubuntu
+Group=ubuntu
+Type=simple
+EnvironmentFile=/run/metadata/xbow/scheduler_ip_address
+ExecStart=/usr/local/bin/dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1 --worker-port 45792 ${XBOW_SCHEDULER_IP_ADDRESS}:8786
+#Restart=always

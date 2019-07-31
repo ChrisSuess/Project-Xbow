@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+from xbow import utilities
 from xbow import instances
 from xbow import filesystems
 from xbow import pools
@@ -21,6 +22,8 @@ cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 
+cfg['image_id'] = utilities.get_image_id(cfg)
+
 schedulers = instances.get_by_name(cfg['scheduler_name'])
 if len(schedulers) > 1:
     print('Error - there is more than one scheduler already running with this name.')
@@ -35,13 +38,8 @@ if fs_id is None:
                                  efs_security_groups=cfg['efs_security_groups']
                                 )
 cfg['fs_id'] = fs_id
-if len(schedulers) == 1:
-    inst = schedulers[0]
-    print('Scheduler already running, now starting workers. This may take some time...')
-else:
-    print("Starting the scheduler node - this may take some time...")
 
-    user_data = '''Content-Type: multipart/mixed; boundary="//"
+preamble_data = '''Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
 --//
@@ -59,40 +57,55 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="userdata.txt"
-
+'''
+scheduler_user_data='''
 #!/bin/bash
-pip install dask distributed && sudo -u ubuntu dask-scheduler > /home/ubuntu/scheduler.log 2>&1 &
-mkdir -p {mount_point}
-mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
-chmod go+rw {mount_point}
+mkdir -p /run/metadata/xbow
+touch /run/metadata/xbow/is_scheduler
+echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
 echo 'SHARED={mount_point}' >> /etc/environment
-
 '''.format(**cfg)
-    extra_data = ''
-    if args.script:
-        with open(args.script, 'r') as f:
-            on = True
-            for line in f:
-                if len(line) == 0:
-                    pass
-                elif line[0] == '#':
-                    pass
-                elif line[0] == '[':
-                    if '[all]' in line or '[scheduler]' in line:
-                        on = True
-                    elif '[workers]' in line:
-                        on = False
-                    else:
-                        raise ValueError('Error - unrecognised command in provisioning file')
-                else:
-                    if on:
-                        extra_data += line
 
-    final_data = '''
+scheduler_extra_data = ''
+worker_extra_data = ''
+if args.script:
+    with open(args.script, 'r') as f:
+        for_scheduler = True
+        for_worker = True
+        for line in f:
+            if len(line) == 0:
+                pass
+            elif line[0] == '#':
+                pass
+            elif line[0] == '[':
+                if '[all]' in line:
+                    for_scheduler = True
+                    for_worker = True
+                elif [scheduler] in line:
+                    for_scheduler = True
+                    for_worker = False
+                elif '[workers]' in line:
+                    for_scheduler = False
+                    for_worker = True
+                else:
+                    raise ValueError('Error - unrecognised command in provisioning file')
+            else:
+                if for_scheduler:
+                    scheduler_extra_data += line
+                if for_worker:
+                    worker_extra_data += line
+
+final_data = '''
 
 --//'''
     
-    user_data = user_data + extra_data + final_data
+if len(schedulers) == 1:
+    inst = schedulers[0]
+    print('Scheduler already running, now starting workers. This may take some time...')
+else:
+    print("Starting the scheduler node - this may take some time...")
+
+    user_data = preamble_data + scheduler_user_data + scheduler_extra_data + final_data
     inst = instances.create(
                             cfg['scheduler_name'],
                             image_id=cfg['image_id'],
@@ -102,59 +115,22 @@ echo 'SHARED={mount_point}' >> /etc/environment
                       )
     print("Scheduler ready, now starting workers. This may take some time...")
     
-    cfg['scheduler_ip_address'] = inst.private_ip_address
-    user_data = '''Content-Type: multipart/mixed; boundary="//"
-MIME-Version: 1.0
+cfg['scheduler_ip_address'] = inst.private_ip_address
 
---//
-Content-Type: text/cloud-config; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="cloud-config.txt"
-
-#cloud-config
-cloud_final_modules:
-- [scripts-user, always]
-
---//
-Content-Type: text/x-shellscript; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="userdata.txt"
-
+worker_user_data = '''
 #!/bin/bash
-pip install dask distributed && sudo -u ubuntu dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs 1 --worker-port 45792 {scheduler_ip_address}:8786 &
-mkdir -p {mount_point}
-mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
-chmod go+rw {mount_point}
+mkdir -p /run/metadata/xbow
+echo 'XBOW_SCHEDULER_IP_ADDRESS={scheduler_ip_address}' > /run/metadata/xbow/scheduler_ip_address
+echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
 echo 'SHARED={mount_point}' >> /etc/environment
-
 '''.format(**cfg)
-    extra_data = ''
-    if args.script:
-        with open(args.script, 'r') as f:
-            on = True
-            for line in f:
-                if len(line) == 0:
-                    pass
-                elif line[0] == '#':
-                    pass
-                elif line[0] == '[':
-                    if '[all]' in line or '[workers]' in line:
-                        on = True
-                    elif '[scheduler]' in line:
-                        on = False
-                    else:
-                        raise ValueError('Error - unrecognised command in provisioning file')
-                else:
-                    if on:
-                        extra_data += line
 
 if args.n_workers:
     n_workers = int(args.n_workers)
 else:
     n_workers = cfg['pool_size']
-user_data = user_data + extra_data + final_data
+
+user_data = preamble_data + worker_user_data + worker_extra_data + final_data
 sip = pools.create_spot_pool(cfg['worker_pool_name'],
                         count=n_workers,
                         price=cfg['price'],

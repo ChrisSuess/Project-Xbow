@@ -1,0 +1,9 @@
+[Unit]
+Description='Wait to mount the Xbow shared file system'
+
+[Path]
+PathExists=/run/metadata/xbow/shared_file_system
+Unit=home-ubuntu-shared.mount
+
+[Install]
+WantedBy=multi-user.target

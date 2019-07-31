@@ -1,0 +1,8 @@
+[Unit]
+Description='Watch for creation of /run/metadata/xbow/scheduler_ip_address'
+
+[Path]
+PathExists=/run/metadata/xbow/scheduler_ip_address
+
+[Install]
+WantedBy=multi-user.target

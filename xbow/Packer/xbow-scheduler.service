@@ -1,0 +1,15 @@
+[Unit]
+Description='Start an Xflow/Dask scheduler'
+Requires=xbow-scheduler.path
+After=xbow-scheduler.path
+ConditionPathExists=!/run/metadata/xbow/scheduler_ip_address
+ConditionPathExists=/usr/local/bin/dask-scheduler
+
+[Service]
+User=ubuntu
+Group=ubuntu
+Type=simple
+StandardOutput=file:/home/ubuntu/scheduler.log
+ExecStart=/usr/local/bin/dask-scheduler
+#Restart=always
+
