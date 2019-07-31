@@ -1,6 +1,6 @@
 # Packer files for creating Crossbow AMIs
 
-This directory contains all the files neccessary to build a Crossbow-compliant AMI using [Packer](www.packer.io).
+This directory contains all the files neccessary to build a Crossbow-compliant AMI using [Packer](http://www.packer.io).
 
 ## Overview
  
@@ -55,7 +55,7 @@ Crossbow images must have. These are:
 * Task Spooler, as a basic job submission and monitoring tool.
 * [Xbowflow](https://claughton.bitbucket.io/crossflow.html) for workflow management.
 * NFS for the shared file system.
-* [Docker](www.docker.io), including the NVIDIA runtime for GPU support.
+* [Docker](http://www.docker.io), including the NVIDIA runtime for GPU support.
 * [Pinda](https://claughton.bitbucket.io/pinda.html) for the installation of Dockerized applications.
 
 ## Customising the AMI
