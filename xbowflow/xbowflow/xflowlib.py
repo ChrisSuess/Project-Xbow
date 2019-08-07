@@ -187,16 +187,15 @@ class SubprocessKernel(object):
                     d['value'].save(d['name'])
                 except AttributeError:
                     var_dict[d['name']] = d['value']
+            cmd = self.template.format(**var_dict)
             try:
-                cmd = self.template.format(**var_dict)
                 result = subprocess.run(cmd, shell=True,
-                                        capture_output=True)
-                self.STDOUT = result.stdout.decode()
-                result.check_returncode()
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        check=True)
             except subprocess.CalledProcessError as e:
-                print(e.stdout.decode())
-                print(e.stderr.decode())
-                raise 
+                raise CalledProcessError(e)
+            self.STDOUT = result.stdout.decode()
             for outfile in self.outputs:
                 if os.path.exists(outfile):
                     outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
@@ -311,4 +310,31 @@ class FunctionKernel(object):
         else:
             outputs = tuple(outputs)
         return outputs
+class XflowError(Exception):
+    """
+    Base class for Xflowlib exceptions.
+    """
+    pass
 
+class CalledProcessError(XflowError):
+    """
+    Exception raised if a kernel fails with an error.
+
+    A cosmetic wrapper round subprocess.CalledProcessError
+    """
+
+    def __init__(self, e):
+        self.cmd = e.cmd
+        self.returncode = e.returncode
+        if isinstance(e.stdout, bytes):
+            self.stdout = e.stdout.decode('utf-8')
+        else:
+            self.stdout = e.stdout
+        if isinstance(e.stderr, bytes):
+            self.stderr = e.stderr.decode('utf-8')
+        else:
+            self.stderr = e.stderr
+        self.output = self.stdout
+
+    def __str__(self):
+        return 'Error: command "{}" failed with return code {}; STDOUT="{}"; STDERR="{}"'.format(self.cmd, self.returncode, self.stdout, self.stderr)
