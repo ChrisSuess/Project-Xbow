@@ -189,11 +189,13 @@ class SubprocessKernel(object):
                     var_dict[d['name']] = d['value']
             try:
                 cmd = self.template.format(**var_dict)
-                result = subprocess.check_output(cmd, shell=True,
-                                                 stderr=subprocess.STDOUT)
-                self.STDOUT = result.decode()
+                result = subprocess.run(cmd, shell=True,
+                                        capture_output=True)
+                self.STDOUT = result.stdout.decode()
+                result.check_returncode()
             except subprocess.CalledProcessError as e:
-                print(e.output.decode())
+                print(e.stdout.decode())
+                print(e.stderr.decode())
                 raise 
             for outfile in self.outputs:
                 if os.path.exists(outfile):
