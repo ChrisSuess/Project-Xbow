@@ -94,10 +94,10 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
         time.sleep(35)
     response = dsir(Filters=filters)
     spot_instance_ids = [s['InstanceId'] for s in response['SpotInstanceRequests']]
-    taglist = [{'Key': 'username', 'Value': username}, 
-               {'Key': 'name', 'Value': name}
-              ]
-    for spot_instance_id in spot_instance_ids:
+    for i, spot_instance_id in enumerate(spot_instance_ids):
+        taglist = [{'Key': 'username', 'Value': username}, 
+                   {'Key': 'Name', 'Value': '{}-{}'.format(name, i)}
+                  ]
         ec2_client.create_tags(Resources=[spot_instance_id],Tags=taglist)
     sip = SpotInstancePool(launch_group, region)
     return sip

@@ -262,7 +262,7 @@ def create(name, image_id, instance_type, region=None,
         username = 'ubuntu'
     image.create_tags(Tags=[{'Key': 'username', 'Value': username}])
     instance.create_tags(Tags=[{'Key': 'username', 'Value': username}, 
-                               {'Key': 'name', 'Value': name}
+                               {'Key': 'Name', 'Value': name}
                               ]
                         )
     return instance
