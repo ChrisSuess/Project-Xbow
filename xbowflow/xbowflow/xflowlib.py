@@ -194,7 +194,10 @@ class SubprocessKernel(object):
                                         stderr=subprocess.PIPE,
                                         check=True)
             except subprocess.CalledProcessError as e:
-                raise CalledProcessError(e)
+                result = CalledProcessError(e)
+                if not 'RESULT' in self.outputs:
+                    raise result
+
             self.STDOUT = result.stdout.decode()
             for outfile in self.outputs:
                 if os.path.exists(outfile):
@@ -202,6 +205,8 @@ class SubprocessKernel(object):
                 else:
                     if outfile == 'STDOUT':
                         outputs.append(self.STDOUT)
+                    elif outfile == 'RESULT':
+                        outputs.append(result)
                     else:
                         outputs.append(None)
         try:
@@ -326,14 +331,8 @@ class CalledProcessError(XflowError):
     def __init__(self, e):
         self.cmd = e.cmd
         self.returncode = e.returncode
-        if isinstance(e.stdout, bytes):
-            self.stdout = e.stdout.decode('utf-8')
-        else:
-            self.stdout = e.stdout
-        if isinstance(e.stderr, bytes):
-            self.stderr = e.stderr.decode('utf-8')
-        else:
-            self.stderr = e.stderr
+        self.stdout = e.stdout
+        self.stderr = e.stderr
         self.output = self.stdout
 
     def __str__(self):

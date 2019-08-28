@@ -1,6 +1,6 @@
 sleep 30
 sudo apt-get update
-sudo apt-get install -y python3-pip nfs-common
+sudo apt-get install -y python3-pip nfs-common awscli
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
@@ -13,7 +13,10 @@ sudo apt-get install -y task-spooler
 sudo pip3 install xbowflow
 sudo pip3 install pinda==0.1.9rc1
 pinda update
+mkdir -p $HOME/.local/bin
 ln -s $HOME/.local/bin $HOME/bin
+# Install Nvidia driver
+sudo apt install -y nvidia-driver-430
 # Install Nvidia container runtime for Docker
 curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
   sudo apt-key add -
