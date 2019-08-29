@@ -62,7 +62,7 @@ def create_settings():
 
             newfile.write('region: eu-west-1\n')
             newfile.write("price: '0.15'\n")
-            newfile.write('image_id: ami-0e3c951d1401c05fc\n')
+            newfile.write('image_name: "*xbow-packer-*"\n')
             newfile.write('scheduler_instance_type: t2.small\n')
             newfile.write('worker_instance_type: c5.xlarge\n')
             newfile.write('pool_size: 4\n\n')
