@@ -11,7 +11,7 @@ sudo usermod -aG docker ${USER}
 sudo apt-get install -y task-spooler
 # Install Xbowflow and Pinda
 sudo pip3 install xbowflow
-sudo pip3 install pinda==0.1.9rc1
+sudo pip3 install pinda
 pinda update
 mkdir -p $HOME/.local/bin
 ln -s $HOME/.local/bin $HOME/bin

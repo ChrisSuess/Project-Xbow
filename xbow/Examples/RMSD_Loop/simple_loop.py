@@ -17,8 +17,8 @@ grompp.set_inputs(['x.mdp', 'x.gro', 'x.top'])
 grompp.set_outputs(['x.tpr'])
 
 # Now we do the same for "mdrun". The function will take just one input, the
-# tpr file data created by grompp, and return two outputs - the compressed 
-# trajectory data and the final coordinates data.
+# tpr file data created by grompp, and return three outputs - the compressed 
+# trajectory data, the final coordinates data, and the job log file.
 print('Creating the grompp and mdrun kernels...')
 mdrun_command = 'gmx mdrun -s x.tpr -x x.xtc -c x.gro -g x.log'
 mdrun = xflowlib.SubprocessKernel(mdrun_command)
@@ -34,62 +34,56 @@ client = XflowClient()
 # But to run the same job as a function we need to pass the actual data itself,
 # So we upload the input data from each input file:
 print('Uploading input data...')
-startcrds = 'bpti.gro'
-mdpfile = 'mdrun.mdp'
-topfile = 'bpti.top'
+startcrd_name = 'bpti.gro'
+targetcrd_name = 'bpti-150000.gro'
+mdpfile_name = 'mdrun.mdp'
+topfile_name = 'bpti.top'
 
-startcrd_data = client.upload(xflowlib.load(startcrds))
-mdp_data = client.upload(xflowlib.load(mdpfile))
-top_data = client.upload(xflowlib.load(topfile))
+startcrd = client.upload(xflowlib.load(startcrd_name))
+mdp = client.upload(xflowlib.load(mdpfile_name))
+top = client.upload(xflowlib.load(topfile_name))
 
+n_cycles = 20
+n_reps = 12
+smallest_rmsd = 10000.0
 # We want to run four jobs in parallel, so we need to make four copies of one
-# of the files that will be input to grompp:
-n_reps = 4
-mdp_datas = [mdp_data] * n_reps
+# of the files that will be input to grompp - we choose the mdp file:
+mdps = [mdp] * n_reps
 
+for cycle in range(n_cycles):
 # Now we run the grompp and mdrun jobs via the client. The "map" command sends
 # each replicate of the job to a different worker (if there are enough of them)
-print('Running the grompp kernel for four replicates...')
-tpr_datas = client.map(grompp, mdp_datas, startcrd_data, top_data)
-print('Running the mdrun kernel for four replicates...')
-xtc_datas, gro_datas, log_datas = client.map(mdrun, tpr_datas)
+    print(f'Running the grompp kernel for {n_reps} replicates...')
+    tprs = client.map(grompp, mdps, startcrd, top)
+    print(f'Running the mdrun kernel for {n_reps} replicates...')
+    xtcs, gros, logs = client.map(mdrun, tprs)
 
 # Now we want to calculate the RMSD of each final structure from the starting
 # structure. As this is not a big calculation we will not send it to the
 # worker nodes, but just run it locally.
-# We will use functions from the Python mdio library for this (mdio is a bit
-# like mdtraj, if you know of that). The mdio library expects to load
-# structures from filenames, but currently we just have file _data_, the
-# data objects created by **Crossflow** have an as_file() method to achieve
-# this:
+# We will use functions from the Python mdtraj library for this.
+# The mdtraj library expects to load structures from filenames, but currently 
+# we just have file _data_, the data objects created by **Crossflow** have an 
+# as_file() method to achieve this:
 
-print('Calculating the RMSD:')
-refcrds = mdt.load(startcrds)
-biggest_rmsd = 0.0
-furthest_structure = None
-for grodata in gro_datas:
-    testcrds = mdt.load(grodata.result().as_file())
-    rmsd = mdt.rmsd(testcrds,refcrds)[0]
-    if rmsd > biggest_rmsd:
-        biggest_rmsd = rmsd
-        furthest_structure = grodata
-print('Biggest rmsd = {:6.2f}'.format(biggest_rmsd))
-
-# Now we run four more simulations, starting from this set of final coordinates
-print('Starting four more simulations from this set of final coordinates...')
-tpr_datas = client.map(grompp, mdp_datas, furthest_structure, top_data)
-xtc_datas, gro_datas, log_datas = client.map(mdrun, tpr_datas)
-
-# Save final files
-print('Saving output files...')
-for i, d, in enumerate(xtc_datas):
-    d.result().save('rep{}.xtc'.format(i))
-
-for i, d, in enumerate(log_datas):
-    d.result().save('rep{}.log'.format(i)) 
-
-for i, d, in enumerate(gro_datas):
-    d.result().save('rep{}.gro'.format(i))
-
+    print('Calculating the RMSD:')
+    targetcrd = mdt.load(targetcrd_name)
+    atom_indices = targetcrd.topology.select('name CA')
+    nearest_index = None
+    for i, gro in enumerate(gros):
+        testcrd = mdt.load(gro.result().as_file())
+        rmsd = mdt.rmsd(testcrd, targetcrd, atom_indices=atom_indices)[0]
+        if rmsd < smallest_rmsd:
+            smallest_rmsd = rmsd
+            nearest_structure = gro
+            nearest_index = i
+    print('Cycle {}, Smallest rmsd = {:6.3f}'.format(cycle, smallest_rmsd))
+    # Save the best xtc and gro files, if any:
+    if nearest_index is not None:
+        print('Saving new trajectory segment')
+        xtcs[nearest_index].result().save('bpti-cycle{:03d}.xtc'.format(cycle))
+        nearest_structure.result().save('bpti-cycle{:03d}.gro'.format(cycle))
+        # set startcrd to the nearest structure for the next cycle
+        startcrd = nearest_structure
 # All finished, so it's nice to shut down the client:
 client.close()
