@@ -3,8 +3,7 @@ Simple MD and analysis loop
 
 This is a simple example of how to write and execute a simple MD and analysis loop using **Crossflow** on a **Crossbow** cluster.
 
-.. image:: conformational-change-workflow.png
-    :height: 20px
+![conformational-change-workflow](conformational-change-workflow.png)
 
 Background:
 ----------
