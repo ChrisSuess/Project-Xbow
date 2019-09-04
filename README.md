@@ -1,7 +1,9 @@
 CCPBioSim Demo 
 ================
 
-If you would like to try Xbow:Portal please follow this link: [Xbow:Portal](http://ec2-52-215-182-91.eu-west-1.compute.amazonaws.com)
+If you would like to try Xbow:Portal please follow this link: 
+
+The portal is now down. Come back tomorrow!!!
 
 Crossbow
 ============
