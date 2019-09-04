@@ -1,3 +1,10 @@
+CCPBioSim Demo 
+================
+
+If you would like to try Xbow:Portal please follow this link: [Xbow:Portal](http://ec2-54-171-116-96.eu-west-1.compute.amazonaws.com/)
+
+
+
 
 **Crossbow** is an EPSRC-funded project to develop software that makes it easier for Biomolecular Simulation scientists to use
 Cloud computing resources.
