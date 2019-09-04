@@ -36,7 +36,7 @@ Then you log in to your **Crossbow** cluster:
     
 Navigate to the $HOME/shared/RMSD_Loop directory and you will be ready to run your MD/analysis job. Run it by simply using:
 
-    python3 simple_loop.py
+    python simple_loop.py
     
 You should be getting some helpful output on your screen while your job is run.
 

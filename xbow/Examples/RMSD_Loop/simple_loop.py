@@ -53,9 +53,9 @@ mdps = [mdp] * n_reps
 for cycle in range(n_cycles):
 # Now we run the grompp and mdrun jobs via the client. The "map" command sends
 # each replicate of the job to a different worker (if there are enough of them)
-    print(f'Running the grompp kernel for {n_reps} replicates...')
+    print('Running the grompp kernel for {} replicates...'.format(n_reps))
     tprs = client.map(grompp, mdps, startcrd, top)
-    print(f'Running the mdrun kernel for {n_reps} replicates...')
+    print(f'Running the mdrun kernel for {} replicates...'.format(n_reps))
     xtcs, gros, logs = client.map(mdrun, tprs)
 
 # Now we want to calculate the RMSD of each final structure from the starting
