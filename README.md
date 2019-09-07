@@ -1,10 +1,3 @@
-CCPBioSim Demo 
-================
-
-If you would like to try Xbow:Portal please follow this link: 
-
-The portal is now down. Come back tomorrow!!!
-
 Crossbow
 ============
 
