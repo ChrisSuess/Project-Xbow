@@ -1,6 +1,6 @@
 sleep 30
 sudo apt-get update
-sudo apt-get install -y python3-pip nfs-common awscli
+sudo apt-get install -y python3-pip nfs-common awscli zlib1g-dev
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
