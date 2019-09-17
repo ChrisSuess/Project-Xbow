@@ -1,0 +1,54 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "eu-west-1",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "ubuntu/images/*ubuntu-bionic-18.04-amd64-server-*",
+        "root-device-type": "ebs"
+      },
+      "owners": ["099720109477"],
+      "most_recent": true
+    },
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "ami_name": "xbow-packer-{{timestamp}}"
+  }],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "home-ubuntu-shared.path",
+      "destination": "/tmp/home-ubuntu-shared.path"
+    },
+    {
+      "type": "file",
+      "source": "home-ubuntu-shared.mount",
+      "destination": "/tmp/home-ubuntu-shared.mount"
+    },
+    {
+      "type": "file",
+      "source": "xbow-scheduler.path",
+      "destination": "/tmp/xbow-scheduler.path"
+    },
+    {
+      "type": "file",
+      "source": "xbow-scheduler.service",
+      "destination": "/tmp/xbow-scheduler.service"
+    },
+    {
+      "type": "file",
+      "source": "xbow-worker.path",
+      "destination": "/tmp/xbow-worker.path"
+    },
+    {
+      "type": "file",
+      "source": "xbow-worker.service",
+      "destination": "/tmp/xbow-worker.service"
+    },
+    {
+      "type": "shell",
+      "script": "xbow-provision.sh"
+    }
+  ]
+}

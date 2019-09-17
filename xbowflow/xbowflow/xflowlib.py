@@ -187,20 +187,26 @@ class SubprocessKernel(object):
                     d['value'].save(d['name'])
                 except AttributeError:
                     var_dict[d['name']] = d['value']
+            cmd = self.template.format(**var_dict)
             try:
-                cmd = self.template.format(**var_dict)
-                result = subprocess.check_output(cmd, shell=True,
-                                                 stderr=subprocess.STDOUT)
-                self.STDOUT = result.decode()
+                result = subprocess.run(cmd, shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        check=True)
             except subprocess.CalledProcessError as e:
-                print(e.output.decode())
-                raise 
+                result = CalledProcessError(e)
+                if not 'RESULT' in self.outputs:
+                    raise result
+
+            self.STDOUT = result.stdout.decode()
             for outfile in self.outputs:
                 if os.path.exists(outfile):
                     outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
                 else:
                     if outfile == 'STDOUT':
                         outputs.append(self.STDOUT)
+                    elif outfile == 'RESULT':
+                        outputs.append(result)
                     else:
                         outputs.append(None)
         try:
@@ -309,4 +315,25 @@ class FunctionKernel(object):
         else:
             outputs = tuple(outputs)
         return outputs
+class XflowError(Exception):
+    """
+    Base class for Xflowlib exceptions.
+    """
+    pass
 
+class CalledProcessError(XflowError):
+    """
+    Exception raised if a kernel fails with an error.
+
+    A cosmetic wrapper round subprocess.CalledProcessError
+    """
+
+    def __init__(self, e):
+        self.cmd = e.cmd
+        self.returncode = e.returncode
+        self.stdout = e.stdout
+        self.stderr = e.stderr
+        self.output = self.stdout
+
+    def __str__(self):
+        return 'Error: command "{}" failed with return code {}; STDOUT="{}"; STDERR="{}"'.format(self.cmd, self.returncode, self.stdout, self.stderr)

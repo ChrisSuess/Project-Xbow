@@ -1,0 +1,9 @@
+# Provisioning script for xbow-create_cluster
+#
+# zlib is needed for MDTraj
+apt-get install zlib1g-dev
+# numpy, cython, and scipy must be installed before MDTraj
+pip3 install numpy scipy cython
+pip3 install mdtraj
+# Assuming you are using GPU workers, use GPU-enabled Gromacs
+pinda install gromacs 2019-cuda
