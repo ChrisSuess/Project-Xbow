@@ -5,6 +5,7 @@ import boto3
 import uuid
 import datetime
 import os
+import sys
 
 def valid_selection(region, instance_type):
     '''
