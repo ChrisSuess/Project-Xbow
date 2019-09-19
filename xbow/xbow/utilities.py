@@ -314,7 +314,6 @@ def create_settings():
         
 	# Setting up the .xbow directory.
         if not os.path.isfile(os.path.expanduser('~/.xbow/settings.yml')):
-
             print('Xbow will create a hidden directory in your $HOME directory \n'
                   'in which it will create the hosts configuration file. You will\n'
                   'need to edit this file with your cloud preferences for the \n'
