@@ -101,10 +101,18 @@ echo 'SHARED={mount_point} >> /etc/environment
         ci = instances.ConnectedInstance(inst)
         print("All ready for use")
 
-def xbow_login(name):
+def xbow_login():
     """
     Login in to your head node
     """
+
+    cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+    with open(cfg_file, 'r') as ymlfile:
+        cfg = yaml.safe_load(ymlfile)
+
+    name = cfg['scheduler_name']
+
     if name is None:
         raise ValueError('Error - No lab has been provided')
         

@@ -19,7 +19,7 @@ flow_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
 flow_parser.add_argument('-j', '--jobid', help='Name your job')
 
 login_parser = subparsers.add_parser('login', description='Log in to your lab', help='login to your lab')
-login_parser.add_argument('uid')
+#login_parser.add_argument('uid')
 
 portal_parser = subparsers.add_parser('portal', description='Launch Xbow:Portal', help='connects you to xbow:portal')
 portal_parser.add_argument('uid')
@@ -32,6 +32,11 @@ download_parser = subparsers.add_parser('download', description='Download data t
 
 args = parser.parse_args()
 
+cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+with open(cfg_file, 'r') as ymlfile:
+    cfg = yaml.safe_load(ymlfile)
+
 if args.subparser_name == 'lab':
     commands.create_lab()
 
@@ -42,5 +47,5 @@ if args.subparser_name == 'terminate':
     commands.terminate_instance(args.uid)
 
 if args.subparser_name == 'login':
-    commands.login_instance(args.uid)
+    commands.xbow_login()
 
