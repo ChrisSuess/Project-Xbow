@@ -3,6 +3,7 @@ from __future__ import print_function
 from xbow import instances
 from xbow import filesystems
 from xbow import utilities
+from xbow.instances import get_by_name
 
 import xbow
 import yaml
@@ -98,3 +99,40 @@ echo 'SHARED={mount_point} >> /etc/environment
     
         ci = instances.ConnectedInstance(inst)
         print("All ready for use")
+
+def xbow_login(name=None, instance_id=None, region=None):
+    """
+    Log in to the selected instance
+    """
+    if name is None and instance_id is None:
+        raise ValueError('Error - either the name or instance_id must be provided')
+
+    ec2 = boto3.resource('ec2', region_name=region)
+    if name is not None:
+        instances = get_by_name(name, region)
+    else:
+        instances = list(ec2.instances.filter(InstanceIds=[instance_id]))
+
+    if len(instances) == 0:
+        raise ValueError('Error - no such instance')
+    elif len(instances) > 1:
+        raise ValueError('Error - more than one instance has that name')
+    else:
+        instance = instances[0]
+        name = instance.key_name
+        username = None
+        if instance.tags is not None:
+            for tag in instance.tags:
+                if tag['Key'] == 'username':
+                    username = tag['Value']
+        if username is None:
+            print('Warning: cannot determine username, assuming it is ubuntu')
+
+
+        mount_point = cfg['mount_point']
+        cwd = os.getcwd()
+        base = os.path.basename(cwd)
+        pem_file = '{}/{}.pem'.format(xbow.XBOW_CONFIGDIR, name)
+
+        launch_command = "ssh -i {} {}@{} -oStrictHostKeyChecking=no".format(pem_file, username, instance.public_dns_name)
+        subprocess.call(launch_command, shell=True)
