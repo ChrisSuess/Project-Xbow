@@ -12,6 +12,10 @@ lab_parser = subparsers.add_parser('lab', description='create your lab in the cl
 lab_parser.add_argument('-c', '--compute', help='Compute resource of head node')
 lab_parser.add_argument('-s', '--shutdown', help='Shutdown your lab')
 
+project_parser = subparsers.add_parser('create-project', description='create your project', help='Create a project for experiments')
+project_parser.add_argument('-f', '--files', help='Copy your files to your project')
+project_parser.add_argument('-p', '--project-name', help='Name your project')
+
 flow_parser = subparsers.add_parser('flow', description='Run a job in your Xbow Lab', help='xbow flow executable -a arg1 -b arg2 -c arg3')
 flow_parser.add_argument('-c', '--compute', help='Compute resource of worker to use eg. p2.xlarge')
 flow_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
@@ -44,3 +48,5 @@ if args.subparser_name == 'terminate':
 if args.subparser_name == 'login':
     commands.xbow_login()
 
+if args.subparser_name == 'create-project':
+    commands.create_project(args.project, args.files)
