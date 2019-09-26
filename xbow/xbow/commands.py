@@ -138,3 +138,25 @@ def xbow_login():
     launch_command = "ssh -i {} {}@{} -oStrictHostKeyChecking=no".format(pem_file, username, instance.public_dns_name)
     #print(launch_command)
     subprocess.call(launch_command, shell=True)
+
+def create_project(project=None, files=None):
+    """
+    create a project directory
+    """
+    
+    if project is None:
+        get_input = input
+        if sys.version_info[:2] <= (2, 7):
+            get_input = raw_input
+        project = get_input("Please give your project a name:")
+    
+    #mount_point = cfg['mount_point']
+    mount_point = '/home/ubuntu/shared'
+    fullpath = mount_point + '/' + project
+    
+    try:
+        os.mkdir(fullpath)
+    except OSError:
+        print ("Creation of the project '%s' failed, does it already exist?" % project)
+    else:
+        print ("Successfully created the project '%s' " % project)
