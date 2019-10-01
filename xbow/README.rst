@@ -44,21 +44,21 @@ Your settings.yml file will look like this::
     ### CLUSTER SPECIFIC SETTINGS ###
     region: eu-west-1                       # AWS region where your instance will be launched 
     price: '0.15'                           # max spot price in US dollars
-    image_id: ami-4fgh647925ats             # Amazon Machine Image (AMI)
+    image_name: '*xbow-packer-*'            # Amazon Machine Image (AMI) name (newest matching this string)
     scheduler_instance_type: t2.small       # scheduler instance type (hardware)
     worker_instance_type: c5.xlarge         # worker instance type (hardware)
-    pool_size: 10                           # how many workers required
+    pool_size: 2                            # how many workers required
+    worker_nprocs: 1                        # how many jobs can be run in parallel on each worker
 
     ### SECURITY SPECIFIC SETTINGS ###
     ec2_security_groups: ['SG-1']
     efs_security_groups: ['SG-2']
 
-The default values in ``settings.yml`` will launch a **Xbow** cliuster consisting of a head node and two worker nodes. The
-head node will be a ``t2.small`` instance and each worker will be a ``g2.2xlarge`` instance. The head node is a conventional
+The default values in ``settings.yml`` will launch a **Xbow** cluster consisting of a head node and two worker nodes. The
+head node will be a ``t2.small`` instance and each worker will be a ``c5.xlarge`` instance. The head node is a conventional
 instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_. All
-instances use the same image; the default provides pre-installed versions of Gromacs2018 and AmberTools16 (i.e.,
-the MD engines ``gmx mdrun``, ``sander`` and ``sander.MPI``, but not ``pmemd`` as an Amber license is required to use this and 
-we can't assume you have one).
+instances use the same image; the default provides only basic software, you will need to install MD codes, Python packages
+etc. at launch time ('provision' the instances). The image has Docker installed, so you may be able to use `Pinda <https://claughton.bitbucket.io/pinda.html>`_ for this.
 
 Creating an Xbow Filesystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,6 +107,13 @@ To create a new **Xbow** cluster, run the command::
     xbow-create_cluster
 
 This command will create the head node, worker nodes, and shared file system according to the specification in your ``settings.yml`` file.
+
+If you need to install extra software (e.g. an MD code, particular Python packages) you can do this at launch time by specifying a provisioning script::
+
+    xbow-create_cluster -s add_gromacs.sh
+    
+See the examples for guidance as to the format of provisioning scripts.
+
 
 Launching Xbow:Portal
 ~~~~~~~~~~~~~~~~~~~~~
