@@ -66,6 +66,7 @@ def create_settings():
             newfile.write('scheduler_instance_type: t2.small\n')
             newfile.write('worker_instance_type: c5.xlarge\n')
             newfile.write('pool_size: 4\n\n')
+            newfile.write('worker_nprocs: 1\n'
 
             newfile.write('### SECURITY SPECIFIC SETTINGS ###\n')
             newfile.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")

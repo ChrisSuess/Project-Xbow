@@ -28,15 +28,34 @@ After all these checks have been done it creates a head node ready for you to us
 Using **Xbow:Lab**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+<<<<<<< HEAD
 There are several ways to use your **Xbow:Lab** which have been designed to accomadate most users needs:
+=======
+    ### CLUSTER SPECIFIC SETTINGS ###
+    region: eu-west-1                       # AWS region where your instance will be launched 
+    price: '0.15'                           # max spot price in US dollars
+    image_name: '*xbow-packer-*'            # Amazon Machine Image (AMI) name (newest matching this string)
+    scheduler_instance_type: t2.small       # scheduler instance type (hardware)
+    worker_instance_type: c5.xlarge         # worker instance type (hardware)
+    pool_size: 2                            # how many workers required
+    worker_nprocs: 1                        # how many jobs can be run in parallel on each worker
+>>>>>>> master
 
 - `Xbow:Portal <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowportal>`_. A Browser based GUI that allows you to submit your jobs to your **Xbow:Lab**
 - `Xbow:Note <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbownote>`_. A Jupyter Notebook running on your **Xbow:Lab**
 - `Xbow:Flow <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowflow>`_. A tool to allow you to run your jobs that makes use of the workflow language **xbowflow**. **Xbow:Flow** can be run on your local workstation or remotely using **Xbow:Login**  
 - `Xbow:Login <https://github.com/ChrisSuess/Project-Xbow/tree/xbow-lab/xbow#xbowlogin>`_. A simple way to login to your **Xbow:Lab** and run your jobs using **Xbow:Flow**
 
+<<<<<<< HEAD
 **Xbow:Portal**
 ~~~~~~~~~~~~~~~~~
+=======
+The default values in ``settings.yml`` will launch a **Xbow** cluster consisting of a head node and two worker nodes. The
+head node will be a ``t2.small`` instance and each worker will be a ``c5.xlarge`` instance. The head node is a conventional
+instance but the workers are "spot" instances - see the AWS documentation `here <https://aws.amazon.com/ec2/spot/>`_. All
+instances use the same image; the default provides only basic software, you will need to install MD codes, Python packages
+etc. at launch time ('provision' the instances). The image has Docker installed, so you may be able to use `Pinda <https://claughton.bitbucket.io/pinda.html>`_ for this.
+>>>>>>> master
 
 **Xbow:Portal** creates a browser based GUI. To start this::
 
@@ -86,7 +105,19 @@ By default the command ``xbow flow`` will use the specifications in the ``~/.xbo
 **Xbow:Login**
 ~~~~~~~~~~~~~~~~~~
 
+<<<<<<< HEAD
 Using **Xbow:Lab** can be done entirely remotely but if you prefer to work directly on the head node this is possible with the command::
+=======
+If you need to install extra software (e.g. an MD code, particular Python packages) you can do this at launch time by specifying a provisioning script::
+
+    xbow-create_cluster -s add_gromacs.sh
+    
+See the examples for guidance as to the format of provisioning scripts.
+
+
+Launching Xbow:Portal
+~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> master
 
     xbow login
 
