@@ -299,3 +299,38 @@ echo 'SHARED={mount_point}' >> /etc/environment
                             user_data=user_data
                           )  
     print("Worker now ready. Please use `xbow-check` to monitor your job...")
+
+def xbow_bs_settings():
+    
+    cwd = os.getcwd()
+    filename = cwd + '/xbow-batch.yml'
+    exp = os.path.basename(cwd)
+    #print(filename)
+    #print(exp)
+    
+    newfile = open(os.path.expanduser(filename), 'w+')
+    
+    newfile.write('### CLUSTER SPECIFIC SETTINGS ###\n')
+    newfile.write('region: eu-west-1\n')
+    newfile.write("price: '0.15'\n")
+    newfile.write('image_id: ami-0e3c951d1401c05fc\n')
+    newfile.write('scheduler_instance_type: t2.small\n')
+    newfile.write('worker_instance_type: c5.xlarge\n')
+    newfile.write('pool_size: 4\n\n')
+    
+    newfile.write('### RESOURCE SETTINGS ###\n')
+    newfile.write('cluster_name: {}\n'.format(exp))
+    newfile.write('scheduler_name: {}\n'.format(exp))
+    newfile.write('worker_pool_name: {}\n'.format(exp))
+    newfile.write('shared_file_system: {}FS\n'.format(exp))
+    newfile.write('creation_token: {}FS\n'.format(exp))
+    newfile.write('mount_point: /home/ubuntu/shared\n')
+    newfile.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")
+    newfile.write("efs_security_groups: ['Xbow-SG-mt']\n\n")
+    
+    newfile.write('### JOB SETTINGS ###\n')
+    newfile.write('job: gmx mdrun -deffnm bpti-md\n\n')
+    
+    newfile.write('cluster: delete')
+    
+    newfile.close()
