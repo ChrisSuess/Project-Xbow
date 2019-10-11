@@ -58,7 +58,10 @@ def create_spot_pool(name, count=1, price=1.0, image_id=None, region=None,
     key_name = launch_group
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, launch_group) + '.pem'
     if not os.path.exists(pem_file):
-        raise RuntimeError('Error - cannot find key file {}'.format(pem_file))
+        cwd = os.getcwd()
+        xbowdir = cwd + '/.xbow'
+        pem_file = xbowdir + '.pem'
+        #raise RuntimeError('Error - cannot find key file {}'.format(pem_file))
 
     if username is None:
         image = ec2_resource.Image(image_id)
