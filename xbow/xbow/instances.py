@@ -232,8 +232,8 @@ def create(name, image_id, instance_type, region=None,
     pem_file = os.path.join(xbow.XBOW_CONFIGDIR, key_name) + '.pem'
     if not os.path.exists(pem_file):
         cwd = os.getcwd()
-        xbowdir = cwd + '/.xbow'
-        pem_file = xbowdir + '.pem'
+        xbowdir = cwd + '/.xbow/'
+        pem_file = xbowdir + key_name + '.pem'
         #raise RuntimeError('Error - cannot find {}'.format(pem_file))
 
     instances = get_by_name(key_name)
