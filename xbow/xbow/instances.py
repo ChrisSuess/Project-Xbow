@@ -240,7 +240,8 @@ def create(name, image_id, instance_type, region=None,
     instances = get_by_name(key_name)
     if len(instances) > 0:
         raise ValueError('Error - an instance with this name already exists')
-        
+     
+    ec2_resource = boto3.resource('ec2')   
     image = ec2_resource.Image(image_id)
 
     instance = ec2_resource.create_instances(ImageId=image_id, 
