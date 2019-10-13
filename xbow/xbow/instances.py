@@ -56,6 +56,10 @@ class ConnectedInstance(object):
         if key_filename is None:
             key_filename = os.path.join(xbow.XBOW_CONFIGDIR, self.instance.key_name) + '.pem'
         if not os.path.exists(key_filename):
+            cwd = os.getcwd()
+            xbowdir = cwd + '/.xbow/'
+            pem_file = xbowdir + key_name + '.pem'
+            #print(pem_file)
             raise RuntimeError('Error - cannot find the key file {}'.format(key_filename))
                 
         self.sshclient.connect(instance.public_ip_address, username=username,
