@@ -1,23 +1,21 @@
 from __future__ import print_function
 
-from xbow import instances
-from xbow import filesystems
-from xbow import utilities
-from xbow.instances import get_by_name
-
-import xbow
-import yaml
 import os
-import argparse
-import subprocess
 import sys
+import yaml
+import xbow
+import subprocess
 import uuid
 import glob
+import argparse
+import boto3
 
-from xbow.metering import SpotMeter
-from xbow.instances import get_by_name, ConnectedInstance
-from xbow.filesystems import fs_id_from_name
+from xbow import instances
+from xbow import filesystems
+from xbow.instances import get_by_name
+from xbow.instances import ConnectedInstance
 from xbow import pools
+from xbow.metering import SpotMeter
 
 def create_lab():
     """
