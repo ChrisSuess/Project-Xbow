@@ -43,7 +43,8 @@ if args.subparser_name == 'create':
     commands.create_instance(args.region, args.instance_type, tag=args.instance_name)
 
 if args.subparser_name == 'flow':
-    commands.xflow(args.nodes, args.command)
+    #commands.xflow(args.nodes, args.command)
+    commands.create_exp()
 
 if args.subparser_name == 'terminate':
     commands.terminate_instance(args.uid)
