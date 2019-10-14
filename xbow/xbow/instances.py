@@ -61,7 +61,7 @@ class ConnectedInstance(object):
             key_name = self.instance.key_name
             key_filename = xbowdir + key_name + '.pem'
             print(key_filename)
-            raise RuntimeError('Error - cannot find the key file {}'.format(key_filename))
+            #raise RuntimeError('Error - cannot find the key file {}'.format(key_filename))
                 
         self.sshclient.connect(instance.public_ip_address, username=username,
                                key_filename=key_filename, timeout=10)
