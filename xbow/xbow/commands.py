@@ -531,3 +531,45 @@ echo 'SHARED={mount_point}' >> /etc/environment
                             ec2_security_groups=cfg['ec2_security_groups'],
                             user_data=user_data
                             )
+
+def create_exp_settings():
+    
+    cwd = os.getcwd()
+    xbowdir = cwd + '/.xbow'
+    filename = xbowdir + '/xbow-schd.yml'
+    
+    exp = os.path.basename(cwd)
+    
+    if not os.path.exists(cwd + '/.xbow'):
+        os.makedirs(cwd + '/.xbow')
+    
+    #print(filename)
+    #print(exp)
+
+    newfile = open(os.path.expanduser(filename), 'w+')
+    
+    newfile.write('### CLUSTER SPECIFIC SETTINGS ###\n')
+    newfile.write('region: eu-west-1\n')
+    newfile.write("price: '0.15'\n")
+    newfile.write('image_id: ami-0e3c951d1401c05fc\n')
+    newfile.write('scheduler_instance_type: t2.small\n')
+    newfile.write('worker_instance_type: c5.xlarge\n')
+    newfile.write('pool_size: 4\n\n')
+    
+    newfile.write('### RESOURCE SETTINGS ###\n')
+    newfile.write('cluster_name: {}\n'.format(exp))
+    newfile.write('scheduler_name: {}\n'.format(exp))
+    newfile.write('worker_pool_name: {}wrk\n'.format(exp))
+    newfile.write('shared_file_system: {}FS\n'.format(exp))
+    newfile.write('creation_token: {}FS\n'.format(exp))
+    newfile.write('mount_point: /home/ubuntu/shared\n')
+    newfile.write("ec2_security_groups: ['Xbow-SG-ec2c']\n")
+    newfile.write("efs_security_groups: ['Xbow-SG-mt']\n\n")
+    
+    newfile.write('### JOB SETTINGS ###\n')
+    newfile.write('job: gmx mdrun -deffnm bpti-md\n\n')
+    
+    newfile.write('cluster: delete')
+    
+    newfile.close()
+
