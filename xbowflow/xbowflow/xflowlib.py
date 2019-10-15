@@ -3,6 +3,7 @@ Xflowlib: the Xflow library to build workflows on an Xbow cluster
 '''
 import re
 import subprocess
+from fnmatch import fnmatch
 import os
 import tempfile
 import shutil
@@ -83,11 +84,14 @@ class Filepack(object):
         for filename in filelist:
             self.filepack[filename] = filehandler(filename, session_dir=session_dir)
 
-    def unpack(self, outputdir='.'):
+    def unpack(self, outputdir='.', pattern=None):
         '''
         Unpack the files in the Filepack into the given directory.
         '''
         for filename in self.filepack:
+            if pattern is not None:
+                if not fnmatch(filename, pattern):
+                    raise ValueError('Error: filename {} does not match pattern {}'.format(filename, pattern))
             outname = os.path.join(outputdir, filename)
             self.filepack[filename].save(outname)
 
@@ -178,10 +182,13 @@ class SubprocessKernel(object):
                 if self.inputs[i] in self.variables:
                     var_dict[self.inputs[i]] = args[i]
                 else:
-                    try:
-                        args[i].save(self.inputs[i])
-                    except AttributeError:
-                        raise TypeError('Error with variable {} {}'.format(i, args[i]))
+                    if isinstance(args[i], Filepack):
+                        args[i].unpack(pattern=self.inputs[i])
+                    else:
+                        try:
+                            args[i].save(self.inputs[i])
+                        except AttributeError:
+                            raise TypeError('Error with variable {} {}'.format(i, args[i]))
             for d in self.constants:
                 try:
                     d['value'].save(d['name'])
@@ -200,8 +207,11 @@ class SubprocessKernel(object):
 
             self.STDOUT = result.stdout.decode()
             for outfile in self.outputs:
-                if os.path.exists(outfile):
+                outf = glob.glob(outfile)
+                if len(outf) == 1:
                     outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
+                elif len(outf) > 1:
+                    outputs.append(Filepack(outf))
                 else:
                     if outfile == 'STDOUT':
                         outputs.append(self.STDOUT)
