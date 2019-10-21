@@ -3,11 +3,11 @@ data.py: data and databases
 '''
 import yaml
 import os
-from ecpc.configuration import ECPC_DIR
+#from ecpc.configuration import ECPC_DIR
 import boto3
 
 default_data = {}
-databasefile = os.path.join(ECPC_DIR, 'database.yml')
+databasefile = os.path.join(xbow.XBOW_CONFIGDIR, 'database.yml')
 if not os.path.exists(databasefile):
     with open(databasefile, 'w') as f:
         yaml.dump(default_data, f, default_flow_style=False)
