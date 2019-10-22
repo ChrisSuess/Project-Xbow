@@ -1,0 +1,26 @@
+'''
+configuration.py: configuration and defaults
+'''
+import yaml
+import os
+import boto3
+
+XBOW_DIR = os.path.join(os.getenv('HOME'), '.xbow')
+
+session = boto3.session.Session()
+default_data = {}
+default_config = {'instance_type': 't2.small'}
+default_config['region'] = session.region_name
+default_config['source'] = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20180912'
+
+if not os.path.exists(XBOW_DIR):
+    os.mkdir(XBOW_DIR)
+
+configfile = os.path.join(XBOW_DIR, 'config.yml')
+if not os.path.exists(configfile):
+    with open(configfile, 'w') as f:
+        yaml.dump(default_config, f, default_flow_style=False)
+    config = default_config
+else:
+    with open(configfile, 'r') as f:
+        config = yaml.load(f, Loader=yaml.BaseLoader)
