@@ -55,9 +55,6 @@ if args.subparser_name == 'create':
 if args.subparser_name == 'flow':
     commands.create_experiment(args.compute, args.nodes, tag=args.instance_name)
 
-if args.subparser_name == 'terminate':
-    commands.terminate_instance(args.uid)
-
 if args.subparser_name == 'login':
     commands.xbow_login_lab()
 
