@@ -208,3 +208,64 @@ def create_experiment(region=None, instance_type=None, tag=None):
         print(e)
         terminate_instance(uid)
 
+def list_instances():
+    '''
+    List running instances.
+    '''
+    ids = database.ids()
+    rows = []
+    row = ['ID', 'region', 'type', 'up_time', 'state', 'cost($)']
+    rows.append(row)
+    for uid in ids:
+        data = database.get(uid)
+        region = data['region']
+        instance = utilities.get_instance(region, uid)
+        if instance is None:
+            data['up_time'] = '********'
+            data['state'] = 'FAILED'
+            data['cost'] = 0.0
+        else: 
+            state = utilities.get_instance_state(region, uid)
+            data['instance_type'] = instance.instance_type
+            utc = pytz.UTC
+            up = datetime.now(utc) - instance.launch_time
+            hours, remainder = divmod(int(up.total_seconds()), 3600)
+            minutes, remainder = divmod(remainder, 60)
+            seconds, remainder = divmod(remainder, 60)
+            data['up_time'] = '{:02d}:{:02d}:{:02d}'.format(hours, minutes, seconds)
+            data['state'] = state
+            data['cost'] = utilities.get_instance_cost(region, uid)
+        row = '{uid} {region} {instance_type} {up_time} {state} {cost:3.2f}'.format(**data).split()
+        rows.append(row)
+    widths = [max(map(len, col)) for col in zip(*rows)]
+    if len(rows) == 1:
+        return
+    for row in rows:
+        print("  ".join((val.ljust(width) for val, width in zip(row, widths))))
+
+def terminate_instance(uid):
+    entry = database.get(uid)
+    region = entry['region']
+    utilities.terminate(region, uid)
+    print('instance terminated')
+    utilities.delete_security_group(region, uid)
+    print('security group deleted')
+    utilities.delete_key_pair(region, uid)
+    print('key pair deleted')
+    utilities.delete_pem_file(XBOW_DIR, uid)
+    print('.pem file deleted')
+    database.remove_entry(uid)
+
+def transfer(source, target):
+    uid = utilities.get_transfer_uid(XBOW_DIR, source, target)
+    try:
+        entry = database.get(uid)
+    except IndexError as e:
+        print(e)
+        exit(1)
+    command = utilities.get_transfer_string(XBOW_DIR, entry['region'], uid, source, target)
+    state = utilities.get_instance_state(entry['region'], uid)
+    if state is not 'ready':
+        print('Instance is not ready, in state {}'.format(state))
+    else:
+        exit(subprocess.call(command, shell=True))
