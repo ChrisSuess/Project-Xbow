@@ -17,6 +17,7 @@ project_parser.add_argument('-f', '--files', help='Copy your files to your proje
 project_parser.add_argument('-p', '--project-name', help='Name your project')
 
 flow_parser = subparsers.add_parser('flow', description='Run a job in your Xbow Lab', help='xbow flow executable -a arg1 -b arg2 -c arg3')
+flow_parser.add_argument('instance_name', help='Name for this instance')
 flow_parser.add_argument('-c', '--compute', help='Compute resource of worker to use eg. p2.xlarge')
 flow_parser.add_argument('-m', '--max-cost', help='Max cost of simulation eg. 5.00 for $5')
 flow_parser.add_argument('-n', '--nodes', help='Number of worker nodes')
@@ -36,6 +37,13 @@ download_parser = subparsers.add_parser('download', description='Download data t
 
 list_parser = subparsers.add_parser('list', description='List available instances', help='list current instances')
 
+terminate_parser = subparsers.add_parser('terminate', description='Terminate an instance', help='terminate an instance')
+terminate_parser.add_argument('uid')
+
+transfer_parser = subparsers.add_parser('transfer', description='Transfer files to/from an instance', help='transfer files to/from an instance')
+transfer_parser.add_argument('source', help='File or directory to transfer')
+transfer_parser.add_argument('target', help='Destination file or directory')
+
 args = parser.parse_args()
 
 if args.subparser_name == 'lab':
@@ -53,8 +61,11 @@ if args.subparser_name == 'terminate':
 if args.subparser_name == 'login':
     commands.xbow_login_lab()
 
-if args.subparser_name == 'create-project':
-    commands.create_project(args.project, args.files)
-
 if args.subparser_name == 'list':
     commands.list_instances()
+
+if args.subparser_name == 'terminate':
+    commands.terminate_instance(args.uid)
+
+if args.subparser_name == 'transfer':
+    commands.transfer(args.source, args.target)

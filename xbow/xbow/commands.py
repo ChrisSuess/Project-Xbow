@@ -9,6 +9,7 @@ import uuid
 import glob
 import argparse
 import boto3
+import pytz
 
 from xbow.data import database
 from xbow import utilities

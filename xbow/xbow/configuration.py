@@ -5,7 +5,7 @@ import yaml
 import os
 import boto3
 
-XBOW_DIR = os.path.join(os.getenv('HOME'), '.xbow')
+XBOW_DIR = os.path.join(os.getenv('HOME'), '.xbow-test')
 
 session = boto3.session.Session()
 default_data = {}
