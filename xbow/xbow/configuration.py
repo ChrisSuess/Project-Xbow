@@ -10,7 +10,7 @@ XBOW_DIR = os.path.join(os.getenv('HOME'), '.xbow-test')
 session = boto3.session.Session()
 default_data = {}
 default_config = {'instance_type': 't2.small'}
-default_config = {'worker_type': 'c5.large'}
+default_config['worker_type'] 'c5.large'
 default_config['region'] = session.region_name
 default_config['source'] = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20180912'
 
