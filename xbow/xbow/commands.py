@@ -10,6 +10,9 @@ import glob
 import argparse
 import boto3
 import pytz
+from botocore.exceptions import ClientError
+
+from datetime import datetime
 
 from xbow.data import database
 from xbow import utilities
