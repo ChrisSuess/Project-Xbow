@@ -34,6 +34,8 @@ upload_parser = subparsers.add_parser('upload', description='Upload data to your
 
 download_parser = subparsers.add_parser('download', description='Download data to your xbow:lab', help='download data to your xbow:lab')
 
+list_parser = subparsers.add_parser('list', description='List available instances', help='list current instances')
+
 args = parser.parse_args()
 
 if args.subparser_name == 'lab':
@@ -43,8 +45,7 @@ if args.subparser_name == 'create':
     commands.create_instance(args.region, args.instance_type, tag=args.instance_name)
 
 if args.subparser_name == 'flow':
-    #commands.xflow(args.nodes, args.command)
-    commands.create_exp()
+    commands.create_experiment(args.compute, args.nodes, tag=args.instance_name)
 
 if args.subparser_name == 'terminate':
     commands.terminate_instance(args.uid)
@@ -54,3 +55,6 @@ if args.subparser_name == 'login':
 
 if args.subparser_name == 'create-project':
     commands.create_project(args.project, args.files)
+
+if args.subparser_name == 'list':
+    commands.list_instances()
