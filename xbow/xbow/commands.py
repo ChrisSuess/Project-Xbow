@@ -206,7 +206,7 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
 
     print('launching instance')
     try:
-        instance_id = utilities.launch(XBOW_DIR, region, uid, image_id, instance_type)
+        instance_id = utilities.launch(XBOW_DIR, region, uid, image_id, instance_type, worker_type)
         data['instance_id'] = instance_id
         database.update(uid, data)
         print('instance {instance_id} launched'.format(**data))
