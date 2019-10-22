@@ -181,7 +181,7 @@ def create_experiment(region=None, instance_type=None, tag=None):
     print('creating a {instance_type} instance in region {region} with ID {uid}'.format(**data))
 
     key_material = utilities.create_key_pair(region, uid)
-    pem_file = utilities.create_pem_file(ECPC_DIR, uid, key_material)
+    pem_file = utilities.create_pem_file(XBOW_DIR, uid, key_material)
     data['pem_file'] = pem_file
     database.update(uid, data)
     print('key pair created')
@@ -198,7 +198,7 @@ def create_experiment(region=None, instance_type=None, tag=None):
 
     print('launching instance')
     try:
-        instance_id = utilities.launch(ECPC_DIR, region, uid, image_id, instance_type)
+        instance_id = utilities.launch(XBOW_DIR, region, uid, image_id, instance_type)
         data['instance_id'] = instance_id
         database.update(uid, data)
         print('instance {instance_id} launched'.format(**data))
