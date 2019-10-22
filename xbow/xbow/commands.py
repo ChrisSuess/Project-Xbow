@@ -10,6 +10,8 @@ import glob
 import argparse
 import boto3
 
+from xbow.data import database
+from xbow import utilities
 from xbow.configuration import XBOW_DIR, config
 from xbow import instances
 from xbow import filesystems
