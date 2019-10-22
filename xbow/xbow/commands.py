@@ -10,6 +10,7 @@ import glob
 import argparse
 import boto3
 
+from xbow.configuration import XBOW_DIR, config
 from xbow import instances
 from xbow import filesystems
 from xbow.instances import get_by_name
@@ -144,4 +145,64 @@ def xbow_login_lab():
     launch_command = "ssh -i {} {}@{} -oStrictHostKeyChecking=no".format(pem_file, username, instance.public_dns_name)
     #print(launch_command)
     subprocess.call(launch_command, shell=True)
+
+def create_experiment(region=None, instance_type=None, tag=None):
+    '''
+    Create and launch an instance
+    '''
+    if region is None:
+        region = config['region']
+    if instance_type is None:
+        instance_type = config['instance_type']
+
+    try:
+        utilities.valid_selection(region, instance_type)
+    except ValueError as e:
+        print(e)
+        exit(1)
+    if tag is not None:
+        if tag in database.ids():
+            print('Error: name {} is already in use'.format(tag))
+            exit(1)
+        uid = tag
+    else:
+        uid = str(uuid.uuid4())[:8]
+    database.add_entry(uid)
+    data = {}
+    data['uid'] = uid
+    data['region'] = region
+    data['instance_type'] = instance_type
+    data['pem_file'] = None
+    data['security_group_id'] = None
+    data['image_id'] = None
+    data['security_group_id'] = None
+    data['instance_id'] = None
+    database.update(uid, data)
+    print('creating a {instance_type} instance in region {region} with ID {uid}'.format(**data))
+
+    key_material = utilities.create_key_pair(region, uid)
+    pem_file = utilities.create_pem_file(ECPC_DIR, uid, key_material)
+    data['pem_file'] = pem_file
+    database.update(uid, data)
+    print('key pair created')
+
+    security_group_id = utilities.create_security_group(region, uid)
+    data['security_group_id'] = security_group_id
+    database.update(uid, data)
+    print('security group created')
+
+    image_id = utilities.ami_from_source(region, config['source'])
+    data['image_id'] = image_id
+    database.update(uid, data)
+    print('required ami identified')
+
+    print('launching instance')
+    try:
+        instance_id = utilities.launch(ECPC_DIR, region, uid, image_id, instance_type)
+        data['instance_id'] = instance_id
+        database.update(uid, data)
+        print('instance {instance_id} launched'.format(**data))
+    except ClientError as e:
+        print(e)
+        terminate_instance(uid)
 
