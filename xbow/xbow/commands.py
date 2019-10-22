@@ -152,7 +152,7 @@ def xbow_login_lab():
     #print(launch_command)
     subprocess.call(launch_command, shell=True)
 
-def create_experiment(region=None, instance_type=None, tag=None):
+def create_experiment(region=None, instance_type=None, tag=None, worker_type=None):
     '''
     Create and launch an instance
     '''
@@ -160,6 +160,8 @@ def create_experiment(region=None, instance_type=None, tag=None):
         region = config['region']
     if instance_type is None:
         instance_type = config['instance_type']
+    if worker_type is None:
+        worker_type = config['worker_type']
 
     try:
         utilities.valid_selection(region, instance_type)

@@ -119,7 +119,7 @@ def ami_from_source(region, source):
     #print('Using image {}'.format(image_id))
     return image_id
 
-def launch(dirname, region, uid, image_id, instance_type):
+def launch(dirname, region, uid, image_id, instance_type, worker_type):
     '''
     Launch the instance.
     '''
