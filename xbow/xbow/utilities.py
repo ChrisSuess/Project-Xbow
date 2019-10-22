@@ -149,6 +149,16 @@ def launch(dirname, region, uid, image_id, instance_type):
                                          InstanceMarketOptions={'MarketType': 'spot'}
                                         )
     instance = instances[0]
+    workers = resource.create_instances(ImageId=image_id,
+                                         InstanceType=worker_type,
+                                         MaxCount=4,
+                                         MinCount=4,
+                                         KeyName=uid,
+                                         SecurityGroupIds=[security_group_id],
+                                         ClientToken=str(uuid.uuid4()),
+                                         InstanceMarketOptions={'MarketType': 'spot'}
+                                        )
+
     #waiter = client.get_waiter('instance_status_ok')
     #waiter.wait(InstanceIds=[instance.instance_id])
     #instance.reload()
