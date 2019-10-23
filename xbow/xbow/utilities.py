@@ -435,7 +435,7 @@ def terminate_cluster(uid, region=None):
     resource = boto3.resource('ec2', region_name=region)
 
     dsir = client.describe_spot_instance_requests
-    response = dsir(Filters=[{'Name': 'launch-group', 'Values': [uid]}])
+    response = dsir(Filters=[{'Name': 'key-name', 'Values': [uid]}])
     spot_instance_request_ids = [s['SpotInstanceRequestId']
                                  for s in response['SpotInstanceRequests']
                                 ]
