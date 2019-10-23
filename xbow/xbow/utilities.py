@@ -427,7 +427,7 @@ def get_image_id(cfg):
         image_id = images_by_age[0]['ImageId']
     return image_id
 
-def terminate_cluster(uid, region=None):
+def terminate_cluster(uid, region):
     """
     Terminates the cluster given by the name specified in settings.yml
     """
