@@ -251,7 +251,7 @@ def list_instances():
 
 def terminate_instance(uid):
     entry = database.get(uid)
-    region = entry['region']
+    region = data['region']
     utilities.terminate_cluster(region, uid)
     print('instance terminated')
     utilities.delete_security_group(region, uid)
