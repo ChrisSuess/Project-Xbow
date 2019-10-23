@@ -426,3 +426,33 @@ def get_image_id(cfg):
         images_by_age = sorted(images, reverse=True, key=lambda img: img['CreationDate'])
         image_id = images_by_age[0]['ImageId']
     return image_id
+
+def terminate_cluster(uid, region=None):
+    """
+    Terminates the cluster given by the name specified in settings.yml
+    """
+    client = boto3.client('ec2', region_name=region)
+    resource = boto3.resource('ec2', region_name=region)
+
+    dsir = client.describe_spot_instance_requests
+    response = dsir(Filters=[{'Name': 'launch-group', 'Values': [uid]}])
+    spot_instance_request_ids = [s['SpotInstanceRequestId']
+                                 for s in response['SpotInstanceRequests']
+                                ]
+
+    if len(spot_instance_request_ids) > 1:
+        print('cancelling all spot requests')
+        csir =  client.cancel_spot_instance_requests
+        csir(SpotInstanceRequestIds=spot_instance_request_ids, DryRun=False)
+
+    filters = [{'Name': 'key-name', 'Values': [uid]},
+               {'Name': 'instance-state-name', 'Values': ['running']}
+              ]
+    instances = list(resource.instances.filter(Filters=filters))
+
+    if len(instances) == 0:
+        raise ValueError('Error - no such cluster')
+    else:
+        print('Terminating instances')
+        for instance in instances:
+            instance.terminate(DryRun=False)
