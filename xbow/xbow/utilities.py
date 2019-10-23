@@ -456,3 +456,9 @@ def terminate_cluster(region, uid):
         print('Terminating instances')
         for instance in instances:
             instance.terminate(DryRun=False)
+
+        for instance in instances:
+            waiter = client.get_waiter('instance_terminated')
+            waiter.wait(InstanceIds=[instance.id])
+            
+        print('Cluster {} terminated'.format(uid))
