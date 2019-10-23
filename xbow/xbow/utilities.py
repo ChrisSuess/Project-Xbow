@@ -153,7 +153,7 @@ def launch(dirname, region, uid, image_id, instance_type, worker_type):
                                                     'Tags' : [
                                                         {
                                                              'Key': 'Name', 'Value': uid + 'scd',
-                                                             'Key': 'name', 'Value': uid + 'scd
+                                                             'Key': 'name', 'Value': uid + 'scd'
                                                         },
                                                      ]
                                                 },
