@@ -146,7 +146,18 @@ def launch(dirname, region, uid, image_id, instance_type, worker_type):
                                          KeyName=uid, 
                                          SecurityGroupIds=[security_group_id], 
                                          ClientToken=str(uuid.uuid4()),
-                                         InstanceMarketOptions={'MarketType': 'spot'}
+                                         InstanceMarketOptions={'MarketType': 'spot'},
+                                         TagSpecifications=[
+                                                {
+                                                    'ResourceType' : 'instance',
+                                                    'Tags' : [
+                                                        {
+                                                             'Key': 'Name', 'Value': uid + 'scd',
+                                                             'Key': 'name', 'Value': uid + 'scd
+                                                        },
+                                                     ]
+                                                },
+                                            ],
                                         )
     instance = instances[0]
     if worker_type is not None:
