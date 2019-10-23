@@ -157,7 +157,10 @@ def launch(dirname, region, uid, image_id, instance_type, worker_type):
                                             KeyName=uid,
                                             SecurityGroupIds=[security_group_id],
                                             ClientToken=str(uuid.uuid4()),
-                                            InstanceMarketOptions={'MarketType': 'spot'}
+                                            InstanceMarketOptions={'MarketType': 'spot'},
+                                            TagSpecifications=[{'Tags' : 'Name', 'Value' : uid},
+                                                               {'Tags' : 'name', 'Value' : uid}
+                                                              ]
                                            )
 
     #waiter = client.get_waiter('instance_status_ok')
