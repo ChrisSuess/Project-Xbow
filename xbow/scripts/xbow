@@ -31,16 +31,12 @@ portal_parser.add_argument('uid')
 
 note_parser = subparsers.add_parser('note', description='Launch a Xbow Notebook', help='configures a notebook running from your xbow:lab')
 
-upload_parser = subparsers.add_parser('upload', description='Upload data to your xbow:lab', help='upload data to your xbow:lab')
-
-download_parser = subparsers.add_parser('download', description='Download data to your xbow:lab', help='download data to your xbow:lab')
-
 list_parser = subparsers.add_parser('list', description='List available instances', help='list current instances')
 
 terminate_parser = subparsers.add_parser('terminate', description='Terminate an instance', help='terminate an instance')
 terminate_parser.add_argument('uid')
 
-transfer_parser = subparsers.add_parser('transfer', description='Transfer files to/from an instance', help='transfer files to/from an instance')
+transfer_parser = subparsers.add_parser('transfer', description='Transfer files to/from your Xbow:Lab', help='transfer files to/from your Xbow:Lab')
 transfer_parser.add_argument('source', help='File or directory to transfer')
 transfer_parser.add_argument('target', help='Destination file or directory')
 
