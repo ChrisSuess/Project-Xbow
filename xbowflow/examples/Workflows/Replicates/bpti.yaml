@@ -1,4 +1,4 @@
-local: True
+local: False
 startcrds: bpti.gro
 topfile: bpti.top
 mdpfile: mdrun.mdp
