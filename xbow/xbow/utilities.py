@@ -110,7 +110,7 @@ def ami_from_source(region, source):
     client = boto3.client('ec2', region_name=region)
     filters=[{'Name': 'manifest-location', 
               'Values': [source]}]
-    result = client.describe_images(ExecutableUsers=['all'], Filters=filters)
+    result = client.describe_images(ExecutableUsers=['self'], Filters=filters)
 
     amis = [i['ImageId'] for i in result['Images']]
     if len(amis) == 0:
