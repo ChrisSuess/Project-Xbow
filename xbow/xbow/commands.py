@@ -152,7 +152,7 @@ def xbow_login_lab():
     #print(launch_command)
     subprocess.call(launch_command, shell=True)
 
-def create_experiment(region=None, instance_type=None, tag=None, worker_type=None):
+def create_experiment(region=None, instance_type=None, tag=None, worker_type=None, image_name=None):
     '''
     Create and launch an instance
     '''
@@ -162,6 +162,8 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
         instance_type = config['instance_type']
     if worker_type is None:
         worker_type = config['worker_type']
+    if image_name is None:
+        image_name = config['image_name']
 
     try:
         utilities.valid_selection(region, instance_type)
@@ -182,7 +184,7 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     data['instance_type'] = instance_type
     data['pem_file'] = None
     data['security_group_id'] = None
-    data['image_id'] = None
+    data['image_id'] = image_name
     data['security_group_id'] = None
     data['instance_id'] = None
     database.update(uid, data)
@@ -199,8 +201,9 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     database.update(uid, data)
     print('security group created')
 
-    image_id = utilities.ami_from_source(region, config['source'])
-    data['image_id'] = image_id
+    if image_name is None: 
+        image_name = utilities.ami_from_source(region, config['source'])
+    data['image_id'] = image_name
     database.update(uid, data)
     print('required ami identified')
 
