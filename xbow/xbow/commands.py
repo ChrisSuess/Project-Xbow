@@ -156,14 +156,22 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     '''
     Create and launch an instance
     '''
+
+    cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
+
+    with open(cfg_file, 'r') as ymlfile:
+        cfg = yaml.safe_load(ymlfile)
+
+    cfg['image_id'] = utilities.get_image_id(cfg)    
+
     if region is None:
         region = config['region']
     if instance_type is None:
         instance_type = config['instance_type']
     if worker_type is None:
         worker_type = config['worker_type']
-    if image_id is None:
-        image_id = config['image_id']
+    #if image_id is None:
+    #    image_id = config['image_id']
 
     try:
         utilities.valid_selection(region, instance_type)
@@ -184,7 +192,7 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     data['instance_type'] = instance_type
     data['pem_file'] = None
     data['security_group_id'] = None
-    data['image_id'] = image_id
+    data['image_id'] = cfg['image_id']
     data['security_group_id'] = None
     data['instance_id'] = None
     database.update(uid, data)
