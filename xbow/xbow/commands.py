@@ -210,9 +210,9 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     print('security group created')
 
     image_id = cfg['image_id']
-    #if image_id is None: 
-    #    image_id = utilities.ami_from_source(region, config['source'])
-    #database.update(uid, data)
+    if image_id is None: 
+        image_id = utilities.ami_from_source(region, config['source'])
+    database.update(uid, data)
     print('required ami identified')
 
     print('launching instance')
