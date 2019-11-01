@@ -52,7 +52,7 @@ mkdir -p /run/metadata/xbow
 touch /run/metadata/xbow/is_scheduler
 echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
 echo 'SHARED={mount_point}' >> /etc/environment
-'''.format(**cfg)
+'''.format(**config)
 
 scheduler_extra_data = ''
 worker_extra_data = ''
@@ -95,4 +95,4 @@ echo 'XBOW_SCHEDULER_IP_ADDRESS={scheduler_ip_address}' > /run/metadata/xbow/sch
 echo 'XBOW_WORKER_NPROCS={worker_nprocs}' >> /run/metadata/xbow/scheduler_ip_address
 echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
 echo 'SHARED={mount_point}' >> /etc/environment
-'''.format(**cfg)
+'''.format(**config)
