@@ -195,6 +195,7 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     data['image_id'] = cfg['image_id']
     data['security_group_id'] = None
     data['instance_id'] = None
+    data['fs_id'] = None
     database.update(uid, data)
     print('creating a {instance_type} instance in region {region} with ID {uid}'.format(**data))
 
@@ -215,9 +216,73 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     database.update(uid, data)
     print('required ami identified')
 
+    fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'], 
+                                       region=cfg['region'] 
+                                       )
+    if fs_id is None:
+        fs_id = filesystems.create_fs(cfg['shared_file_system'],
+                                      region=cfg['region'], 
+                                      efs_security_groups=cfg['efs_security_groups']
+                                     )
+    data['fs_id'] = fs_id
+    database.update(uid, data)
+    print('required filesystem attached')
+
+    preamble_data = '''Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config.txt"
+
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+'''
+    scheduler_user_data='''
+#!/bin/bash
+mkdir -p /run/metadata/xbow
+touch /run/metadata/xbow/is_scheduler
+echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
+echo 'SHARED={mount_point}' >> /etc/environment
+'''.format(**data)
+
+    scheduler_extra_data = ''
+    worker_extra_data = ''
+
+    final_data = '''
+
+--//'''
+    
+    schd_data = preamble_data + scheduler_user_data + scheduler_extra_data + final_data
+    
+    data['scheduler_ip_address'] = inst.private_ip_address
+        if not 'worker_nprocs' in cfg:
+    data['worker_nprocs'] = 1
+    database.update(uid, data)
+
+    worker_user_data = '''
+#!/bin/bash
+mkdir -p /run/metadata/xbow
+echo 'XBOW_SCHEDULER_IP_ADDRESS={scheduler_ip_address}' > /run/metadata/xbow/scheduler_ip_address
+echo 'XBOW_WORKER_NPROCS={worker_nprocs}' >> /run/metadata/xbow/scheduler_ip_address
+echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
+echo 'SHARED={mount_point}' >> /etc/environment
+'''.format(**data)
+
+    work_data = preamble_data + worker_user_data + worker_extra_data + final_data
+
     print('launching instance')
     try:
-        instance_id = utilities.launch(XBOW_DIR, region, uid, image_id, instance_type, worker_type)
+        instance_id = utilities.launch(XBOW_DIR, region, uid, image_id, instance_type, worker_type, schd_data, work_data)
         data['instance_id'] = instance_id
         database.update(uid, data)
         print('instance {instance_id} launched'.format(**data))
