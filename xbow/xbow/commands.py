@@ -276,8 +276,8 @@ echo 'SHARED={mount_point}' >> /etc/environment
         terminate_instance(uid)
 
     data['scheduler_ip_address'] = instance.private_ip_address
-        if not 'worker_nprocs' in cfg:
-    data['worker_nprocs'] = 1
+    if not 'worker_nprocs' in cfg:
+        data['worker_nprocs'] = 1
     database.update(uid, data)
 
     worker_user_data = '''
