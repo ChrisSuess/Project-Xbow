@@ -83,6 +83,10 @@ def create_security_group(region, uid):
             {'IpProtocol': 'tcp',
              'FromPort': 22,
              'ToPort': 22,
+             'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+            {'IpProtocol': 'tcp',
+             'FromPort': 2049,
+             'ToPort': 2049,
              'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
         ])
     #print('Ingress Successfully Set.')
@@ -119,7 +123,7 @@ def ami_from_source(region, source):
     #print('Using image {}'.format(image_id))
     return image_id
 
-def launch(dirname, region, uid, image_id, instance_type, worker_type):
+def launch(dirname, region, uid, image_id, instance_type, worker_type, schd_data, worker_data):
     '''
     Launch the instance.
     '''
@@ -144,6 +148,7 @@ def launch(dirname, region, uid, image_id, instance_type, worker_type):
                                          MaxCount=1, 
                                          MinCount=1, 
                                          KeyName=uid, 
+                                         UserData=schd_data,
                                          SecurityGroupIds=[security_group_id], 
                                          ClientToken=str(uuid.uuid4()),
                                          InstanceMarketOptions={'MarketType': 'spot'},
@@ -166,6 +171,7 @@ def launch(dirname, region, uid, image_id, instance_type, worker_type):
                                             MaxCount=4,
                                             MinCount=4,
                                             KeyName=uid,
+                                            UserData=worker_data,
                                             SecurityGroupIds=[security_group_id],
                                             ClientToken=str(uuid.uuid4()),
                                             InstanceMarketOptions={'MarketType': 'spot'},
