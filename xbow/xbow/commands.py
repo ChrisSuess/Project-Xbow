@@ -227,7 +227,7 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
     data['fs_id'] = fs_id
     database.update(uid, data)
     print('required filesystem attached')
-
+    
     preamble_data = '''Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
@@ -252,7 +252,7 @@ Content-Disposition: attachment; filename="userdata.txt"
 mkdir -p /run/metadata/xbow
 touch /run/metadata/xbow/is_scheduler
 echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
-echo 'SHARED={mount_point}' >> /etc/environment
+echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
 '''.format(**data)
 
     scheduler_extra_data = ''
