@@ -193,6 +193,98 @@ def launch(dirname, region, uid, image_id, instance_type, worker_type, schd_data
     #instance.reload()
     return instance.instance_id
 
+def launch_schd(dirname, region, uid, image_id, instance_type, schd_data):
+    '''
+    Launch the schd.
+    '''
+    instance_id = get_instance_id(region, uid)
+    if instance_id is not None:
+        return instance_id
+
+    key_name = get_key_pair(region, uid)
+    if key_name is None:
+        key_material = create_key_pair(region, uid)
+        key_name = uid
+        pem_file = create_pem_file(dirname, uid, key_material)
+
+    security_group_id = get_security_group_id(region, uid)
+    if security_group_id is None:
+        security_group_id = create_security_group(region, uid)
+
+    client = boto3.client('ec2', region_name=region)
+    resource = boto3.resource('ec2', region_name=region)
+    instances = resource.create_instances(ImageId=image_id, 
+                                         InstanceType=instance_type, 
+                                         MaxCount=1, 
+                                         MinCount=1, 
+                                         KeyName=uid, 
+                                         UserData=schd_data,
+                                         SecurityGroupIds=[security_group_id], 
+                                         ClientToken=str(uuid.uuid4()),
+                                         InstanceMarketOptions={'MarketType': 'spot'},
+                                         TagSpecifications=[
+                                                {
+                                                    'ResourceType' : 'instance',
+                                                    'Tags' : [
+                                                        {
+                                                             'Key': 'Name', 'Value': uid + 'scd',
+                                                             'Key': 'name', 'Value': uid + 'scd'
+                                                        },
+                                                     ]
+                                                },
+                                            ],
+                                        )
+    instance = instances[0]
+    return instance.instance_id
+
+def launch_work(dirname, region, uid, image_id, instance_type, worker_type, worker_data):
+    '''
+    Launch the workers. Viva La Resistance
+    '''
+    instance_id = get_instance_id(region, uid)
+    if instance_id is not None:
+        return instance_id
+
+    key_name = get_key_pair(region, uid)
+    if key_name is None:
+        key_material = create_key_pair(region, uid)
+        key_name = uid
+        pem_file = create_pem_file(dirname, uid, key_material)
+
+    security_group_id = get_security_group_id(region, uid)
+    if security_group_id is None:
+        security_group_id = create_security_group(region, uid)
+
+    client = boto3.client('ec2', region_name=region)
+    resource = boto3.resource('ec2', region_name=region)
+    if worker_type is not None:
+        print('arming the workers')
+        workers = resource.create_instances(ImageId=image_id,
+                                            InstanceType=worker_type,
+                                            MaxCount=4,
+                                            MinCount=4,
+                                            KeyName=uid,
+                                            UserData=worker_data,
+                                            SecurityGroupIds=[security_group_id],
+                                            ClientToken=str(uuid.uuid4()),
+                                            InstanceMarketOptions={'MarketType': 'spot'},
+                                            TagSpecifications=[
+                                                {
+                                                    'ResourceType' : 'instance',
+                                                    'Tags' : [
+                                                        {
+                                                             'Key': 'Name', 'Value': uid,
+                                                             'Key': 'name', 'Value': uid
+                                                        },
+                                                     ]
+                                                },
+                                            ],
+                                           )
+
+    #return workers.instance_id
+
+
+
 def get_instance_cost(region, uid):
     '''
     Returns the APPROXIMATE cost so far for the instance

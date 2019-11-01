@@ -264,7 +264,18 @@ echo 'SHARED={mount_point}' >> /etc/environment
     
     schd_data = preamble_data + scheduler_user_data + scheduler_extra_data + final_data
     
-    data['scheduler_ip_address'] = inst.private_ip_address
+
+    print('launching scheduler')
+    try:
+        instance_id = utilities.launch_schd(XBOW_DIR, region, uid, image_id, instance_type, schd_data)
+        data['instance_id'] = instance_id
+        database.update(uid, data)
+        print('instance {instance_id} launched'.format(**data))
+    except ClientError as e:
+        print(e)
+        terminate_instance(uid)
+
+    data['scheduler_ip_address'] = instance.private_ip_address
         if not 'worker_nprocs' in cfg:
     data['worker_nprocs'] = 1
     database.update(uid, data)
@@ -280,12 +291,12 @@ echo 'SHARED={mount_point}' >> /etc/environment
 
     work_data = preamble_data + worker_user_data + worker_extra_data + final_data
 
-    print('launching instance')
     try:
-        instance_id = utilities.launch(XBOW_DIR, region, uid, image_id, instance_type, worker_type, schd_data, work_data)
-        data['instance_id'] = instance_id
+        workers = utilities.launch_work(XBOW_DIR, region, uid, image_id, instance_type, worker_type, schd_data, work_data)
+        data['workers_id'] = workers
         database.update(uid, data)
-        print('instance {instance_id} launched'.format(**data))
+        print('workers launched')
+        #print('instance {instance_id} launched'.format(**data))
     except ClientError as e:
         print(e)
         terminate_instance(uid)
