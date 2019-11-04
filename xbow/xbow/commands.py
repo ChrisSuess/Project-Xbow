@@ -286,7 +286,7 @@ mkdir -p /run/metadata/xbow
 echo 'XBOW_SCHEDULER_IP_ADDRESS={scheduler_ip_address}' > /run/metadata/xbow/scheduler_ip_address
 echo 'XBOW_WORKER_NPROCS={worker_nprocs}' >> /run/metadata/xbow/scheduler_ip_address
 echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
-echo 'SHARED={mount_point}' >> /etc/environment
+echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
 '''.format(**data)
 
     work_data = preamble_data + worker_user_data + worker_extra_data + final_data
