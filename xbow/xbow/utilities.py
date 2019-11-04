@@ -260,7 +260,7 @@ def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
     resource = boto3.resource('ec2', region_name=region)
     if worker_type is None:
        print('no worker has been specified')
-       break
+       sys.exit()
 
     print('arming the workers')
     workers = resource.create_instances(ImageId=image_id,
