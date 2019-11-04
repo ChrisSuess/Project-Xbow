@@ -238,7 +238,7 @@ def launch_schd(dirname, region, uid, image_id, instance_type, schd_data):
     #return instance.instance_id
     return instance
 
-def launch_work(dirname, region, uid, image_id, instance_type, worker_type, worker_data):
+def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
     '''
     Launch the workers. Viva La Resistance
     '''
@@ -283,7 +283,7 @@ def launch_work(dirname, region, uid, image_id, instance_type, worker_type, work
                                            )
 
     #return workers.instance_id
-
+    return workers
 
 
 def get_instance_cost(region, uid):
