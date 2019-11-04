@@ -258,19 +258,22 @@ def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
 
     client = boto3.client('ec2', region_name=region)
     resource = boto3.resource('ec2', region_name=region)
-    if worker_type is not None:
-        print('arming the workers')
-        workers = resource.create_instances(ImageId=image_id,
-                                            InstanceType=worker_type,
-                                            MaxCount=4,
-                                            MinCount=4,
-                                            KeyName=uid,
-                                            UserData=worker_data,
-                                            SecurityGroupIds=[security_group_id],
-                                            ClientToken=str(uuid.uuid4()),
-                                            InstanceMarketOptions={'MarketType': 'spot'},
-                                            TagSpecifications=[
-                                                {
+    if worker_type is None:
+       print('no worker has been specified')
+       break
+
+    print('arming the workers')
+    workers = resource.create_instances(ImageId=image_id,
+                                        InstanceType=worker_type,
+                                        MaxCount=4,
+                                        MinCount=4,
+                                        KeyName=uid,
+                                        UserData=worker_data,
+                                        SecurityGroupIds=[security_group_id],
+                                        ClientToken=str(uuid.uuid4()),
+                                        InstanceMarketOptions={'MarketType': 'spot'},
+                                        TagSpecifications=[
+                                                 {
                                                     'ResourceType' : 'instance',
                                                     'Tags' : [
                                                         {
@@ -280,7 +283,7 @@ def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
                                                      ]
                                                 },
                                             ],
-                                           )
+                                        )
 
     #return workers.instance_id
     return workers
