@@ -292,7 +292,7 @@ echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
     work_data = preamble_data + worker_user_data + worker_extra_data + final_data
 
     try:
-        workers = utilities.launch_work(XBOW_DIR, region, uid, image_id, instance_type, worker_type, schd_data, work_data)
+        workers = utilities.launch_work(XBOW_DIR, region, uid, image_id, instance_type, worker_type, work_data)
         data['workers_id'] = workers
         database.update(uid, data)
         print('workers launched')
