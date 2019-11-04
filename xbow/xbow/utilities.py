@@ -236,7 +236,7 @@ def launch_schd(dirname, region, uid, image_id, instance_type, schd_data):
                                         )
     instance = instances[0]
     #return instance.instance_id
-    return instance.id
+    return instance
 
 def launch_work(dirname, region, uid, image_id, instance_type, worker_type, worker_data):
     '''
