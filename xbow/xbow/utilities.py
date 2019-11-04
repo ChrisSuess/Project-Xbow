@@ -242,9 +242,9 @@ def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
     '''
     Launch the workers. Viva La Resistance
     '''
-    instance_id = get_instance_id(region, uid)
-    if instance_id is not None:
-        return instance_id
+    #instance_id = get_instance_id(region, uid)
+    #if instance_id is not None:
+    #    return instance_id
 
     key_name = get_key_pair(region, uid)
     if key_name is None:

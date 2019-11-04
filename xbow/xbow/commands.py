@@ -220,6 +220,7 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
                                        region=cfg['region'] 
                                        )
     if fs_id is None:
+        print('creating a new filesystem')
         fs_id = filesystems.create_fs(cfg['shared_file_system'],
                                       region=cfg['region'], 
                                       efs_security_groups=cfg['efs_security_groups']
