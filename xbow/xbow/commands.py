@@ -268,7 +268,7 @@ echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
     print('launching scheduler')
     try:
         instance_id = utilities.launch_schd(XBOW_DIR, region, uid, image_id, instance_type, schd_data)
-        data['instance_id'] = instance_id
+        data['instance_id'] = instance
         database.update(uid, data)
         print('instance {instance_id} launched'.format(**data))
     except ClientError as e:
