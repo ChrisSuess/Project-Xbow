@@ -296,11 +296,11 @@ echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
         workers = utilities.launch_work(XBOW_DIR, region, uid, image_id, worker_type, work_data)
         a = 0
         for worker in workers:
-            print(worker.id)
+            print(worker.id, 'worker{}'.format(a)) 
             data['worker{}'.format(a)] = worker
             a = a + 1
         #data['workers_id'] = workers
-        database.update(uid, data)
+        #database.update(uid, data)
         print('workers launched')
         #print('instance {instance_id} launched'.format(**data))
     except ClientError as e:
