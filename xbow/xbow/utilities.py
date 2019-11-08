@@ -238,7 +238,7 @@ def launch_schd(dirname, region, uid, image_id, instance_type, schd_data):
     #return instance.instance_id
     return instance
 
-def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
+def launch_work(dirname, region, uid, image_id, worker_type, worker_data, pool_size):
     '''
     Launch the workers. Viva La Resistance
     '''
@@ -265,8 +265,8 @@ def launch_work(dirname, region, uid, image_id, worker_type, worker_data):
     print('arming the workers')
     workers = resource.create_instances(ImageId=image_id,
                                         InstanceType=worker_type,
-                                        MaxCount=4,
-                                        MinCount=4,
+                                        MaxCount=pool_size,
+                                        MinCount=pool_size,
                                         KeyName=uid,
                                         UserData=worker_data,
                                         SecurityGroupIds=[security_group_id],
