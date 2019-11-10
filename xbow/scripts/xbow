@@ -50,7 +50,8 @@ if args.subparser_name == 'create':
     commands.create_instance(args.region, args.instance_type, tag=args.instance_name)
 
 if args.subparser_name == 'flow':
-    commands.create_experiment(args.compute, args.nodes, tag=args.instance_name, tag=args.job_schd)
+    commands.create_experiment(tag=args.job_schd)
+    #commands.create_experiment(args.compute, args.nodes, tag=args.instance_name, tag=args.job_schd)
 
 if args.subparser_name == 'login':
     commands.xbow_login_lab()
