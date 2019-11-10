@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import re
 import sys
 import yaml
 import xbow
@@ -152,7 +153,7 @@ def xbow_login_lab():
     #print(launch_command)
     subprocess.call(launch_command, shell=True)
 
-def create_experiment(region=None, instance_type=None, tag=None, worker_type=None, image_id=None, job_schd):
+def create_experiment(job_schd, region=None, instance_type=None, tag=None, worker_type=None, image_id=None):
     '''
     Create and launch an instance
     '''
@@ -164,46 +165,42 @@ def create_experiment(region=None, instance_type=None, tag=None, worker_type=Non
 
     cfg['image_id'] = utilities.get_image_id(cfg)    
 
-    with open(job_schd, 'r') as job_schd:
-        for line in job_schd:
+    with open(job_schd, 'r') as tag1:
+        for line in tag1:
             if re.search('#XBOW-CLUS cluster_name', line):
                  newline = line.replace('#XBOW-CLUS cluster_name: ', "")
                  tag = newline[:-1]
-                 print(tag)
     
-    with open(job_schd, 'r') as job_schd:
-        for line in job_schd:
+    with open(job_schd, 'r') as region1:
+        for line in region1:
             if re.search('#XBOW-CLUS region', line):
                  newline = line.replace('#XBOW-CLUS region: ', "")
                  region = newline[:-1]
-                 print(region)            
     if region is None:
         region = config['region']
 
-    with open(job_schd, 'r') as job_schd:
-        for line in job_schd:
+    with open(job_schd, 'r') as itype:
+        for line in itype:
             if re.search('#XBOW-CLUS scheduler_instance_type:', line):
                  newline = line.replace('#XBOW-CLUS scheduler_instance_type: ', "")
                  instance_type = newline[:-1]
-                 print(instance_type)
     if instance_type is None:
         instance_type = config['instance_type']
 
-    with open(job_schd, 'r') as job_schd:
-        for line in job_schd:
+    with open(job_schd, 'r') as wtype:
+        for line in wtype:
             if re.search('#XBOW-CLUS worker_instance_type:', line):
                  newline = line.replace('#XBOW-CLUS worker_instance_type: ', "")
                  worker_type = newline[:-1]
-                 print(worker_type)
     if worker_type is None:
         worker_type = config['worker_type']
     
-    with open(job_schd, 'r') as job_schd:
-        for line in job_schd:
+    with open(job_schd, 'r') as psize:
+        for line in psize:
             if re.search('#XBOW-CLUS pool_size:', line):
                  newline = line.replace('#XBOW-CLUS pool_size: ', "")
                  pool_size = newline[:-1]
-                 print(pool_size)
+                 pool_size = int(pool_size)
     if pool_size is None:
         print('no workers specified')
         
