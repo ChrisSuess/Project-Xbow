@@ -163,7 +163,9 @@ def create_experiment(job_schd, region=None, instance_type=None, tag=None, worke
     with open(cfg_file, 'r') as ymlfile:
         cfg = yaml.safe_load(ymlfile)
 
-    cfg['image_id'] = utilities.get_image_id(cfg)    
+    if image_id is None:
+        config['image_id'] = utilities.get_image_id(config)
+        image_id = config['image_id']    
 
     with open(job_schd, 'r') as tag1:
         for line in tag1:
