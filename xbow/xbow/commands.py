@@ -163,10 +163,6 @@ def create_experiment(job_schd, region=None, instance_type=None, tag=None, worke
     with open(cfg_file, 'r') as ymlfile:
         cfg = yaml.safe_load(ymlfile)
 
-    if image_id is None:
-        config['image_id'] = utilities.get_image_id(config)
-        image_id = config['image_id']    
-
     with open(job_schd, 'r') as tag1:
         for line in tag1:
             if re.search('#XBOW-CLUS cluster_name', line):
@@ -180,6 +176,22 @@ def create_experiment(job_schd, region=None, instance_type=None, tag=None, worke
                  region = newline[:-1]
     if region is None:
         region = config['region']
+
+    with open(cfg_file, 'r') as ymlfile:
+        #print(ymlfile.read()),
+        for line in ymlfile:
+            if re.search('#XBOW-CLUS image_name', line):
+                newline = line.replace('#XBOW-CLUS image_name: ', "")
+                newline = newline.replace('"', "")
+                newline = newline[:-1]
+                image = {}
+                image['image_name'] = newline
+                image['region'] = region
+    image['image_name'] = utilities.get_image_id(image)
+    image_id = image['image_name']
+    if image_id is None:
+        config['image_id'] = utilities.get_image_id(config)
+        image_id = config['image_id']
 
     with open(job_schd, 'r') as itype:
         for line in itype:
