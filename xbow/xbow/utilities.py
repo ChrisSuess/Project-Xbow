@@ -85,6 +85,10 @@ def create_security_group(region, uid):
              'ToPort': 22,
              'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
             {'IpProtocol': 'tcp',
+             'FromPort': 0,
+             'ToPort': 65535,
+             'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+            {'IpProtocol': 'tcp',
              'FromPort': 2049,
              'ToPort': 2049,
              'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
