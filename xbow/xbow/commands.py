@@ -257,9 +257,17 @@ def create_experiment(job_schd, region=None, instance_type=None, tag=None, worke
         image_id = utilities.ami_from_source(region, config['source'])
     database.update(uid, data)
     print('required ami identified')
+    
+    fs_path = os.path.abspath('/run/metadata/xbow/shared_file_system')
+    with open(fs_path, 'r') as fs_path1:
+        for line in fs_path1:
+            if re.search('FS_ID=', line):
+                FS_ID = line.replace('FS_ID=', "")
+                FS_ID = FS_ID.replace('"', "")
+                FS_ID = FS_ID[:-1]
 
-    fs_id = filesystems.fs_id_from_name(cfg['shared_file_system'], 
-                                       region=cfg['region'] 
+    fs_id = filesystems.fs_id_from_name(FS_ID, 
+                                       region=data['region'] 
                                        )
     if fs_id is None:
         print('creating a new filesystem')
