@@ -83,24 +83,14 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="userdata.txt"
 
 #!/bin/bash
-#pip install dask distributed && sudo -u ubuntu dask-scheduler > /home/ubuntu/scheduler.log 2>&1 &
-mkdir -p {mount_point}
-mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 {fs_id}.efs.{region}.amazonaws.com:/ {mount_point}
-chmod go+rw {mount_point}
-echo 'SHARED={mount_point} >> /etc/environment
+mkdir -p /run/metadata/xbow
+touch /run/metadata/xbow/is_scheduler
+echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
+echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
 '''.format(**cfg)
-    
+
         final_data = '''
 --//'''
-    
-        #extra_data = ''
-        #if args.script:
-        #    with open(args.script, 'r') as f:
-        #        for line in f:
-        #            if len(line) > 0 and line[0] != '#':
-        #                extra_data += line
-
-        #user_data = user_data + extra_data + final_data
 
         user_data = user_data + final_data 
 
