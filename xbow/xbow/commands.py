@@ -57,6 +57,9 @@ def create_lab():
 
     cfg['fs_id'] = fs_id
 
+    cfg['image_id'] = utilities.get_image_id(cfg)
+    image_id = cfg['image_id']
+
     if len(schedulers) == 1:
         inst = schedulers[0]
         print('Scheduler already running')
@@ -86,6 +89,7 @@ Content-Disposition: attachment; filename="userdata.txt"
 mkdir -p /run/metadata/xbow
 touch /run/metadata/xbow/is_scheduler
 echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
+echo 'FS_ID={shared_file_system}' >> /run/metadata/xbow/shared_file_system
 echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
 '''.format(**cfg)
 
@@ -96,7 +100,7 @@ echo 'SHARED=/home/ubuntu/shared' >> /etc/environment
 
         inst = instances.create_lab(
                                     cfg['scheduler_name'],
-                                    image_id=cfg['image_id'],
+                                    image_id=image_id,
                                     instance_type=cfg['scheduler_instance_type'],
                                     ec2_security_groups = cfg['ec2_security_groups'],
                                     user_data=user_data
