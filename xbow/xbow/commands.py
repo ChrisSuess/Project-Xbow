@@ -181,8 +181,8 @@ def create_experiment(job_schd, region=None, instance_type=None, tag=None, worke
                 image = {}
                 image['image_name'] = newline
                 image['region'] = region
-    image['image_name'] = utilities.get_image_id(image)
-    image_id = image['image_name']
+    #image['image_name'] = utilities.get_image_id(image)
+    #image_id = image['image_name']
     if image_id is None:
         config['image_id'] = utilities.get_image_id(config)
         image_id = config['image_id']
