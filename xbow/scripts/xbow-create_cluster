@@ -63,6 +63,7 @@ scheduler_user_data='''
 mkdir -p /run/metadata/xbow
 touch /run/metadata/xbow/is_scheduler
 echo 'XBOW_SHARED_FILESYSTEM={fs_id}.efs.{region}.amazonaws.com:/' > /run/metadata/xbow/shared_file_system
+echo 'SHARED={mount_point}' >> /run/metadata/xbow/shared_file_system
 echo 'SHARED={mount_point}' >> /etc/environment
 '''.format(**cfg)
 

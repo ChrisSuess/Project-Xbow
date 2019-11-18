@@ -4,18 +4,22 @@ Xflowlib: the Xflow library to build workflows on an Xbow cluster
 import re
 import subprocess
 import os
+import os.path as op
 import tempfile
 import shutil
 import copy
 import hashlib
 import glob
 import uuid
+import numpy as np
 from path import Path
-from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle
+from .filehandling import SharedFileHandle, CompressedFileHandle, TempFileHandle, FileHandle
 
 filehandler = None
 filehandler_type = None
 session_dir = str(uuid.uuid4())
+STDOUT = "STDOUT"
+DEBUGINFO = "DEBUGINFO"
 
 def set_filehandler(fh_type):
     """
@@ -74,22 +78,66 @@ def load(filename):
         set_filehandler('memory')
     return filehandler(filename, session_dir=session_dir)
 
+def _gen_filenames(pattern, n_files):
+    '''
+    Generate a list of filenames consistent with a pattern.
+    '''
+    if not '?' in pattern and not '*' in pattern:
+        raise ValueError('Error - the pattern must contain * or ?')
+    l = int(np.log10(n_files)) + 1
+    if '*' in pattern:
+        w = pattern.split('*')
+        template = '{}{{:0{}d}}{}'.format(w[0], l, w[1])
+    else:
+        w = pattern.split('?')
+        if pattern.count('?') < l:
+            raise ValueError('Error - too many files for this pattern')
+        template = '{}{{:0{}d}}{}'.format(w[0], pattern.count('?'), w[-1])
+    filenames = [template.format(i) for i in range(n_files)]
+    return filenames
+            
 class Filepack(object):
     """
     A collection of files
     """
     def __init__(self, filelist):
-        self.filepack = {}
+        self.filepack = []
         for filename in filelist:
-            self.filepack[filename] = filehandler(filename, session_dir=session_dir)
+            self.filepack.append(load(filename))
 
-    def unpack(self, outputdir='.'):
+    def _gen_filenames(self, pattern):
+        '''
+        Generate a list of filenames consistent with a pattern.
+        '''
+        if not '?' in pattern and not '*' in pattern:
+            raise ValueError('Error - the pattern must contain * or ?')
+        n_files = len(self.filepack)
+        l = int(np.log10(n_files)) + 1
+        if '*' in pattern:
+            w = pattern.split('*')
+            template = '{}{{:0{}d}}{}'.format(w[0], l, w[1])
+        else:
+            w = pattern.split('?')
+            if pattern.count('?') < l:
+                raise ValueError('Error - too many files for this pattern')
+            template = '{}{{:0{}d}}{}'.format(w[0], pattern.count('?'), w[-1])
+        filenames = [template.format(i) for i in range(n_files)]
+        return filenames
+            
+    def unpack(self, pattern, outputdir='.'):
         '''
         Unpack the files in the Filepack into the given directory.
         '''
-        for filename in self.filepack:
-            outname = os.path.join(outputdir, filename)
-            self.filepack[filename].save(outname)
+        filenames = self._gen_filenames(pattern)
+        for i, f in enumerate(self.filepack):
+            outname = os.path.join(outputdir, filenames[i])
+            f.save(outname)
+
+    def append(self, other):
+        if not isinstance(other, FileHandle):
+            raise ValueError('Error - cannot add a {} to a Filepack'.format(type(other)))
+        else:
+            self.filepack.append(other)
 
 class SubprocessKernel(object):
     '''
@@ -178,10 +226,15 @@ class SubprocessKernel(object):
                 if self.inputs[i] in self.variables:
                     var_dict[self.inputs[i]] = args[i]
                 else:
-                    try:
-                        args[i].save(self.inputs[i])
-                    except AttributeError:
-                        raise TypeError('Error with variable {} {}'.format(i, args[i]))
+                    if isinstance(args[i], list):
+                        fnames = _gen_filenames(self.inputs[i], len(args[i]))
+                        for j, f in enumerate(args[i]):
+                            f.save(fnames[j])
+                    else:
+                        try:
+                            args[i].save(self.inputs[i])
+                        except AttributeError:
+                            raise TypeError('Error: cannot process kernel argument {} {}'.format(i, args[i]))
             for d in self.constants:
                 try:
                     d['value'].save(d['name'])
@@ -195,17 +248,21 @@ class SubprocessKernel(object):
                                         check=True)
             except subprocess.CalledProcessError as e:
                 result = CalledProcessError(e)
-                if not 'RESULT' in self.outputs:
+                if not DEBUGINFO in self.outputs:
                     raise result
 
             self.STDOUT = result.stdout.decode()
             for outfile in self.outputs:
-                if os.path.exists(outfile):
-                    outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
+                if '*' in outfile or '?' in outfile:
+                    outf = glob.glob(outfile)
+                    outf.sort()
+                    outputs.append([self.filehandler(f, session_dir=self.session_dir) for f in outf])
                 else:
-                    if outfile == 'STDOUT':
+                    if op.exists(outfile):
+                        outputs.append(self.filehandler(outfile, session_dir=self.session_dir))
+                    elif outfile == STDOUT:
                         outputs.append(self.STDOUT)
-                    elif outfile == 'RESULT':
+                    elif outfile == DEBUGINFO:
                         outputs.append(result)
                     else:
                         outputs.append(None)

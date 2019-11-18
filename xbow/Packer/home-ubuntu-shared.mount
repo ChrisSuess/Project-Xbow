@@ -7,7 +7,7 @@ ConditionFileNotEmpty=/run/metadata/xbow/shared_file_system
 [Mount]
 EnvironmentFile=/run/metadata/xbow/shared_file_system
 What=${XBOW_SHARED_FILESYSTEM}
-Where=/home/ubuntu/shared
+Where=${SHARED}
 Type=nfs
 Options=nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2
 DirectoryMode=777
