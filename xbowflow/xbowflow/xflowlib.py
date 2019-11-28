@@ -229,12 +229,18 @@ class SubprocessKernel(object):
                     if isinstance(args[i], list):
                         fnames = _gen_filenames(self.inputs[i], len(args[i]))
                         for j, f in enumerate(args[i]):
-                            f.save(fnames[j])
+                            try:
+                                f.symlink(fnames[j])
+                            except AttributeError:
+                                f.save(fnames[j])
                     else:
                         try:
-                            args[i].save(self.inputs[i])
+                            args[i].symlink(self.inputs[i])
                         except AttributeError:
-                            raise TypeError('Error: cannot process kernel argument {} {}'.format(i, args[i]))
+                            try:
+                                args[i].save(self.inputs[i])
+                            except AttributeError:
+                                raise TypeError('Error: cannot process kernel argument {} {}'.format(i, args[i]))
             for d in self.constants:
                 try:
                     d['value'].save(d['name'])

@@ -55,6 +55,21 @@ class FileHandle(object):
             copyfile(self.path, path)
         return path
 
+    def symlink(self, path):
+        """
+        Save the file as a symbolic link
+
+        args:
+            path (str): file path
+
+        returns:
+            str: the path
+        """
+        abspath = os.path.abspath(path)
+        if abspath != self.path:
+            os.symlink(self.path, path)
+        return path
+
     def as_file(self):
         """
         Returns a path which points at the file
@@ -85,6 +100,19 @@ class TempFileHandle(FileHandle):
             str: the path used
         """
         copyfile(self.tmp_path, path)
+        return path
+
+    def symlink(self, path):
+        """
+        Save a copy of the file as a symbolic link.
+
+        args:
+            path (str): the path to use
+
+        returns:
+            str: the path used
+        """
+        os.symlink(self.tmp_path, path)
         return path
 
     def as_file(self):
@@ -128,6 +156,22 @@ class SharedFileHandle(FileHandle):
         copyfile(shared_path, path)
         return path
 
+    def symlink(self, path):
+        """
+        Save a copy of the file as a symbolic link
+
+        args:
+            path (str): path for the saved file
+
+        returns:
+            str: path of the saved file
+        """
+        if self.session_dir is None:
+            raise SystemError('Error - session_dir not set')
+        shared_path = self.as_file()
+        os.symlink(shared_path, path)
+        return path
+
     def as_file(self):
         """
         Returns a path that points at the file
@@ -162,6 +206,18 @@ class CompressedFileHandle(FileHandle):
             f.write(zlib.decompress(self.compressed_data))
         return path
 
+    def symlink(self, path):
+        """
+        Save a copy of the file - alias for save()
+
+        args:
+            path (str): path for the saved file
+
+        returns:
+            str: path of the saved file
+        """
+        return self.save(path)
+        
     def as_file(self):
         """
         Returns a path that points at the file
