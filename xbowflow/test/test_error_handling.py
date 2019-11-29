@@ -3,8 +3,9 @@ from xbowflow.clients import XflowClient
 import subprocess
 
 DEBUG = True
+xflowlib.set_filehandler('shared')
 ls = xflowlib.SubprocessKernel('ls {x} > output')
-ls.set_inputs(['x'])
+ls.set_inputs(['x', 'td.dat'])
 if DEBUG:
     ls.set_outputs(['output', xflowlib.DEBUGINFO])
 else:
@@ -12,18 +13,21 @@ else:
 
 if __name__ == '__main__':
     client = XflowClient(local=True)
-    testdata = '-a'
+    with open('test_data.dat', 'w') as f:
+        f.write('some test data\n')
+    td = xflowlib.load('test_data.dat')
+    testarg = '-al'
     if DEBUG:
-        output, result = client.submit(ls, testdata)
+        output, result = client.submit(ls, testarg, td)
         print(result.result())
     else:
-        output = client.submit(ls, testdata)
+        output = client.submit(ls, testarg, td)
     output.result().save('ls-result1.log')
-    testdata = 'crap'
+    testarg = 'crap'
     if DEBUG:
-        output, result = client.submit(ls, testdata)
+        output, result = client.submit(ls, testarg, td)
         print(result.result())
     else:
-        output = client.submit(ls, testdata)
+        output = client.submit(ls, testarg, td)
     output.result().save('ls-result2.log')
     client.close()

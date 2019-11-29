@@ -1,4 +1,4 @@
 '''
 _version.py: defines the code version
 '''
-__version__ = "0.1.14.rc0"
+__version__ = "0.1.14.rc1"

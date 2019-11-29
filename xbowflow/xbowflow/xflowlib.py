@@ -251,13 +251,16 @@ class SubprocessKernel(object):
                 result = subprocess.run(cmd, shell=True,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
+                                        universal_newlines=True,
                                         check=True)
             except subprocess.CalledProcessError as e:
-                result = CalledProcessError(e)
+                r2 = subprocess.run(['ls', '-l'], stdout=subprocess.PIPE,
+                                    universal_newlines=True)
+                result = CalledProcessError(e, extra=r2.stdout)
                 if not DEBUGINFO in self.outputs:
                     raise result
 
-            self.STDOUT = result.stdout.decode()
+            self.STDOUT = result.stdout
             for outfile in self.outputs:
                 if '*' in outfile or '?' in outfile:
                     outf = glob.glob(outfile)
@@ -391,10 +394,10 @@ class CalledProcessError(XflowError):
     A cosmetic wrapper round subprocess.CalledProcessError
     """
 
-    def __init__(self, e):
+    def __init__(self, e, extra=''):
         self.cmd = e.cmd
         self.returncode = e.returncode
-        self.stdout = e.stdout
+        self.stdout = e.stdout + extra
         self.stderr = e.stderr
         self.output = self.stdout
 
