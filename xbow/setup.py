@@ -105,8 +105,10 @@ setup_args = {
     'install_requires': ['boto3',
                          'argparse',
                          'paramiko',
-                         'cryptography>=2.5',
-			 'pyYAML'],
+                         'cryptography',
+                         'pytz',
+                         'pyYAML'
+                         ],
 
     'zip_safe': False,
 }
