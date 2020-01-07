@@ -9,7 +9,7 @@ ConditionPathExists=/usr/local/bin/dask-scheduler
 User=ubuntu
 Group=ubuntu
 Type=simple
-StandardOutput=file:/home/ubuntu/scheduler.log
+StandardOutput=append:/home/ubuntu/scheduler.log
 ExecStart=/usr/local/bin/dask-scheduler
 #Restart=always
 
