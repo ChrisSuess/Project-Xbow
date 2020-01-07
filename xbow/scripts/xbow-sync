@@ -8,6 +8,11 @@ from xbow.instances import get_by_name
 
 cfg_file = os.path.join(xbow.XBOW_CONFIGDIR, "settings.yml")
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--download', help='download from cloud', action="store_true")
+parser.add_argument('-u', '--upload', help='upload to cloud', action="store_true")
+args = parser.parse_args()
+
 with open(cfg_file, 'r') as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 
@@ -43,9 +48,15 @@ def exists_remote(name=None, instance_id=None, region=None):
     cwd = os.getcwd().replace(" ", "\\ ")
     base = os.path.basename(cwd)
 
-    status = "ssh -i {} {}@{} '[ -d {}/{} ]'".format(pem_file, username, instance.public_dns_name, mount_point, base)
-    #print(status)
-    check = subprocess.call(status, shell=True)
+    if not args.download and not args.upload:
+        status = "ssh -i {} {}@{} '[ -d {}/{} ]'".format(pem_file, username, instance.public_dns_name, mount_point, base)
+        #print(status)
+        check = subprocess.call(status, shell=True)
+    elif args.download:
+        check = 0
+    else:
+        check = 1
+
     if check == 1:
         client2cloud = 'rsync -avz --progress -e "ssh -i {}" {}/ {}@{}:{}/{}/'.format(pem_file, cwd, username, instance.public_dns_name, mount_point, base)
         subprocess.call(client2cloud, shell=True)
