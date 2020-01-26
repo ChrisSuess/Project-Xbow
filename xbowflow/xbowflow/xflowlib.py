@@ -219,8 +219,9 @@ class SubprocessKernel(object):
                 self.outputs
         """
         outputs = []
-        td = tempfile.mkdtemp()
-        with Path(td) as tmpdir:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            old_dir = os.getcwd()
+            os.chdir(tmpdirname)
             var_dict = {}
             for i in range(len(args)):
                 if self.inputs[i] in self.variables:
@@ -266,10 +267,7 @@ class SubprocessKernel(object):
                         outputs.append(result)
                     else:
                         outputs.append(None)
-        try:
-            shutil.rmtree(td)
-        except:
-            pass
+            os.chdir(old_dir)
         if len(outputs) == 1:
             outputs = outputs[0]
         else:
