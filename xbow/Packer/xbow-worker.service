@@ -9,5 +9,5 @@ User=ubuntu
 Group=ubuntu
 Type=simple
 EnvironmentFile=/run/metadata/xbow/scheduler_ip_address
-ExecStart=/usr/local/bin/dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs ${XBOW_WORKER_NPROCS} ${XBOW_SCHEDULER_IP_ADDRESS}:8786
+ExecStart=/usr/local/bin/dask-worker --local-directory /tmp/dask --nthreads 1 --nprocs ${XBOW_WORKER_NPROCS} ${XBOW_SCHEDULER_IP_ADDRESS}:80
 #Restart=always

@@ -10,13 +10,15 @@ sudo usermod -aG docker ${USER}
 # Install Task Spooler
 sudo apt-get install -y task-spooler
 # Install Xbowflow and Pinda
+sudo pip3 install numpy
 sudo pip3 install xbowflow==0.1.13rc3
+sudo pip3 install crossflow==0.0.3rc0
 sudo pip3 install pinda
 pinda update
 mkdir -p $HOME/.local/bin
 ln -s $HOME/.local/bin $HOME/bin
 # Install Nvidia driver
-sudo apt install -y nvidia-driver-430
+sudo apt install -y nvidia-430
 # Install Nvidia container runtime for Docker
 curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
   sudo apt-key add -

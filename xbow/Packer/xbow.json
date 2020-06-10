@@ -11,9 +11,9 @@
       "owners": ["099720109477"],
       "most_recent": true
     },
-    "instance_type": "t2.micro",
+    "instance_type": "t2.small",
     "ssh_username": "ubuntu",
-    "ami_name": "xbow-packer-{{timestamp}}"
+    "ami_name": "xbow-port80-{{timestamp}}"
   }],
   "provisioners": [
     {

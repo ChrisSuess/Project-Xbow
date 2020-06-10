@@ -6,10 +6,10 @@ ConditionPathExists=!/run/metadata/xbow/scheduler_ip_address
 ConditionPathExists=/usr/local/bin/dask-scheduler
 
 [Service]
-User=ubuntu
+#User=ubuntu
 Group=ubuntu
 Type=simple
-StandardOutput=append:/home/ubuntu/scheduler.log
-ExecStart=/usr/local/bin/dask-scheduler
+#StandardOutput=/home/ubuntu/scheduler.log
+ExecStart=/usr/local/bin/dask-scheduler --port 80
 #Restart=always
 
